@@ -45,30 +45,38 @@ export function BottomDock() {
   // Hide the dock on the auth pages
   if (loc.pathname.startsWith("/auth")) return null;
 
+  const dockHidden = browse || profile || search;
+
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[70] flex justify-center px-4 [transform:translateZ(0)]">
-        <motion.nav
-          initial={{ y: 60, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 26 }}
-          className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-neutral-900/60 p-1.5 shadow-2xl backdrop-blur-lg"
-          style={{ boxShadow: "0 10px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.02)" }}
-        >
-          <DockLink to="/" label="Home" active={isActive("/")}>
-            <Home className="h-4 w-4" />
-          </DockLink>
-          <DockButton onClick={() => setBrowse(true)} label="Browse">
-            <LayoutGrid className="h-4 w-4" />
-          </DockButton>
-          <DockButton onClick={() => setSearch(true)} label="Search">
-            <Search className="h-4 w-4" />
-          </DockButton>
-          <DockButton onClick={() => setProfile(true)} label="Profile" active={profile}>
-            <User className="h-4 w-4" />
-          </DockButton>
-        </motion.nav>
-      </div>
+      <AnimatePresence>
+        {!dockHidden && (
+          <div className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[70] flex justify-center px-4 [transform:translateZ(0)]">
+            <motion.nav
+              key="dock"
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 26 }}
+              className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-neutral-900/60 p-1.5 shadow-2xl backdrop-blur-lg"
+              style={{ boxShadow: "0 10px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.02)" }}
+            >
+              <DockLink to="/" label="Home" active={isActive("/")}>
+                <Home className="h-4 w-4" />
+              </DockLink>
+              <DockButton onClick={() => setBrowse(true)} label="Browse">
+                <LayoutGrid className="h-4 w-4" />
+              </DockButton>
+              <DockButton onClick={() => setSearch(true)} label="Search">
+                <Search className="h-4 w-4" />
+              </DockButton>
+              <DockButton onClick={() => setProfile(true)} label="Profile" active={profile}>
+                <User className="h-4 w-4" />
+              </DockButton>
+            </motion.nav>
+          </div>
+        )}
+      </AnimatePresence>
 
       <CommandPalette open={search} onClose={() => setSearch(false)} />
 
