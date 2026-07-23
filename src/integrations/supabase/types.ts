@@ -14,16 +14,381 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      announcements: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          message: string
+          variant: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          message: string
+          variant?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          message?: string
+          variant?: string
+        }
+        Relationships: []
+      }
+      app_config: {
+        Row: {
+          id: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
+      error_logs: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          stack: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      hero_overrides: {
+        Row: {
+          backdrop_path: string | null
+          content_id: number
+          content_type: string
+          created_at: string
+          id: string
+          sort_order: number
+          tagline: string | null
+          title: string
+        }
+        Insert: {
+          backdrop_path?: string | null
+          content_id: number
+          content_type: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          tagline?: string | null
+          title: string
+        }
+        Update: {
+          backdrop_path?: string | null
+          content_id?: number
+          content_type?: string
+          created_at?: string
+          id?: string
+          sort_order?: number
+          tagline?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      party_messages: {
+        Row: {
+          body: string
+          created_at: string
+          display_name: string
+          id: string
+          room_code: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          display_name: string
+          id?: string
+          room_code: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          room_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_messages_room_code_fkey"
+            columns: ["room_code"]
+            isOneToOne: false
+            referencedRelation: "party_rooms"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      party_rooms: {
+        Row: {
+          code: string
+          content_id: number
+          content_type: string
+          created_at: string
+          episode_number: number | null
+          host_id: string
+          season_number: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          content_id: number
+          content_type: string
+          created_at?: string
+          episode_number?: number | null
+          host_id: string
+          season_number?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          content_id?: number
+          content_type?: string
+          created_at?: string
+          episode_number?: number | null
+          host_id?: string
+          season_number?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          preferences: Json
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          preferences?: Json
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          preferences?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      server_health: {
+        Row: {
+          category: string
+          is_online: boolean
+          last_checked: string
+          latency_ms: number | null
+          server_name: string
+        }
+        Insert: {
+          category?: string
+          is_online?: boolean
+          last_checked?: string
+          latency_ms?: number | null
+          server_name: string
+        }
+        Update: {
+          category?: string
+          is_online?: boolean
+          last_checked?: string
+          latency_ms?: number | null
+          server_name?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          backdrop_path: string | null
+          duration_seconds: number
+          episode: number | null
+          fully_watched: boolean
+          id: string
+          media_type: string
+          position_seconds: number
+          poster_path: string | null
+          progress_pct: number | null
+          season: number | null
+          title: string
+          tmdb_id: number
+          updated_at: string
+          user_id: string
+          watched_episodes: Json | null
+        }
+        Insert: {
+          backdrop_path?: string | null
+          duration_seconds?: number
+          episode?: number | null
+          fully_watched?: boolean
+          id?: string
+          media_type: string
+          position_seconds?: number
+          poster_path?: string | null
+          progress_pct?: number | null
+          season?: number | null
+          title: string
+          tmdb_id: number
+          updated_at?: string
+          user_id: string
+          watched_episodes?: Json | null
+        }
+        Update: {
+          backdrop_path?: string | null
+          duration_seconds?: number
+          episode?: number | null
+          fully_watched?: boolean
+          id?: string
+          media_type?: string
+          position_seconds?: number
+          poster_path?: string | null
+          progress_pct?: number | null
+          season?: number | null
+          title?: string
+          tmdb_id?: number
+          updated_at?: string
+          user_id?: string
+          watched_episodes?: Json | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_watchlists: {
+        Row: {
+          created_at: string
+          id: string
+          media_type: string
+          poster_path: string | null
+          title: string
+          tmdb_id: number
+          user_id: string
+          year: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          media_type: string
+          poster_path?: string | null
+          title: string
+          tmdb_id: number
+          user_id: string
+          year?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          media_type?: string
+          poster_path?: string | null
+          title?: string
+          tmdb_id?: number
+          user_id?: string
+          year?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +515,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user", "super_admin"],
+    },
   },
 } as const
