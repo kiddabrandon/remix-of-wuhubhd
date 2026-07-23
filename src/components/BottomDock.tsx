@@ -202,13 +202,15 @@ export function BottomDock() {
                   <div className="truncate text-xs text-neutral-400">{session?.user.email}</div>
                 </div>
               </div>
-              <Link
-                to="/settings"
-                onClick={() => setProfile(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-white/5"
+              <button
+                onClick={() => {
+                  setProfile(false);
+                  navigate({ to: "/settings" });
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-white/5"
               >
                 <Sun className="h-4 w-4" /> Settings
-              </Link>
+              </button>
               <button
                 onClick={signOut}
                 className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-300 hover:bg-red-500/10"
