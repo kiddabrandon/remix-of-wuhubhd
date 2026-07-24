@@ -48,11 +48,14 @@ import {
 } from "@/lib/admin.functions";
 import { AdminAIPanel } from "@/components/AdminAIPanel";
 
-// Client-side password gate. Credentials are intentionally shared and stored
-// in sessionStorage — this is a lightweight config surface, not real auth.
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "cinehub2024";
-const SESSION_KEY = "cinehub:admin-session";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
+import { isAdmin as isAdminFn } from "@/lib/admin.functions";
+import { Link } from "@tanstack/react-router";
+
+// Admin access is gated by Supabase auth AND the `admin` role in user_roles.
+// The `admin` role is granted automatically to the designated email via a
+// database trigger on auth.users.
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -67,20 +70,101 @@ export const Route = createFileRoute("/admin")({
 
 function AdminGate() {
   const [ready, setReady] = useState(false);
-  const [authed, setAuthed] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [admin, setAdmin] = useState<boolean | null>(null);
+  const checkAdmin = useServerFn(isAdminFn);
 
   useEffect(() => {
-    try {
-      setAuthed(window.sessionStorage.getItem(SESSION_KEY) === "1");
-    } catch {
-      /* ignore */
-    }
-    setReady(true);
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!session) {
+      setAdmin(null);
+      return;
+    }
+    let cancelled = false;
+    checkAdmin()
+      .then((r) => {
+        if (!cancelled) setAdmin(Boolean(r?.admin));
+      })
+      .catch(() => {
+        if (!cancelled) setAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session, checkAdmin]);
+
   if (!ready) return null;
-  if (!authed) return <LoginCard onSuccess={() => setAuthed(true)} />;
-  return <Panel onSignOut={() => setAuthed(false)} />;
+  if (!session) return <SignInPrompt />;
+  if (admin === null) return <LoadingCard />;
+  if (!admin) return <DeniedCard email={session.user.email ?? ""} />;
+  return <Panel onSignOut={async () => { await supabase.auth.signOut(); }} />;
+}
+
+function LoadingCard() {
+  return (
+    <div className="grid min-h-[100dvh] place-items-center bg-black px-4 py-10 text-sm text-neutral-400">
+      Verifying access…
+    </div>
+  );
+}
+
+function SignInPrompt() {
+  return (
+    <div className="grid min-h-[100dvh] place-items-center bg-black px-4 py-10">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0b0c] p-6 text-center sm:p-8">
+        <div
+          className="mx-auto grid h-12 w-12 place-items-center rounded-full"
+          style={{ background: "var(--accent)" }}
+        >
+          <Lock className="h-5 w-5 text-black" />
+        </div>
+        <h1 className="mt-5 font-display text-2xl font-bold tracking-tight">Admin access</h1>
+        <p className="mt-1 text-xs text-neutral-500">Sign in with the authorized account to continue.</p>
+        <Link
+          to="/auth"
+          search={{ next: "/admin" }}
+          className="mt-6 inline-flex w-full items-center justify-center rounded-full py-2.5 text-sm font-semibold text-black"
+          style={{ background: "var(--accent)" }}
+        >
+          Sign in
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function DeniedCard({ email }: { email: string }) {
+  return (
+    <div className="grid min-h-[100dvh] place-items-center bg-black px-4 py-10">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0b0c] p-6 text-center sm:p-8">
+        <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-red-500/20">
+          <Lock className="h-5 w-5 text-red-400" />
+        </div>
+        <h1 className="mt-5 font-display text-2xl font-bold tracking-tight">Access denied</h1>
+        <p className="mt-1 text-xs text-neutral-500">
+          {email} is not authorized for the admin panel.
+        </p>
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut();
+          }}
+          className="mt-6 inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-white/5 py-2.5 text-sm hover:bg-white/10"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function LoginCard({ onSuccess }: { onSuccess: () => void }) {
