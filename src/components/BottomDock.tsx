@@ -58,9 +58,36 @@ export function BottomDock() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 60, opacity: 0 }}
               transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-neutral-900/60 p-1.5 shadow-2xl backdrop-blur-lg"
+              className="pointer-events-auto relative flex items-center gap-1 rounded-full border border-white/10 bg-neutral-900/60 p-1.5 shadow-2xl backdrop-blur-lg"
               style={{ boxShadow: "0 10px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.02)" }}
             >
+              {/* Ambient breathing glow behind the pill */}
+              <motion.span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -z-10 rounded-full blur-2xl"
+                style={{
+                  background:
+                    "radial-gradient(60% 100% at 50% 50%, color-mix(in oklab, var(--accent) 55%, transparent) 0%, transparent 70%)",
+                }}
+                animate={{ opacity: [0.35, 0.7, 0.35], scale: [0.98, 1.06, 0.98] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+              />
+              {/* Rotating conic tail around the pill outline */}
+              <motion.span
+                aria-hidden
+                className="pointer-events-none absolute -inset-[1px] -z-10 rounded-full opacity-60"
+                style={{
+                  background:
+                    "conic-gradient(from 0deg, transparent 0deg, color-mix(in oklab, var(--accent) 90%, transparent) 40deg, transparent 90deg, transparent 360deg)",
+                  WebkitMask:
+                    "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite: "exclude",
+                  padding: 1,
+                }}
+                animate={{ rotate: 360 }}
+                transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+              />
               <DockLink to="/" label="Home" active={isActive("/")}>
                 <Home className="h-4 w-4" />
               </DockLink>
