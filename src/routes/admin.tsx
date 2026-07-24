@@ -167,86 +167,8 @@ function DeniedCard({ email }: { email: string }) {
   );
 }
 
-function LoginCard({ onSuccess }: { onSuccess: () => void }) {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    setErr(null);
-    // Small delay to reduce UI flash / brute-force feel.
-    setTimeout(() => {
-      if (user.trim() === ADMIN_USER && pass === ADMIN_PASS) {
-        try {
-          window.sessionStorage.setItem(SESSION_KEY, "1");
-        } catch {
-          /* ignore */
-        }
-        onSuccess();
-      } else {
-        setErr("Invalid credentials");
-      }
-      setBusy(false);
-    }, 200);
-  };
 
-  return (
-    <div className="grid min-h-[100dvh] place-items-center bg-black px-4 py-10">
-      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#0b0b0c] p-6 shadow-[0_30px_60px_-20px_rgba(0,229,255,0.15)] sm:p-8">
-        <div
-          className="mx-auto grid h-12 w-12 place-items-center rounded-full"
-          style={{ background: "var(--accent)" }}
-        >
-          <Lock className="h-5 w-5 text-black" />
-        </div>
-        <h1 className="mt-5 text-center font-display text-2xl font-bold tracking-tight">
-          Admin access
-        </h1>
-        <p className="mt-1 text-center text-xs text-neutral-500">
-          Restricted area. Sign in to continue.
-        </p>
-        <form onSubmit={submit} className="mt-6 space-y-3">
-          <label className="block">
-            <div className="mb-1 text-[11px] uppercase tracking-widest text-neutral-500">
-              Username
-            </div>
-            <input
-              autoFocus
-              autoComplete="username"
-              value={user}
-              onChange={(e) => setUser(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-black px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-            />
-          </label>
-          <label className="block">
-            <div className="mb-1 text-[11px] uppercase tracking-widest text-neutral-500">
-              Password
-            </div>
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-black px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-            />
-          </label>
-          {err && <p className="text-xs text-red-400">{err}</p>}
-          <button
-            type="submit"
-            disabled={busy}
-            className="mt-2 w-full rounded-full py-2.5 text-sm font-semibold text-black disabled:opacity-60"
-            style={{ background: "var(--accent)" }}
-          >
-            {busy ? "Checking…" : "Sign in"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
 
 function Panel({ onSignOut }: { onSignOut: () => void }) {
   const initial = useMemo<SiteConfig>(() => loadSiteConfigLocal(), []);
