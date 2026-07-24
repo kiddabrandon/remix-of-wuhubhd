@@ -189,7 +189,7 @@ function Panel({ onSignOut }: { onSignOut: () => void }) {
     setSaving(true);
     setSaveErr(null);
     try {
-      await saveConfigFn({ data: { password: ADMIN_PASS, json: JSON.stringify(cfg) } });
+      await saveConfigFn({ data: { json: JSON.stringify(cfg) } });
       saveSiteConfigLocal(cfg);
       setSavedAt(Date.now());
     } catch (e) {
@@ -200,11 +200,6 @@ function Panel({ onSignOut }: { onSignOut: () => void }) {
   };
 
   const signOut = () => {
-    try {
-      window.sessionStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* ignore */
-    }
     onSignOut();
   };
 
