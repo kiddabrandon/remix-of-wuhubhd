@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
-const ADMIN_PASS = "cinehub2024"; // must match src/routes/admin.tsx
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { ensureAdmin } from "@/lib/admin-helpers.server";
 
 export const getSiteConfig = createServerFn({ method: "GET" }).handler(async (): Promise<{ json: string }> => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -15,14 +15,14 @@ export const getSiteConfig = createServerFn({ method: "GET" }).handler(async ():
 });
 
 const SaveSchema = z.object({
-  password: z.string(),
   json: z.string(),
 });
 
 export const saveSiteConfig = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SaveSchema.parse(d))
-  .handler(async ({ data }) => {
-    if (data.password !== ADMIN_PASS) throw new Error("Forbidden");
+  .handler(async ({ context, data }) => {
+    await ensureAdmin(context.supabase, context.userId);
     const value = JSON.parse(data.json);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
