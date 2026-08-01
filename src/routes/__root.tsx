@@ -15,6 +15,8 @@ import { AppProvider } from "@/lib/app-store";
 import { TopNav } from "@/components/TopNav";
 import { BottomDock } from "@/components/BottomDock";
 import { PWAInstall } from "@/components/PWAInstall";
+import { Preloader } from "@/components/Preloader";
+
 import { registerPWA } from "@/lib/pwa-register";
 import { hydrateSiteConfigFromServer } from "@/lib/site-config";
 
@@ -113,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
       },
-      { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -147,7 +149,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider>
-        <div className="flex min-h-screen flex-col bg-black pb-28">
+        <Preloader />
+        <div className="flex min-h-screen flex-col bg-black pb-[max(4.5rem,calc(3.5rem+env(safe-area-inset-bottom)))]">
           <TopNav />
           <PWAInstall />
           <main className="flex-1">
@@ -157,5 +160,6 @@ function RootComponent() {
         </div>
       </AppProvider>
     </QueryClientProvider>
+
   );
 }
