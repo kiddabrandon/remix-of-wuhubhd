@@ -6,13 +6,14 @@ import { ensureAdmin } from "@/lib/admin-helpers.server";
 export const isAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.rpc("has_role", {
+    // is_admin covers both 'admin' and 'super_admin'
+    const { data, error } = await context.supabase.rpc("is_admin", {
       _user_id: context.userId,
-      _role: "admin",
     });
-    if (error) return { admin: false };
+    if (error) throw new Error(error.message);
     return { admin: Boolean(data) };
   });
+
 
 export const getSiteConfig = createServerFn({ method: "GET" }).handler(async () => {
   const { createClient } = await import("@supabase/supabase-js");
