@@ -69,25 +69,21 @@ export function BottomDock() {
                   background:
                     "radial-gradient(60% 100% at 50% 50%, color-mix(in oklab, var(--accent) 55%, transparent) 0%, transparent 70%)",
                 }}
-                animate={{ opacity: [0.35, 0.7, 0.35], scale: [0.98, 1.06, 0.98] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.98, 1.05, 0.98] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               />
-              {/* Rotating conic tail around the pill outline */}
+              {/* Soft drifting sheen (no rotating line) */}
               <motion.span
                 aria-hidden
-                className="pointer-events-none absolute -inset-[1px] -z-10 rounded-full opacity-60"
+                className="pointer-events-none absolute -inset-3 -z-10 rounded-full blur-3xl"
                 style={{
                   background:
-                    "conic-gradient(from 0deg, transparent 0deg, color-mix(in oklab, var(--accent) 90%, transparent) 40deg, transparent 90deg, transparent 360deg)",
-                  WebkitMask:
-                    "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
-                  WebkitMaskComposite: "xor",
-                  maskComposite: "exclude",
-                  padding: 1,
+                    "radial-gradient(40% 80% at 30% 50%, color-mix(in oklab, var(--accent) 35%, transparent) 0%, transparent 70%)",
                 }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                animate={{ x: ["-12%", "12%", "-12%"], opacity: [0.25, 0.5, 0.25] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
               />
+
               <DockLink to="/" label="Home" active={isActive("/")}>
                 <Home className="h-4 w-4" />
               </DockLink>
