@@ -100,7 +100,23 @@
     background: var(--accent);
     color: #000;
   }
+
+  /* Non-selectable UI, except real text inputs */
+  html,
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
 }
+
 
 @utility scrollbar-none {
   scrollbar-width: none;
