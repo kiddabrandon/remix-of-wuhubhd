@@ -254,47 +254,30 @@ export const clearErrorLogs = createServerFn({ method: "POST" })
   });
 
 // ---------- Stats ----------
+type TopRow = { tmdb_id: number; media_type: string; title: string; plays: number };
+
 export const getAdminStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await ensureAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-    const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
-    const [profiles, progressUsers, watchlistUsers, roleUsers, plays24, plays7, watchlist, errors24, topRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id"),
-      supabaseAdmin.from("user_progress").select("user_id"),
-      supabaseAdmin.from("user_watchlists").select("user_id"),
-      supabaseAdmin.from("user_roles").select("user_id"),
-      supabaseAdmin.from("user_progress").select("id", { count: "exact", head: true }).gte("updated_at", dayAgo),
-      supabaseAdmin.from("user_progress").select("id", { count: "exact", head: true }).gte("updated_at", weekAgo),
-      supabaseAdmin.from("user_watchlists").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("error_logs").select("id", { count: "exact", head: true }).gte("created_at", dayAgo),
-      supabaseAdmin
-        .from("user_progress")
-        .select("tmdb_id,media_type,title")
-        .gte("updated_at", weekAgo)
-        .limit(500),
-    ]);
-    const buckets = new Map<string, { tmdb_id: number; media_type: string; title: string; plays: number }>();
-    for (const row of (topRes.data ?? []) as Array<{ tmdb_id: number; media_type: string; title: string }>) {
-      const k = `${row.media_type}:${row.tmdb_id}`;
-      const existing = buckets.get(k);
-      if (existing) existing.plays += 1;
-      else buckets.set(k, { tmdb_id: row.tmdb_id, media_type: row.media_type, title: row.title, plays: 1 });
-    }
-    const top = Array.from(buckets.values()).sort((a, b) => b.plays - a.plays).slice(0, 10);
-    const userIds = new Set<string>();
-    for (const row of (profiles.data ?? []) as Array<{ id?: string | null }>) if (row.id) userIds.add(row.id);
-    for (const row of (progressUsers.data ?? []) as Array<{ user_id?: string | null }>) if (row.user_id) userIds.add(row.user_id);
-    for (const row of (watchlistUsers.data ?? []) as Array<{ user_id?: string | null }>) if (row.user_id) userIds.add(row.user_id);
-    for (const row of (roleUsers.data ?? []) as Array<{ user_id?: string | null }>) if (row.user_id) userIds.add(row.user_id);
+    // Uses a security-definer DB function so no privileged service key is needed.
+    const { data, error } = await context.supabase.rpc("admin_stats");
+    if (error) throw new Error(error.message);
+    const stats = (data ?? {}) as {
+      users?: number;
+      plays24h?: number;
+      plays7d?: number;
+      watchlist?: number;
+      errors24h?: number;
+      top?: TopRow[];
+    };
     return {
-      users: userIds.size,
-      plays24h: plays24.count ?? 0,
-      plays7d: plays7.count ?? 0,
-      watchlist: watchlist.count ?? 0,
-      errors24h: errors24.count ?? 0,
-      top,
+      users: stats.users ?? 0,
+      plays24h: stats.plays24h ?? 0,
+      plays7d: stats.plays7d ?? 0,
+      watchlist: stats.watchlist ?? 0,
+      errors24h: stats.errors24h ?? 0,
+      top: stats.top ?? [],
     };
   });
+
