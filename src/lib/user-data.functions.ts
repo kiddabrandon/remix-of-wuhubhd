@@ -177,8 +177,9 @@ export const upsertProgress = createServerFn({ method: "POST" })
           season: data.season ?? null,
           episode: data.episode ?? null,
           progress_pct: pct,
-          position_seconds: data.position_seconds ?? 0,
-          duration_seconds: data.duration_seconds ?? 0,
+          position_seconds: position,
+          duration_seconds: duration,
+
           fully_watched: fully,
           watched_episodes: watched,
           updated_at: new Date().toISOString(),
