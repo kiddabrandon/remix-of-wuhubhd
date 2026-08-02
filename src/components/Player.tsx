@@ -156,18 +156,31 @@ export function Player({
     const el = wrapRef.current as any;
     if (!el) return;
     const inFs = document.fullscreenElement || (document as any).webkitFullscreenElement;
+    const orientation = (screen as any)?.orientation;
     try {
       if (inFs) {
         if (document.exitFullscreen) await document.exitFullscreen();
         else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
+        // App is portrait-locked; release the temporary landscape lock.
+        try {
+          orientation?.unlock?.();
+        } catch {
+          /* ignore */
+        }
       } else {
         if (el.requestFullscreen) await el.requestFullscreen();
         else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
         else if (iframeRef.current && (iframeRef.current as any).webkitEnterFullscreen)
           (iframeRef.current as any).webkitEnterFullscreen();
+        try {
+          await orientation?.lock?.("landscape");
+        } catch {
+          /* device may refuse; harmless */
+        }
       }
     } catch {
+
       /* ignore */
     }
   };
@@ -195,6 +208,9 @@ export function Player({
             src={src}
             title={title ? `${title} · ${active.name}` : `Player · ${active.name}`}
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            // Blocks the provider's pop-ups / redirect-to-ad tricks while keeping playback working.
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
+
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"

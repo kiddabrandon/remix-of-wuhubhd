@@ -138,7 +138,7 @@ export const upsertProgress = createServerFn({ method: "POST" })
     const supa = context.supabase;
     const { data: existing } = await supa
       .from("user_progress")
-      .select("watched_episodes")
+      .select("watched_episodes,progress_pct,position_seconds,duration_seconds,fully_watched")
       .eq("user_id", context.userId)
       .eq("tmdb_id", data.tmdb_id)
       .eq("media_type", data.media_type)
@@ -150,16 +150,19 @@ export const upsertProgress = createServerFn({ method: "POST" })
       if (!watched.includes(tag)) watched = [...watched, tag];
     }
 
-    const pct = data.progress_pct ?? (
-      data.position_seconds && data.duration_seconds
-        ? Math.min(100, Math.round((data.position_seconds / data.duration_seconds) * 100))
-        : 0
-    );
-    const fully = data.fully_watched ?? (
-      data.position_seconds && data.duration_seconds
-        ? data.position_seconds / data.duration_seconds >= 0.9
-        : false
-    );
+    // Only overwrite timeline fields when this call actually carries a position.
+    const hasTimeline = Boolean(data.position_seconds && data.duration_seconds);
+    const position = hasTimeline ? data.position_seconds! : Number(existing?.position_seconds ?? 0);
+    const duration = hasTimeline ? data.duration_seconds! : Number(existing?.duration_seconds ?? 0);
+    const pct =
+      data.progress_pct ??
+      (hasTimeline
+        ? Math.min(100, Math.round((position / duration) * 100))
+        : Number(existing?.progress_pct ?? 0));
+    const fully =
+      data.fully_watched ??
+      (hasTimeline ? position / duration >= 0.9 : Boolean(existing?.fully_watched));
+
 
     const { error } = await supa
       .from("user_progress")
@@ -174,8 +177,9 @@ export const upsertProgress = createServerFn({ method: "POST" })
           season: data.season ?? null,
           episode: data.episode ?? null,
           progress_pct: pct,
-          position_seconds: data.position_seconds ?? 0,
-          duration_seconds: data.duration_seconds ?? 0,
+          position_seconds: position,
+          duration_seconds: duration,
+
           fully_watched: fully,
           watched_episodes: watched,
           updated_at: new Date().toISOString(),
