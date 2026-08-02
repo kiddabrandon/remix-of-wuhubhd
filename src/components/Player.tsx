@@ -195,6 +195,9 @@ export function Player({
             src={src}
             title={title ? `${title} · ${active.name}` : `Player · ${active.name}`}
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            // Blocks the provider's pop-ups / redirect-to-ad tricks while keeping playback working.
+            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
+
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"
