@@ -1,0 +1,1 @@
+ALTER TABLE public.user_progress ADD COLUMN IF NOT EXISTS episode_positions jsonb NOT NULL DEFAULT '{}'::jsonb;
