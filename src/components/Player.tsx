@@ -219,9 +219,10 @@ export function Player({
       if (inFs) {
         if (document.exitFullscreen) await document.exitFullscreen();
         else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
-        // App is portrait-locked; release the temporary landscape lock.
+        // App is portrait by default; restore the lock after fullscreen.
         try {
           orientation?.unlock?.();
+          void orientation?.lock?.("portrait")?.catch?.(() => {});
         } catch {
           /* ignore */
         }
