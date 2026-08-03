@@ -60,7 +60,7 @@ export function Player({
       movie: () => "",
       tv: () => "",
     };
-    return [yt, ...base];
+    return [...base, yt];
   }, [effectiveOrder, youtubeKey]);
   const [localId, setLocalId] = useState<string>(servers[0]?.id ?? "");
   const activeId = serverId || localId;
@@ -254,8 +254,6 @@ export function Player({
             title={title ? `${title} · ${active.name}` : `Player · ${active.name}`}
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             // Blocks the provider's pop-ups / redirect-to-ad tricks while keeping playback working.
-            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
-
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"
