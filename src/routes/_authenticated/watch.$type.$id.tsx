@@ -44,10 +44,17 @@ function Watch() {
   });
 
   const prior = progressFor(idNum, type);
-  const resumeSeconds =
-    prior && !prior.fully_watched && (type === "movie" || (prior.season === s && prior.episode === e))
-      ? prior.position_seconds
-      : 0;
+  const resumeSeconds = (() => {
+    if (!prior) return 0;
+    if (type === "tv") {
+      const saved = prior.episode_positions?.[`s${s}e${e}`];
+      if (saved?.p && saved.d && saved.p / saved.d < 0.97) return saved.p;
+      if (prior.season === s && prior.episode === e && !prior.fully_watched) return prior.position_seconds;
+      return 0;
+    }
+    return prior.fully_watched ? 0 : prior.position_seconds;
+  })();
+
 
   // Seed the row on first load so it appears in Continue Watching immediately.
   useEffect(() => {
