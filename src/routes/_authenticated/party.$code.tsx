@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, MessageCircle, X, Timer, RefreshCw } from "lucide-react";
 import { Player } from "@/components/Player";
 import { PartyPanel } from "@/components/PartyPanel";
-import { getParty, updatePartyTarget } from "@/lib/party.functions";
+import { EpisodeSelector } from "@/components/EpisodeSelector";
+import { getParty, updatePartyState } from "@/lib/party.functions";
+import { tmdbTv } from "@/lib/tmdb.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
 
@@ -16,6 +19,9 @@ type PartyRow = {
   title: string;
   season_number: number | null;
   episode_number: number | null;
+  server_id: string | null;
+  start_at: string | null;
+  sync_nonce: number | null;
 };
 
 export const Route = createFileRoute("/_authenticated/party/$code")({
@@ -35,8 +41,9 @@ function PartyPage() {
   const { session } = useApp();
   const [room, setRoom] = useState<PartyRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const get = useServerFn(getParty);
-  const update = useServerFn(updatePartyTarget);
+  const update = useServerFn(updatePartyState);
   const isHost = session?.user?.id === room?.host_id;
 
   useEffect(() => {
@@ -49,7 +56,7 @@ function PartyPage() {
     };
   }, [code, get]);
 
-  // Realtime — follow host's episode changes
+  // Realtime — follow every host-driven state change (episode, server, start time).
   useEffect(() => {
     if (!room) return;
     const chan = supabase
@@ -71,6 +78,29 @@ function PartyPage() {
     if (room.content_type === "tv") return "tv";
     return null;
   }, [room]);
+
+  const { data: tv } = useQuery({
+    queryKey: ["tv", room?.content_id],
+    queryFn: () => tmdbTv({ data: { id: room!.content_id } }),
+    enabled: Boolean(room && room.content_type === "tv"),
+    staleTime: 5 * 60_000,
+  });
+
+  const push = useCallback(
+    (patch: {
+      code: string;
+      season_number?: number;
+      episode_number?: number;
+      server_id?: string;
+      start_in?: number;
+      resync?: boolean;
+    }) => {
+      if (!isHost) return;
+      void update({ data: patch }).catch((e) => console.error(e));
+    },
+    [isHost, update],
+  );
+
 
   if (error) {
     return (
@@ -100,6 +130,10 @@ function PartyPage() {
       </div>
     );
   }
+
+  const seasons = (tv?.seasons ?? []).filter(
+    (s: { season_number: number }) => s.season_number > 0,
+  ) as { season_number: number; name: string; episode_count: number }[];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8">
@@ -135,67 +169,156 @@ function PartyPage() {
             season={playerKind === "tv" ? room.season_number ?? 1 : undefined}
             episode={playerKind === "tv" ? room.episode_number ?? 1 : undefined}
             title={room.title}
+            serverId={room.server_id ?? undefined}
+            lockServer={!isHost}
+            reloadKey={room.sync_nonce ?? 0}
+            onServerChange={(id) => push({ code, server_id: id })}
+            overlay={
+              <>
+                <StartCountdown startAt={room.start_at} />
+                <ChatOverlay code={code} open={chatOpen} onClose={() => setChatOpen(false)} />
+                <button
+                  type="button"
+                  onClick={() => setChatOpen((v) => !v)}
+                  className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs text-neutral-100 backdrop-blur hover:bg-black/90 hide-in-focus"
+                >
+                  {chatOpen ? <X className="h-3.5 w-3.5" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                  Chat
+                </button>
+              </>
+            }
           />
-          {playerKind === "tv" && isHost && (
-            <HostEpisodeControls
-              current={{ s: room.season_number ?? 1, e: room.episode_number ?? 1 }}
-              onChange={(s, e) => update({ data: { code, season_number: s, episode_number: e } })}
+
+          {isHost && (
+            <HostControls
+              onStart={(seconds) => push({ code, start_in: seconds })}
+              onResync={() => push({ code, resync: true })}
             />
           )}
+
+          {playerKind === "tv" && seasons.length > 0 && (
+            <div className="mt-6 h-[520px]">
+              <EpisodeSelector
+                tvId={room.content_id}
+                seasons={seasons}
+                season={room.season_number ?? 1}
+                episode={room.episode_number ?? 1}
+                onChange={(s, e) =>
+                  isHost
+                    ? push({ code, season_number: s, episode_number: e })
+                    : undefined
+                }
+              />
+              {!isHost && (
+                <p className="mt-2 text-xs text-neutral-500">
+                  Only the host can change the episode for the party.
+                </p>
+              )}
+            </div>
+          )}
+
           <p className="mt-4 text-xs text-neutral-500">
-            Chat, presence, and host episode switches sync live. Play/pause frames don't — start at the same moment.
+            The host controls the episode, the server, and the shared countdown — everyone's player follows
+            automatically. Individual play/pause frames stay local (the stream providers run in their own player).
           </p>
         </div>
-        <PartyPanel code={code} />
+        <div className="hidden lg:block">
+          <PartyPanel code={code} />
+        </div>
       </div>
     </div>
   );
 }
 
-function HostEpisodeControls({
-  current,
-  onChange,
+function HostControls({
+  onStart,
+  onResync,
 }: {
-  current: { s: number; e: number };
-  onChange: (s: number, e: number) => void;
+  onStart: (seconds: number) => void;
+  onResync: () => void;
 }) {
-  const [s, setS] = useState(current.s);
-  const [e, setE] = useState(current.e);
-  useEffect(() => {
-    setS(current.s);
-    setE(current.e);
-  }, [current.s, current.e]);
   return (
     <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 text-sm">
       <span className="text-xs uppercase tracking-widest text-neutral-500">Host controls</span>
-      <label className="inline-flex items-center gap-1 text-xs text-neutral-400">
-        S
-        <input
-          type="number"
-          min={1}
-          value={s}
-          onChange={(ev) => setS(Math.max(1, Number(ev.target.value) || 1))}
-          className="w-16 rounded-md border border-white/10 bg-black/40 px-2 py-1 text-sm"
-        />
-      </label>
-      <label className="inline-flex items-center gap-1 text-xs text-neutral-400">
-        E
-        <input
-          type="number"
-          min={1}
-          value={e}
-          onChange={(ev) => setE(Math.max(1, Number(ev.target.value) || 1))}
-          className="w-16 rounded-md border border-white/10 bg-black/40 px-2 py-1 text-sm"
-        />
-      </label>
+      {[5, 10, 30].map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onStart(s)}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-black"
+          style={{ background: "var(--accent-hex, #00D8FF)" }}
+        >
+          <Timer className="h-3.5 w-3.5" />
+          Start in {s}s
+        </button>
+      ))}
       <button
         type="button"
-        onClick={() => onChange(s, e)}
-        className="rounded-md px-3 py-1 text-xs font-semibold text-black"
-        style={{ background: "var(--accent-hex, #00D8FF)" }}
+        onClick={onResync}
+        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
       >
-        Sync party
+        <RefreshCw className="h-3.5 w-3.5" /> Reload everyone
       </button>
+    </div>
+  );
+}
+
+function StartCountdown({ startAt }: { startAt: string | null }) {
+  const [remaining, setRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!startAt) {
+      setRemaining(null);
+      return;
+    }
+    const target = new Date(startAt).getTime();
+    const tick = () => {
+      const left = Math.ceil((target - Date.now()) / 1000);
+      setRemaining(left > 0 ? left : null);
+    };
+    tick();
+    const iv = window.setInterval(tick, 250);
+    return () => window.clearInterval(iv);
+  }, [startAt]);
+
+  if (remaining == null) return null;
+  return (
+    <div className="absolute inset-0 z-30 grid place-items-center bg-black/70 backdrop-blur-sm">
+      <div className="text-center">
+        <div className="text-xs uppercase tracking-[0.3em] text-neutral-400">Press play together in</div>
+        <div className="font-display text-7xl font-bold" style={{ color: "var(--accent-hex, #00D8FF)" }}>
+          {remaining}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChatOverlay({
+  code,
+  open,
+  onClose,
+}: {
+  code: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+  return (
+    <div className="absolute bottom-14 right-3 z-20 w-[min(340px,calc(100%-1.5rem))]">
+      <div className="relative">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close chat"
+          className="absolute -top-2 -right-2 z-10 grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-black/80 text-neutral-200"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+        <div className="overflow-hidden rounded-2xl shadow-2xl">
+          <PartyPanel code={code} compact />
+        </div>
+      </div>
     </div>
   );
 }

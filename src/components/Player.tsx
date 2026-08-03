@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Server, ChevronDown, Maximize2, Minimize2 } from "lucide-react";
 import { useApp } from "@/lib/app-store";
 import { useSiteConfig } from "@/lib/site-config";
@@ -18,6 +18,11 @@ export function Player({
   onProgress,
   poster,
   title,
+  serverId,
+  onServerChange,
+  lockServer = false,
+  reloadKey = 0,
+  overlay,
 }: {
   type: "movie" | "tv";
   id: number | string;
@@ -27,13 +32,30 @@ export function Player({
   onProgress?: (p: ProgressPayload) => void;
   poster?: string | null;
   title?: string;
+  /** When set, the active server is controlled from outside (watch party host). */
+  serverId?: string | null;
+  onServerChange?: (id: string) => void;
+  /** Guests in a party can't change the server. */
+  lockServer?: boolean;
+  /** Bump to force the embed to reload (host "resync"). */
+  reloadKey?: number;
+  /** Rendered inside the player box so it survives fullscreen (party chat). */
+  overlay?: ReactNode;
 }) {
   const { settings } = useApp();
   const site = useSiteConfig();
   // Admin-set global order takes precedence; user's local order is the fallback.
   const effectiveOrder = site.serverOrder?.length ? site.serverOrder : settings.serverOrder;
   const servers = useMemo(() => orderedServers(effectiveOrder), [effectiveOrder]);
-  const [activeId, setActiveId] = useState<string>(servers[0]?.id ?? "");
+  const [localId, setLocalId] = useState<string>(servers[0]?.id ?? "");
+  const activeId = serverId || localId;
+  const setActiveId = useCallback(
+    (next: string) => {
+      setLocalId(next);
+      onServerChange?.(next);
+    },
+    [onServerChange],
+  );
   const [errored, setErrored] = useState(false);
   const [nonce, setNonce] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -49,10 +71,17 @@ export function Player({
   }, [resumeSeconds]);
 
   useEffect(() => {
-    if (!servers.find((s) => s.id === activeId)) setActiveId(servers[0]?.id ?? "");
+    if (!servers.find((s) => s.id === activeId)) setLocalId(servers[0]?.id ?? "");
   }, [servers, activeId]);
 
+  // Host-triggered resync.
+  useEffect(() => {
+    setErrored(false);
+    setNonce((n) => n + 1);
+  }, [reloadKey]);
+
   const active: StreamServer | undefined = servers.find((s) => s.id === activeId) ?? servers[0];
+
 
   const src = useMemo(() => {
     if (!active) return "";
@@ -254,51 +283,61 @@ export function Player({
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </button>
-        <div className="relative">
-          <button
-            onClick={() => setPickerOpen((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-100 backdrop-blur hover:bg-black/90"
-          >
+        {lockServer ? (
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-300 backdrop-blur">
             <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
-            {active?.name ?? "Server"}
-            <ChevronDown className={`h-3.5 w-3.5 transition ${pickerOpen ? "rotate-180" : ""}`} />
-          </button>
-          {pickerOpen && (
-            <div className="scrollbar-none absolute right-0 mt-2 max-h-80 w-56 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-neutral-950/95 p-1 shadow-2xl backdrop-blur">
-              {servers.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    setActiveId(s.id);
-                    setErrored(false);
-                    setNonce((n) => n + 1);
-                    setPickerOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition hover:bg-white/5 ${
-                    s.id === active?.id ? "bg-white/5" : ""
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="grid h-5 w-5 place-items-center rounded text-[10px] font-bold"
-                      style={{
-                        background: `${s.color ?? "#00E5FF"}22`,
-                        color: s.color ?? "#00E5FF",
-                      }}
-                    >
-                      {i + 1}
+            {active?.name ?? "Server"} · host
+          </span>
+        ) : (
+          <div className="relative">
+            <button
+              onClick={() => setPickerOpen((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-100 backdrop-blur hover:bg-black/90"
+            >
+              <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+              {active?.name ?? "Server"}
+              <ChevronDown className={`h-3.5 w-3.5 transition ${pickerOpen ? "rotate-180" : ""}`} />
+            </button>
+            {pickerOpen && (
+              <div className="scrollbar-none absolute right-0 mt-2 max-h-80 w-56 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-neutral-950/95 p-1 shadow-2xl backdrop-blur">
+                {servers.map((s, i) => (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      setActiveId(s.id);
+                      setErrored(false);
+                      setNonce((n) => n + 1);
+                      setPickerOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition hover:bg-white/5 ${
+                      s.id === active?.id ? "bg-white/5" : ""
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="grid h-5 w-5 place-items-center rounded text-[10px] font-bold"
+                        style={{
+                          background: `${s.color ?? "#00E5FF"}22`,
+                          color: s.color ?? "#00E5FF",
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      {s.name}
                     </span>
-                    {s.name}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-                    {s.kind}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                    <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+                      {s.kind}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Party chat / countdown overlay — lives inside the fullscreen element. */}
+      {overlay}
 
       {/* Poster overlay while loading */}
       {poster && (
@@ -306,6 +345,7 @@ export function Player({
           <img src={poster} alt="" className="h-full w-full object-cover opacity-30" />
         </div>
       )}
+
     </div>
   );
 }

@@ -122,13 +122,21 @@ async function consumet<T>(path: string, timeoutMs = 9000): Promise<T> {
   throw lastErr instanceof Error ? lastErr : new Error("All anime API mirrors failed");
 }
 
+function megaplayEmbed(episodeId: string, dub: boolean) {
+  // HiAnime episode ids look like "one-piece-100?ep=2142"; Megaplay wants the numeric ep id.
+  const epNum = /ep=(\d+)/.exec(episodeId)?.[1] ?? /(\d+)\s*$/.exec(episodeId)?.[1];
+  if (!epNum) throw new Error("Could not derive a Megaplay episode id");
+  return `https://megaplay.buzz/stream/s-2/${epNum}/${dub ? "dub" : "sub"}`;
+}
+
 export const animeEpisodes = createServerFn({ method: "GET" })
   .inputValidator((d: { id: number; malId?: number | null; title?: string; provider?: string; dub?: boolean }) => d)
   .handler(async ({ data }) => {
-    const provider = data.provider || "gogoanime";
+    const provider = data.provider || "hianime";
     const dubParam = data.dub ? "&dub=true" : "";
     try {
-      if (provider === "hianime") {
+      // Megaplay plays HiAnime episode ids, so its episode list comes from HiAnime.
+      if (provider === "hianime" || provider === "megaplay") {
         const episodes = await hianimeEpisodes(data.id, data.title, data.malId ?? undefined, !!data.dub);
         return { episodes, provider, dub: !!data.dub, error: episodes.length ? null : "No HiAnime episodes found" };
       }
@@ -151,12 +159,32 @@ export const animeEpisodes = createServerFn({ method: "GET" })
     }
   });
 
+type WatchResult = {
+  sources: AnimeStreamSource[];
+  subtitles: { url: string; lang: string }[];
+  headers: Record<string, string>;
+  embed: string | null;
+  error: string | null;
+};
+
 export const animeWatch = createServerFn({ method: "GET" })
   .inputValidator((d: { episodeId: string; provider?: string; dub?: boolean }) => d)
-  .handler(async ({ data }) => {
-    const provider = data.provider || "gogoanime";
+  .handler(async ({ data }): Promise<WatchResult> => {
+    const provider = data.provider || "hianime";
     try {
-      if (provider === "hianime") return await hianimeWatch(data.episodeId, !!data.dub);
+      if (provider === "megaplay") {
+        return {
+          sources: [],
+          subtitles: [],
+          headers: {},
+          embed: megaplayEmbed(data.episodeId, !!data.dub),
+          error: null,
+        };
+      }
+      if (provider === "hianime") {
+        const res = await hianimeWatch(data.episodeId, !!data.dub);
+        return { ...res, embed: null };
+      }
       const res = await consumet<{
         sources?: AnimeStreamSource[];
         subtitles?: { url: string; lang: string }[];
@@ -168,14 +196,17 @@ export const animeWatch = createServerFn({ method: "GET" })
         sources: res.sources ?? [],
         subtitles: res.subtitles ?? [],
         headers: res.headers ?? {},
-        error: null as string | null,
+        embed: null,
+        error: null,
       };
     } catch (e) {
       return {
-        sources: [] as AnimeStreamSource[],
-        subtitles: [] as { url: string; lang: string }[],
-        headers: {} as Record<string, string>,
+        sources: [],
+        subtitles: [],
+        headers: {},
+        embed: null,
         error: e instanceof Error ? e.message : "Providers unreachable",
       };
     }
   });
+

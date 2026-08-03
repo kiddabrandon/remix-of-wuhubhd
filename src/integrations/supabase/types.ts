@@ -184,6 +184,9 @@ export type Database = {
           episode_number: number | null
           host_id: string
           season_number: number | null
+          server_id: string | null
+          start_at: string | null
+          sync_nonce: number
           title: string
           updated_at: string
         }
@@ -195,6 +198,9 @@ export type Database = {
           episode_number?: number | null
           host_id: string
           season_number?: number | null
+          server_id?: string | null
+          start_at?: string | null
+          sync_nonce?: number
           title: string
           updated_at?: string
         }
@@ -206,6 +212,9 @@ export type Database = {
           episode_number?: number | null
           host_id?: string
           season_number?: number | null
+          server_id?: string | null
+          start_at?: string | null
+          sync_nonce?: number
           title?: string
           updated_at?: string
         }

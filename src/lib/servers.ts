@@ -15,12 +15,15 @@ export type StreamServer = {
 
 export const ANIME_API_PROVIDERS = [
   { id: "hianime", name: "HiAnime direct", description: "Primary source with sub/dub server discovery." },
+  { id: "megaplay", name: "Megaplay embed", description: "HiAnime episode ids played through Megaplay." },
   { id: "gogoanime", name: "Gogoanime mirror", description: "Consumet-compatible fallback." },
   { id: "zoro", name: "Zoro / HiAnime mirror", description: "Consumet-compatible fallback." },
   { id: "animepahe", name: "AnimePahe mirror", description: "Sub-focused fallback." },
 ] as const;
 
-export const DEFAULT_ANIME_PROVIDERS = ANIME_API_PROVIDERS.map((p) => p.id);
+/** Anime playback order: HiAnime first, Megaplay as the embed fallback. */
+export const DEFAULT_ANIME_PROVIDERS = ["hianime", "megaplay"] as string[];
+
 
 // URL builder helpers. Not every provider exposes a documented embed schema;
 // we use the most common `/embed/{type}/{id}` pattern as a reasonable default.
