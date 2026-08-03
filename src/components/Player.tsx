@@ -101,6 +101,19 @@ export function Player({
 
   const src = useMemo(() => {
     if (!active) return "";
+    const t = Math.floor(lastResumeRef.current || 0);
+    if (active.id === "youtube") {
+      if (!youtubeKey) return "";
+      const yq = new URLSearchParams({
+        autoplay: settings.autoplay ? "1" : "0",
+        rel: "0",
+        modestbranding: "1",
+        playsinline: "1",
+        cc_lang_pref: settings.subtitleLang || "en",
+      });
+      if (t > 5) yq.set("start", String(t));
+      return `https://www.youtube-nocookie.com/embed/${youtubeKey}?${yq.toString()}`;
+    }
     const base =
       type === "tv" && season != null && episode != null
         ? active.tv(id, season, episode)
@@ -110,14 +123,14 @@ export function Player({
     q.set("autoplay", settings.autoplay ? "1" : "0");
     if (settings.subtitleLang) q.set("ds_lang", settings.subtitleLang);
     // Best-effort resume hints across providers (harmless when ignored).
-    const t = Math.floor(lastResumeRef.current || 0);
     if (t > 5) {
       q.set("t", String(t));
       q.set("startTime", String(t));
       q.set("progress", String(t));
     }
     return `${base}${sep}${q.toString()}`;
-  }, [active, type, id, season, episode, settings.autoplay, settings.subtitleLang, nonce]);
+  }, [active, type, id, season, episode, settings.autoplay, settings.subtitleLang, youtubeKey, nonce]);
+
 
   useEffect(() => {
     setErrored(false);
