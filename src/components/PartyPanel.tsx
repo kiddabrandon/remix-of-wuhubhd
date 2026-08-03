@@ -14,7 +14,7 @@ type Message = {
   created_at: string;
 };
 
-export function PartyPanel({ code }: { code: string }) {
+export function PartyPanel({ code, compact = false }: { code: string; compact?: boolean }) {
   const { session } = useApp();
   const user = session?.user ?? null;
   const [messages, setMessages] = useState<Message[]>([]);
