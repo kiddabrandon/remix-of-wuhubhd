@@ -65,28 +65,45 @@ export const getParty = createServerFn({ method: "GET" })
     return row;
   });
 
-export const updatePartyTarget = createServerFn({ method: "POST" })
+export const updatePartyState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
-    z.object({
-      code: z.string(),
-      season_number: z.number().int().positive(),
-      episode_number: z.number().int().positive(),
-    }).parse(d),
+    z
+      .object({
+        code: z.string(),
+        season_number: z.number().int().positive().optional(),
+        episode_number: z.number().int().positive().optional(),
+        server_id: z.string().max(60).optional(),
+        /** Seconds from now that everyone should press play. */
+        start_in: z.number().int().min(0).max(120).optional(),
+        resync: z.boolean().optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (data.season_number != null) patch.season_number = data.season_number;
+    if (data.episode_number != null) patch.episode_number = data.episode_number;
+    if (data.server_id) patch.server_id = data.server_id;
+    if (data.start_in != null) patch.start_at = new Date(Date.now() + data.start_in * 1000).toISOString();
+
+    // Read the current nonce so a resync (or any state change) reloads guests.
+    const { data: current } = await context.supabase
+      .from("party_rooms")
+      .select("sync_nonce")
+      .eq("code", data.code)
+      .maybeSingle();
+    patch.sync_nonce = Number(current?.sync_nonce ?? 0) + 1;
+
     const { error } = await context.supabase
       .from("party_rooms")
-      .update({
-        season_number: data.season_number,
-        episode_number: data.episode_number,
-        updated_at: new Date().toISOString(),
-      })
+      .update(patch)
       .eq("code", data.code)
       .eq("host_id", context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
 
 export const postPartyMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
