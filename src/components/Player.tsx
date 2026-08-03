@@ -283,51 +283,61 @@ export function Player({
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </button>
-        <div className="relative">
-          <button
-            onClick={() => setPickerOpen((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-100 backdrop-blur hover:bg-black/90"
-          >
+        {lockServer ? (
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-300 backdrop-blur">
             <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
-            {active?.name ?? "Server"}
-            <ChevronDown className={`h-3.5 w-3.5 transition ${pickerOpen ? "rotate-180" : ""}`} />
-          </button>
-          {pickerOpen && (
-            <div className="scrollbar-none absolute right-0 mt-2 max-h-80 w-56 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-neutral-950/95 p-1 shadow-2xl backdrop-blur">
-              {servers.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => {
-                    setActiveId(s.id);
-                    setErrored(false);
-                    setNonce((n) => n + 1);
-                    setPickerOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition hover:bg-white/5 ${
-                    s.id === active?.id ? "bg-white/5" : ""
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="grid h-5 w-5 place-items-center rounded text-[10px] font-bold"
-                      style={{
-                        background: `${s.color ?? "#00E5FF"}22`,
-                        color: s.color ?? "#00E5FF",
-                      }}
-                    >
-                      {i + 1}
+            {active?.name ?? "Server"} · host
+          </span>
+        ) : (
+          <div className="relative">
+            <button
+              onClick={() => setPickerOpen((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-100 backdrop-blur hover:bg-black/90"
+            >
+              <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+              {active?.name ?? "Server"}
+              <ChevronDown className={`h-3.5 w-3.5 transition ${pickerOpen ? "rotate-180" : ""}`} />
+            </button>
+            {pickerOpen && (
+              <div className="scrollbar-none absolute right-0 mt-2 max-h-80 w-56 overflow-y-auto overscroll-contain rounded-xl border border-white/10 bg-neutral-950/95 p-1 shadow-2xl backdrop-blur">
+                {servers.map((s, i) => (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      setActiveId(s.id);
+                      setErrored(false);
+                      setNonce((n) => n + 1);
+                      setPickerOpen(false);
+                    }}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition hover:bg-white/5 ${
+                      s.id === active?.id ? "bg-white/5" : ""
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="grid h-5 w-5 place-items-center rounded text-[10px] font-bold"
+                        style={{
+                          background: `${s.color ?? "#00E5FF"}22`,
+                          color: s.color ?? "#00E5FF",
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      {s.name}
                     </span>
-                    {s.name}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-widest text-neutral-500">
-                    {s.kind}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+                    <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+                      {s.kind}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Party chat / countdown overlay — lives inside the fullscreen element. */}
+      {overlay}
 
       {/* Poster overlay while loading */}
       {poster && (
@@ -335,6 +345,7 @@ export function Player({
           <img src={poster} alt="" className="h-full w-full object-cover opacity-30" />
         </div>
       )}
+
     </div>
   );
 }
