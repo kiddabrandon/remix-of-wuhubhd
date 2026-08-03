@@ -87,12 +87,20 @@ function PartyPage() {
   });
 
   const push = useCallback(
-    (patch: Parameters<typeof update>[0]["data"]) => {
+    (patch: {
+      code: string;
+      season_number?: number;
+      episode_number?: number;
+      server_id?: string;
+      start_in?: number;
+      resync?: boolean;
+    }) => {
       if (!isHost) return;
       void update({ data: patch }).catch((e) => console.error(e));
     },
     [isHost, update],
   );
+
 
   if (error) {
     return (
