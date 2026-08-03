@@ -81,11 +81,19 @@ export const updatePartyState = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const patch: {
+      updated_at: string;
+      season_number?: number;
+      episode_number?: number;
+      server_id?: string;
+      start_at?: string;
+      sync_nonce?: number;
+    } = { updated_at: new Date().toISOString() };
     if (data.season_number != null) patch.season_number = data.season_number;
     if (data.episode_number != null) patch.episode_number = data.episode_number;
     if (data.server_id) patch.server_id = data.server_id;
     if (data.start_in != null) patch.start_at = new Date(Date.now() + data.start_in * 1000).toISOString();
+
 
     // Read the current nonce so a resync (or any state change) reloads guests.
     const { data: current } = await context.supabase
