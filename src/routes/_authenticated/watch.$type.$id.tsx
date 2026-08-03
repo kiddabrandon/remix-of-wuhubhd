@@ -79,6 +79,10 @@ function Watch() {
   }
 
   const title = data.title || data.name;
+  const trailerKey: string | null =
+    (data.videos?.results ?? []).find(
+      (v: any) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"),
+    )?.key ?? null;
   const year = (data.release_date || data.first_air_date || "").slice(0, 4);
   const bg = backdrop(data.backdrop_path, "original");
   const saved = inWatchlist(idNum, type);
@@ -102,6 +106,7 @@ function Watch() {
                 season={type === "tv" ? s : undefined}
                 episode={type === "tv" ? e : undefined}
                 resumeSeconds={resumeSeconds}
+                youtubeKey={trailerKey}
                 title={title ?? undefined}
                 poster={bg}
                 onProgress={({ position_seconds, duration_seconds }) => {

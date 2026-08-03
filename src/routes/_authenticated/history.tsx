@@ -40,10 +40,20 @@ function History() {
           const src = poster(p.poster_path, "w342");
           const sub =
             p.media_type === "tv" && p.season && p.episode ? `S${p.season} · E${p.episode}` : "Movie";
+          // Resume the exact episode that was last played for this show.
           const params =
-            p.media_type === "tv" && p.season && p.episode
-              ? { s: p.season, e: p.episode }
+            p.media_type === "tv"
+              ? { s: p.season ?? 1, e: p.episode ?? 1 }
               : undefined;
+          const epKey = p.media_type === "tv" ? `s${p.season ?? 1}e${p.episode ?? 1}` : null;
+          const ep = epKey ? p.episode_positions?.[epKey] : undefined;
+          const pct = ep?.p && ep?.d ? Math.round((ep.p / ep.d) * 100) : p.progress_pct;
+          const left =
+            ep?.p && ep?.d
+              ? Math.max(0, Math.round((ep.d - ep.p) / 60))
+              : p.duration_seconds > 0
+                ? Math.max(0, Math.round((p.duration_seconds - p.position_seconds) / 60))
+                : null;
           return (
             <Link
               key={`${p.media_type}-${p.tmdb_id}`}
@@ -64,10 +74,11 @@ function History() {
                 <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full"
-                    style={{ width: `${Math.max(3, Math.min(100, p.progress_pct))}%`, background: "var(--accent)" }}
+                    style={{ width: `${Math.max(3, Math.min(100, pct))}%`, background: "var(--accent)" }}
                   />
                 </div>
                 <div className="mt-1 text-[11px] text-neutral-500">
+                  {left != null && left > 0 ? `${left} min left · ` : ""}
                   Last watched {new Date(p.updated_at).toLocaleDateString()}
                 </div>
               </div>
