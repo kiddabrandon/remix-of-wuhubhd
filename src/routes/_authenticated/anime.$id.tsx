@@ -158,7 +158,19 @@ function AnimeDetail() {
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
             {activeEp ? (
-              bestSource ? (
+              watchData?.embed ? (
+                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+                  <iframe
+                    src={watchData.embed}
+                    title={`${data.title} — episode ${activeEp.number}`}
+                    className="h-full w-full"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    referrerPolicy="no-referrer"
+                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                  />
+                </div>
+              ) : bestSource ? (
                 bestSource.isM3U8 ? (
                   <HlsPlayer src={bestSource.url} poster={data.banner || data.poster} />
                 ) : (
@@ -177,6 +189,7 @@ function AnimeDetail() {
                 </div>
               )
             ) : (
+
               <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
                 {epLoading ? (
                   <>
