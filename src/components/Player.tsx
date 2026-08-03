@@ -23,6 +23,7 @@ export function Player({
   lockServer = false,
   reloadKey = 0,
   overlay,
+  youtubeKey,
 }: {
   type: "movie" | "tv";
   id: number | string;
@@ -41,14 +42,29 @@ export function Player({
   reloadKey?: number;
   /** Rendered inside the player box so it survives fullscreen (party chat). */
   overlay?: ReactNode;
+  /** YouTube video id — adds YouTube as a selectable, party-syncable source. */
+  youtubeKey?: string | null;
 }) {
   const { settings } = useApp();
   const site = useSiteConfig();
   // Admin-set global order takes precedence; user's local order is the fallback.
   const effectiveOrder = site.serverOrder?.length ? site.serverOrder : settings.serverOrder;
-  const servers = useMemo(() => orderedServers(effectiveOrder), [effectiveOrder]);
+  const servers = useMemo(() => {
+    const base = orderedServers(effectiveOrder);
+    if (!youtubeKey) return base;
+    const yt: StreamServer = {
+      id: "youtube",
+      name: "YouTube",
+      kind: "general",
+      color: "#FF0033",
+      movie: () => "",
+      tv: () => "",
+    };
+    return [yt, ...base];
+  }, [effectiveOrder, youtubeKey]);
   const [localId, setLocalId] = useState<string>(servers[0]?.id ?? "");
   const activeId = serverId || localId;
+
   const setActiveId = useCallback(
     (next: string) => {
       setLocalId(next);
