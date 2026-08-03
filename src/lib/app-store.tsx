@@ -75,6 +75,7 @@ export type ProgressItem = {
   duration_seconds: number;
   fully_watched: boolean;
   watched_episodes: string[];
+  episode_positions: Record<string, { p: number; d: number }>;
   updated_at: string;
 };
 
@@ -202,6 +203,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         duration_seconds: Number(r.duration_seconds ?? 0),
         fully_watched: Boolean(r.fully_watched),
         watched_episodes: Array.isArray(r.watched_episodes) ? r.watched_episodes : [],
+        episode_positions:
+          r.episode_positions && typeof r.episode_positions === "object" ? r.episode_positions : {},
         updated_at: r.updated_at,
       })),
     [progressData],

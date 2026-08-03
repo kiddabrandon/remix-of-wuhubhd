@@ -7,7 +7,7 @@ import { Player } from "@/components/Player";
 import { PartyPanel } from "@/components/PartyPanel";
 import { EpisodeSelector } from "@/components/EpisodeSelector";
 import { getParty, updatePartyState } from "@/lib/party.functions";
-import { tmdbTv } from "@/lib/tmdb.functions";
+import { tmdbMovie, tmdbTv } from "@/lib/tmdb.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
 
@@ -85,6 +85,19 @@ function PartyPage() {
     enabled: Boolean(room && room.content_type === "tv"),
     staleTime: 5 * 60_000,
   });
+
+  const { data: movie } = useQuery({
+    queryKey: ["movie", room?.content_id],
+    queryFn: () => tmdbMovie({ data: { id: room!.content_id } }),
+    enabled: Boolean(room && room.content_type === "movie"),
+    staleTime: 5 * 60_000,
+  });
+
+  const youtubeKey = useMemo<string | null>(() => {
+    const results = ((movie ?? tv) as { videos?: { results?: { site: string; type: string; key: string }[] } } | undefined)
+      ?.videos?.results ?? [];
+    return results.find((v) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"))?.key ?? null;
+  }, [movie, tv]);
 
   const push = useCallback(
     (patch: {
@@ -170,6 +183,7 @@ function PartyPage() {
             episode={playerKind === "tv" ? room.episode_number ?? 1 : undefined}
             title={room.title}
             serverId={room.server_id ?? undefined}
+            youtubeKey={youtubeKey}
             lockServer={!isHost}
             reloadKey={room.sync_nonce ?? 0}
             onServerChange={(id) => push({ code, server_id: id })}

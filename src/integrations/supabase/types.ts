@@ -279,6 +279,7 @@ export type Database = {
           backdrop_path: string | null
           duration_seconds: number
           episode: number | null
+          episode_positions: Json
           fully_watched: boolean
           id: string
           media_type: string
@@ -296,6 +297,7 @@ export type Database = {
           backdrop_path?: string | null
           duration_seconds?: number
           episode?: number | null
+          episode_positions?: Json
           fully_watched?: boolean
           id?: string
           media_type: string
@@ -313,6 +315,7 @@ export type Database = {
           backdrop_path?: string | null
           duration_seconds?: number
           episode?: number | null
+          episode_positions?: Json
           fully_watched?: boolean
           id?: string
           media_type?: string

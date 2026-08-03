@@ -44,10 +44,17 @@ function Watch() {
   });
 
   const prior = progressFor(idNum, type);
-  const resumeSeconds =
-    prior && !prior.fully_watched && (type === "movie" || (prior.season === s && prior.episode === e))
-      ? prior.position_seconds
-      : 0;
+  const resumeSeconds = (() => {
+    if (!prior) return 0;
+    if (type === "tv") {
+      const saved = prior.episode_positions?.[`s${s}e${e}`];
+      if (saved?.p && saved.d && saved.p / saved.d < 0.97) return saved.p;
+      if (prior.season === s && prior.episode === e && !prior.fully_watched) return prior.position_seconds;
+      return 0;
+    }
+    return prior.fully_watched ? 0 : prior.position_seconds;
+  })();
+
 
   // Seed the row on first load so it appears in Continue Watching immediately.
   useEffect(() => {
@@ -72,6 +79,10 @@ function Watch() {
   }
 
   const title = data.title || data.name;
+  const trailerKey: string | null =
+    (data.videos?.results ?? []).find(
+      (v: any) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"),
+    )?.key ?? null;
   const year = (data.release_date || data.first_air_date || "").slice(0, 4);
   const bg = backdrop(data.backdrop_path, "original");
   const saved = inWatchlist(idNum, type);
@@ -95,6 +106,7 @@ function Watch() {
                 season={type === "tv" ? s : undefined}
                 episode={type === "tv" ? e : undefined}
                 resumeSeconds={resumeSeconds}
+                youtubeKey={trailerKey}
                 title={title ?? undefined}
                 poster={bg}
                 onProgress={({ position_seconds, duration_seconds }) => {

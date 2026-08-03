@@ -138,7 +138,9 @@ export const upsertProgress = createServerFn({ method: "POST" })
     const supa = context.supabase;
     const { data: existing } = await supa
       .from("user_progress")
-      .select("watched_episodes,progress_pct,position_seconds,duration_seconds,fully_watched")
+      .select(
+        "watched_episodes,progress_pct,position_seconds,duration_seconds,fully_watched,episode_positions,season,episode",
+      )
       .eq("user_id", context.userId)
       .eq("tmdb_id", data.tmdb_id)
       .eq("media_type", data.media_type)
@@ -150,19 +152,39 @@ export const upsertProgress = createServerFn({ method: "POST" })
       if (!watched.includes(tag)) watched = [...watched, tag];
     }
 
+    const epKey =
+      data.media_type === "tv" && data.season != null && data.episode != null
+        ? `s${data.season}e${data.episode}`
+        : null;
+    const epPositions: Record<string, { p: number; d: number }> = {
+      ...((existing as { episode_positions?: Record<string, { p: number; d: number }> } | null)
+        ?.episode_positions ?? {}),
+    };
+
     // Only overwrite timeline fields when this call actually carries a position.
     const hasTimeline = Boolean(data.position_seconds && data.duration_seconds);
-    const position = hasTimeline ? data.position_seconds! : Number(existing?.position_seconds ?? 0);
-    const duration = hasTimeline ? data.duration_seconds! : Number(existing?.duration_seconds ?? 0);
+    const sameTarget =
+      data.media_type === "movie" ||
+      (existing?.season == null && existing?.episode == null) ||
+      (existing?.season === (data.season ?? null) && existing?.episode === (data.episode ?? null));
+    const savedForEpisode = epKey ? epPositions[epKey] : undefined;
+
+    const position = hasTimeline
+      ? data.position_seconds!
+      : savedForEpisode?.p ?? (sameTarget ? Number(existing?.position_seconds ?? 0) : 0);
+    const duration = hasTimeline
+      ? data.duration_seconds!
+      : savedForEpisode?.d ?? (sameTarget ? Number(existing?.duration_seconds ?? 0) : 0);
+
+    if (epKey && position > 0 && duration > 0) {
+      epPositions[epKey] = { p: position, d: duration };
+    }
+
     const pct =
       data.progress_pct ??
-      (hasTimeline
-        ? Math.min(100, Math.round((position / duration) * 100))
-        : Number(existing?.progress_pct ?? 0));
+      (position > 0 && duration > 0 ? Math.min(100, Math.round((position / duration) * 100)) : 0);
     const fully =
-      data.fully_watched ??
-      (hasTimeline ? position / duration >= 0.9 : Boolean(existing?.fully_watched));
-
+      data.fully_watched ?? (position > 0 && duration > 0 ? position / duration >= 0.9 : false);
 
     const { error } = await supa
       .from("user_progress")
@@ -179,9 +201,9 @@ export const upsertProgress = createServerFn({ method: "POST" })
           progress_pct: pct,
           position_seconds: position,
           duration_seconds: duration,
-
           fully_watched: fully,
           watched_episodes: watched,
+          episode_positions: epPositions,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "user_id,tmdb_id,media_type" },
@@ -189,6 +211,7 @@ export const upsertProgress = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, fully_watched: fully };
   });
+
 
 export const removeProgress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -23,6 +23,7 @@ export function Player({
   lockServer = false,
   reloadKey = 0,
   overlay,
+  youtubeKey,
 }: {
   type: "movie" | "tv";
   id: number | string;
@@ -41,14 +42,29 @@ export function Player({
   reloadKey?: number;
   /** Rendered inside the player box so it survives fullscreen (party chat). */
   overlay?: ReactNode;
+  /** YouTube video id — adds YouTube as a selectable, party-syncable source. */
+  youtubeKey?: string | null;
 }) {
   const { settings } = useApp();
   const site = useSiteConfig();
   // Admin-set global order takes precedence; user's local order is the fallback.
   const effectiveOrder = site.serverOrder?.length ? site.serverOrder : settings.serverOrder;
-  const servers = useMemo(() => orderedServers(effectiveOrder), [effectiveOrder]);
+  const servers = useMemo(() => {
+    const base = orderedServers(effectiveOrder);
+    if (!youtubeKey) return base;
+    const yt: StreamServer = {
+      id: "youtube",
+      name: "YouTube",
+      kind: "general",
+      color: "#FF0033",
+      movie: () => "",
+      tv: () => "",
+    };
+    return [...base, yt];
+  }, [effectiveOrder, youtubeKey]);
   const [localId, setLocalId] = useState<string>(servers[0]?.id ?? "");
   const activeId = serverId || localId;
+
   const setActiveId = useCallback(
     (next: string) => {
       setLocalId(next);
@@ -85,6 +101,19 @@ export function Player({
 
   const src = useMemo(() => {
     if (!active) return "";
+    const t = Math.floor(lastResumeRef.current || 0);
+    if (active.id === "youtube") {
+      if (!youtubeKey) return "";
+      const yq = new URLSearchParams({
+        autoplay: settings.autoplay ? "1" : "0",
+        rel: "0",
+        modestbranding: "1",
+        playsinline: "1",
+        cc_lang_pref: settings.subtitleLang || "en",
+      });
+      if (t > 5) yq.set("start", String(t));
+      return `https://www.youtube-nocookie.com/embed/${youtubeKey}?${yq.toString()}`;
+    }
     const base =
       type === "tv" && season != null && episode != null
         ? active.tv(id, season, episode)
@@ -94,14 +123,14 @@ export function Player({
     q.set("autoplay", settings.autoplay ? "1" : "0");
     if (settings.subtitleLang) q.set("ds_lang", settings.subtitleLang);
     // Best-effort resume hints across providers (harmless when ignored).
-    const t = Math.floor(lastResumeRef.current || 0);
     if (t > 5) {
       q.set("t", String(t));
       q.set("startTime", String(t));
       q.set("progress", String(t));
     }
     return `${base}${sep}${q.toString()}`;
-  }, [active, type, id, season, episode, settings.autoplay, settings.subtitleLang, nonce]);
+  }, [active, type, id, season, episode, settings.autoplay, settings.subtitleLang, youtubeKey, nonce]);
+
 
   useEffect(() => {
     setErrored(false);
@@ -190,9 +219,10 @@ export function Player({
       if (inFs) {
         if (document.exitFullscreen) await document.exitFullscreen();
         else if ((document as any).webkitExitFullscreen) (document as any).webkitExitFullscreen();
-        // App is portrait-locked; release the temporary landscape lock.
+        // App is portrait by default; restore the lock after fullscreen.
         try {
           orientation?.unlock?.();
+          void orientation?.lock?.("portrait")?.catch?.(() => {});
         } catch {
           /* ignore */
         }
@@ -238,8 +268,6 @@ export function Player({
             title={title ? `${title} · ${active.name}` : `Player · ${active.name}`}
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             // Blocks the provider's pop-ups / redirect-to-ad tricks while keeping playback working.
-            sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-orientation-lock"
-
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"

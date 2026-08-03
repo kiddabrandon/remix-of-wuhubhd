@@ -144,7 +144,14 @@ function RootComponent() {
   useEffect(() => {
     registerPWA();
     void hydrateSiteConfigFromServer();
+    // Installed app defaults to portrait; the player temporarily unlocks for fullscreen.
+    const orientation = (screen as unknown as { orientation?: { lock?: (o: string) => Promise<void> } })
+      ?.orientation;
+    void orientation?.lock?.("portrait").catch(() => {
+      /* browsers outside standalone mode refuse this; harmless */
+    });
   }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>
