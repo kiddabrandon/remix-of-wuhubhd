@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Server, ChevronDown, Maximize2, Minimize2 } from "lucide-react";
 import { useApp } from "@/lib/app-store";
 import { useSiteConfig } from "@/lib/site-config";
@@ -18,6 +18,11 @@ export function Player({
   onProgress,
   poster,
   title,
+  serverId,
+  onServerChange,
+  lockServer = false,
+  reloadKey = 0,
+  overlay,
 }: {
   type: "movie" | "tv";
   id: number | string;
@@ -27,13 +32,30 @@ export function Player({
   onProgress?: (p: ProgressPayload) => void;
   poster?: string | null;
   title?: string;
+  /** When set, the active server is controlled from outside (watch party host). */
+  serverId?: string | null;
+  onServerChange?: (id: string) => void;
+  /** Guests in a party can't change the server. */
+  lockServer?: boolean;
+  /** Bump to force the embed to reload (host "resync"). */
+  reloadKey?: number;
+  /** Rendered inside the player box so it survives fullscreen (party chat). */
+  overlay?: ReactNode;
 }) {
   const { settings } = useApp();
   const site = useSiteConfig();
   // Admin-set global order takes precedence; user's local order is the fallback.
   const effectiveOrder = site.serverOrder?.length ? site.serverOrder : settings.serverOrder;
   const servers = useMemo(() => orderedServers(effectiveOrder), [effectiveOrder]);
-  const [activeId, setActiveId] = useState<string>(servers[0]?.id ?? "");
+  const [localId, setLocalId] = useState<string>(servers[0]?.id ?? "");
+  const activeId = serverId || localId;
+  const setActiveId = useCallback(
+    (next: string) => {
+      setLocalId(next);
+      onServerChange?.(next);
+    },
+    [onServerChange],
+  );
   const [errored, setErrored] = useState(false);
   const [nonce, setNonce] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -49,10 +71,17 @@ export function Player({
   }, [resumeSeconds]);
 
   useEffect(() => {
-    if (!servers.find((s) => s.id === activeId)) setActiveId(servers[0]?.id ?? "");
+    if (!servers.find((s) => s.id === activeId)) setLocalId(servers[0]?.id ?? "");
   }, [servers, activeId]);
 
+  // Host-triggered resync.
+  useEffect(() => {
+    setErrored(false);
+    setNonce((n) => n + 1);
+  }, [reloadKey]);
+
   const active: StreamServer | undefined = servers.find((s) => s.id === activeId) ?? servers[0];
+
 
   const src = useMemo(() => {
     if (!active) return "";
