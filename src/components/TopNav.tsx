@@ -19,6 +19,7 @@ export function TopNav() {
     { to: "/search", label: "Search" },
     { to: "/history", label: "History" },
     { to: "/watchlist", label: "Watchlist" },
+    { to: "/addons", label: "Add-ons" },
   ] as const;
 
   const signOut = async () => {
