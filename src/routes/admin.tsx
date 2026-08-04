@@ -561,6 +561,35 @@ function Dashboard() {
   );
 }
 
+/** Streaming add-ons are bundled server-side; this card documents what ships. */
+function AddonsInfoCard() {
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Megaphone className="h-4 w-4 text-cyan-300" /> Built-in streaming add-ons
+      </div>
+      <p className="mt-2 text-xs text-neutral-400">
+        Stremio add-ons and Nuvio provider packs are bundled with the app and enabled by default for
+        every account. They are intentionally hidden from the frontend UI — users never install
+        anything manually.
+      </p>
+      <ul className="mt-3 space-y-1 text-xs text-neutral-300">
+        {STREMIO_ADDONS.map((a) => (
+          <li key={a.id}>
+            <span className="text-neutral-500">Stremio ·</span> {a.name}
+          </li>
+        ))}
+        {NUVIO_PLUGINS.map((a) => (
+          <li key={a.id}>
+            <span className="text-neutral-500">Nuvio ·</span> {a.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
 function StatsGrid() {
   const fn = useServerFn(getAdminStats);
   const q = useQuery({ queryKey: ["admin", "stats"], queryFn: () => fn(), refetchInterval: 60_000, retry: false });
