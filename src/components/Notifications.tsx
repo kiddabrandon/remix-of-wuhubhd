@@ -23,6 +23,7 @@ export function Notifications() {
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState<string[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const qc = useQueryClient();
 
   const { data } = useQuery({
     queryKey: ["announcements", "active"],
@@ -48,17 +49,14 @@ export function Notifications() {
     const channel = supabase
       .channel("announcements-feed")
       .on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, () => {
-        void supabase
-          .from("announcements")
-          .select("id")
-          .limit(1)
-          .then(() => undefined);
+        void qc.invalidateQueries({ queryKey: ["announcements", "active"] });
       })
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [qc]);
+
 
   useEffect(() => {
     if (!open) return;
