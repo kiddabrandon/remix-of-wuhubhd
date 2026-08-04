@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Megaphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
 
 type Announcement = {
   id: string;
