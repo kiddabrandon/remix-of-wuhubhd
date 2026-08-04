@@ -41,10 +41,12 @@ export const Route = createFileRoute("/_authenticated/party/$code")({
 
 function PartyPage() {
   const { code } = Route.useLoaderData();
-  const { session } = useApp();
+  const { session, settings } = useApp();
+  const site = useSiteConfig();
   const [room, setRoom] = useState<PartyRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+
   const get = useServerFn(getParty);
   const update = useServerFn(updatePartyState);
   const isHost = session?.user?.id === room?.host_id;
