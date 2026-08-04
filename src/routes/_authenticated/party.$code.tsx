@@ -290,9 +290,54 @@ function PartyPage() {
         </div>
       </div>
     </div>
+  );
+}
 
+function InviteCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const link = typeof window !== "undefined" ? `${window.location.origin}/party/${code}` : "";
+
+  const copy = async (value: string, kind: "code" | "link") => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(kind);
+      window.setTimeout(() => setCopied(null), 1600);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">Invite code</div>
+        <div className="font-display text-2xl font-bold tracking-[0.3em]" style={{ color: "var(--accent)" }}>
+          {code}
+        </div>
+      </div>
+      <div className="ml-auto flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void copy(code, "code")}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+        >
+          {copied === "code" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied === "code" ? "Copied" : "Copy code"}
+        </button>
+        <button
+          type="button"
+          onClick={() => void copy(link, "link")}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-black"
+          style={{ background: "var(--accent)" }}
+        >
+          {copied === "link" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied === "link" ? "Link copied" : "Copy invite link"}
+        </button>
+      </div>
     </div>
   );
+}
+
 }
 
 function HostControls({
