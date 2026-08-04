@@ -103,7 +103,7 @@ function Discover() {
   return (
     <div>
       <Hero items={heroItems} />
-      <div className="space-y-10 pt-6 pb-6 sm:space-y-12 sm:pt-8">
+      <div className="space-y-8 pt-2 pb-4 sm:space-y-10 sm:pt-4">
         {configuredSections.map((s) => s.enabled ? <div key={s.id}>{sectionById[s.id]}</div> : null)}
       </div>
     </div>
