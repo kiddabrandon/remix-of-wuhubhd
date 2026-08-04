@@ -168,7 +168,8 @@ function AnimeDetail() {
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                     allowFullScreen
                     referrerPolicy="no-referrer"
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    loading="lazy"
+
                   />
                 </div>
               ) : bestSource ? (
