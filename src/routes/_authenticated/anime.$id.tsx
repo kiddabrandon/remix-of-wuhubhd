@@ -198,7 +198,7 @@ function AnimeDetail() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading episodes…
                   </>
                 ) : (
-                  "No episodes returned by Consumet for this provider yet."
+                  "No episodes available for this provider yet — try another provider."
                 )}
               </div>
             )}
