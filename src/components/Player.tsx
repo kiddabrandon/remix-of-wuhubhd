@@ -261,9 +261,12 @@ export function Player({
   return (
     <div
       ref={wrapRef}
-      className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/5"
+      className={`relative w-full bg-black ${
+        isFullscreen ? "h-screen overflow-hidden" : "overflow-hidden rounded-2xl ring-1 ring-white/5"
+      }`}
     >
-      <div className="relative aspect-video w-full">
+      <div className={`relative w-full ${isFullscreen ? "h-full" : "aspect-video"}`}>
+
         {!errored && active ? (
           <iframe
             ref={iframeRef}
