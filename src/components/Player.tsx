@@ -318,7 +318,7 @@ export function Player({
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </button>
-        {lockServer ? (
+        {hideServerPicker ? null : lockServer ? (
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-300 backdrop-blur">
             <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
             {active?.name ?? "Server"} · host
@@ -372,7 +372,8 @@ export function Player({
       </div>
 
       {/* Party chat / countdown overlay — lives inside the fullscreen element. */}
-      {overlay}
+      {typeof overlay === "function" ? overlay({ isFullscreen }) : overlay}
+
 
       {/* Poster overlay while loading */}
       {poster && (
