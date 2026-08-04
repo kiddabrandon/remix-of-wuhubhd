@@ -1,4 +1,4 @@
-// Multi-server streaming registry for CinehubHD.
+// Multi-server streaming registry for WuHubHD.
 // Each server exposes URL builders for movies and TV episodes.
 // Users can reorder the priority list from Settings.
 

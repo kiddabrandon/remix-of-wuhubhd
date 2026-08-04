@@ -60,8 +60,8 @@ import { Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — CinehubHD" },
-      { name: "description", content: "CinehubHD administrator panel." },
+      { title: "Admin — WuHubHD" },
+      { name: "description", content: "WuHubHD administrator panel." },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -227,7 +227,7 @@ function Panel({ onSignOut }: { onSignOut: () => void }) {
             <div>
               <div className="font-display text-lg font-bold leading-none">Admin</div>
               <div className="text-[10px] uppercase tracking-widest text-neutral-500">
-                CinehubHD control panel
+                WuHubHD control panel
               </div>
             </div>
           </div>

@@ -6,7 +6,7 @@ import { poster } from "@/lib/tmdb-utils";
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
     meta: [
-      { title: "Continue Watching — CinehubHD" },
+      { title: "Continue Watching — WuHubHD" },
       { name: "description", content: "Pick up where you left off." },
     ],
   }),

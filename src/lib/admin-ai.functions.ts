@@ -8,7 +8,7 @@ import { ensureAdmin } from "@/lib/admin-helpers.server";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
 
-const SYSTEM_PROMPT = `You are the on-call site engineer for "CinehubHD", a streaming aggregator
+const SYSTEM_PROMPT = `You are the on-call site engineer for "WuHubHD", a streaming aggregator
 built with TanStack Start + Supabase (Lovable Cloud). You help the site admin:
 - Diagnose failures visible in error_logs and server_health (name likely causes and next steps).
 - Explain how features of the codebase work and how to change them (movies, TV, anime, watchlist,

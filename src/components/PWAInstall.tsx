@@ -64,11 +64,11 @@ export function PWAInstall() {
             <Download className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
             {iosHint ? (
               <span className="text-neutral-300">
-                Install CinehubHD: tap Share, then <b>Add to Home Screen</b>.
+                Install WuHubHD: tap Share, then <b>Add to Home Screen</b>.
               </span>
             ) : (
               <>
-                <span className="text-neutral-300">Install CinehubHD as an app</span>
+                <span className="text-neutral-300">Install WuHubHD as an app</span>
                 <button
                   onClick={install}
                   className="rounded-full px-3 py-1 text-[11px] font-semibold text-black"

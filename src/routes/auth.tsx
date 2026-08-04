@@ -14,8 +14,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: zodValidator(schema),
   head: () => ({
     meta: [
-      { title: "Sign in — CinehubHD" },
-      { name: "description", content: "Sign in to CinehubHD to sync your watchlist and continue watching." },
+      { title: "Sign in — WuHubHD" },
+      { name: "description", content: "Sign in to WuHubHD to sync your watchlist and continue watching." },
     ],
   }),
   component: AuthPage,
@@ -102,7 +102,7 @@ function AuthPage() {
           <span className="grid h-8 w-8 place-items-center rounded-lg text-black" style={{ background: "var(--accent)" }}>
             ◐
           </span>
-          <span className="font-display tracking-tight">CinehubHD</span>
+          <span className="font-display tracking-tight">WuHubHD</span>
         </Link>
         <h1 className="font-display text-3xl font-bold tracking-tight">
           {mode === "signin" ? "Welcome back" : "Create account"}

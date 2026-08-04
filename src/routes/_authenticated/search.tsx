@@ -8,9 +8,9 @@ import { PosterCard } from "@/components/PosterCard";
 export const Route = createFileRoute("/_authenticated/search")({
   head: () => ({
     meta: [
-      { title: "Search — CinehubHD" },
-      { name: "description", content: "Search movies and TV shows on CinehubHD." },
-      { property: "og:title", content: "Search — CinehubHD" },
+      { title: "Search — WuHubHD" },
+      { name: "description", content: "Search movies and TV shows on WuHubHD." },
+      { property: "og:title", content: "Search — WuHubHD" },
       { property: "og:description", content: "Search movies and TV shows." },
     ],
   }),
