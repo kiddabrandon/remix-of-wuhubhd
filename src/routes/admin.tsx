@@ -553,6 +553,8 @@ function Dashboard() {
         <AnnouncementsCard />
         <HeroOverridesCard />
         <FlagsCard />
+        <AddonsInfoCard />
+
       </div>
       <ErrorLogsCard />
     </section>
