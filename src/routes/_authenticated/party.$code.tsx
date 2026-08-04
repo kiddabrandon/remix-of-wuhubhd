@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MessageCircle, X, Timer, RefreshCw } from "lucide-react";
+import { ArrowLeft, MessageCircle, X, Timer, RefreshCw, Copy, Check, Server } from "lucide-react";
 import { Player } from "@/components/Player";
 import { PartyPanel } from "@/components/PartyPanel";
 import { EpisodeSelector } from "@/components/EpisodeSelector";
@@ -10,6 +10,9 @@ import { getParty, updatePartyState } from "@/lib/party.functions";
 import { tmdbMovie, tmdbTv } from "@/lib/tmdb.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
+import { useSiteConfig } from "@/lib/site-config";
+import { orderedServers } from "@/lib/servers";
+
 
 type PartyRow = {
   code: string;
