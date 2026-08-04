@@ -338,7 +338,7 @@ function InviteCode({ code }: { code: string }) {
   );
 }
 
-}
+
 
 function HostControls({
   onStart,
