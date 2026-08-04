@@ -17,7 +17,7 @@ const detailQO = (id: number) =>
 
 export const Route = createFileRoute("/_authenticated/anime/$id")({
   head: ({ params }) => ({
-    meta: [{ title: `Anime #${params.id} — CinehubHD` }],
+    meta: [{ title: `Anime #${params.id} — WuHubHD` }],
   }),
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto max-w-lg px-6 py-24 text-center">
