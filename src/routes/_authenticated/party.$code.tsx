@@ -153,6 +153,9 @@ function PartyPage() {
     (s: { season_number: number }) => s.season_number > 0,
   ) as { season_number: number; name: string; episode_count: number }[];
 
+  const partyServers = orderedServers(site.serverOrder?.length ? site.serverOrder : settings.serverOrder);
+  const activeServerId = room.server_id ?? partyServers[0]?.id ?? "";
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -179,7 +182,9 @@ function PartyPage() {
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <InviteCode code={code} />
+
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div>
           <Player
             type={playerKind}
@@ -187,32 +192,71 @@ function PartyPage() {
             season={playerKind === "tv" ? room.season_number ?? 1 : undefined}
             episode={playerKind === "tv" ? room.episode_number ?? 1 : undefined}
             title={room.title}
-            serverId={room.server_id ?? undefined}
+            serverId={activeServerId}
             youtubeKey={youtubeKey}
             lockServer={!isHost}
+            hideServerPicker
             reloadKey={room.sync_nonce ?? 0}
             onServerChange={(id) => push({ code, server_id: id })}
-            overlay={
+            overlay={({ isFullscreen }) => (
               <>
                 <StartCountdown startAt={room.start_at} />
-                <ChatOverlay code={code} open={chatOpen} onClose={() => setChatOpen(false)} />
-                <button
-                  type="button"
-                  onClick={() => setChatOpen((v) => !v)}
-                  className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs text-neutral-100 backdrop-blur hover:bg-black/90 hide-in-focus"
-                >
-                  {chatOpen ? <X className="h-3.5 w-3.5" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                  Chat
-                </button>
+                {isFullscreen && (
+                  <>
+                    <ChatOverlay code={code} open={chatOpen} onClose={() => setChatOpen(false)} />
+                    <button
+                      type="button"
+                      onClick={() => setChatOpen((v) => !v)}
+                      className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs text-neutral-100 backdrop-blur hover:bg-black/90 hide-in-focus"
+                    >
+                      {chatOpen ? <X className="h-3.5 w-3.5" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                      Chat
+                    </button>
+                  </>
+                )}
               </>
-            }
+            )}
           />
+
+          {/* Controls live below the player so they never cover the picture. */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-xs text-neutral-500">
+              <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} /> Server
+            </span>
+            <select
+              value={activeServerId}
+              disabled={!isHost}
+              onChange={(e) => push({ code, server_id: e.target.value })}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs outline-none disabled:opacity-50"
+            >
+              {partyServers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+              {youtubeKey && <option value="youtube">YouTube</option>}
+            </select>
+            {!isHost && <span className="text-[11px] text-neutral-500">Host controls the server</span>}
+            <button
+              type="button"
+              onClick={() => setChatOpen((v) => !v)}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10 lg:hidden"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> {chatOpen ? "Hide chat" : "Show chat"}
+            </button>
+          </div>
 
           {isHost && (
             <HostControls
               onStart={(seconds) => push({ code, start_in: seconds })}
               onResync={() => push({ code, resync: true })}
             />
+          )}
+
+          {chatOpen && (
+            <div className="mt-4 lg:hidden">
+              <PartyPanel code={code} />
+            </div>
           )}
 
           {playerKind === "tv" && seasons.length > 0 && (
@@ -245,6 +289,8 @@ function PartyPage() {
           <PartyPanel code={code} />
         </div>
       </div>
+    </div>
+
     </div>
   );
 }
