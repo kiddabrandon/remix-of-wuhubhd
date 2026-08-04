@@ -1,5 +1,6 @@
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Play } from "lucide-react";
+import { Check, Play, Search } from "lucide-react";
 import { tmdbSeason } from "@/lib/tmdb.functions";
 import { poster } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
@@ -18,7 +19,11 @@ export function EpisodeSelector({
   onChange: (s: number, e: number) => void;
 }) {
   const { progressFor } = useApp();
-  const watched = new Set(progressFor(tvId, "tv")?.watched_episodes ?? []);
+  const prog = progressFor(tvId, "tv");
+  const positions = prog?.episode_positions ?? {};
+  const [q, setQ] = useState("");
+
+  const realSeasons = seasons.filter((s) => s.season_number > 0);
 
   const { data: seasonData, isLoading } = useQuery({
     queryKey: ["season", tvId, season],
@@ -26,31 +31,71 @@ export function EpisodeSelector({
     staleTime: 5 * 60_000,
   });
 
-  const episodes = seasonData?.episodes ?? [];
+  const episodes = (seasonData?.episodes ?? []) as any[];
+
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return episodes;
+    return episodes.filter(
+      (ep) =>
+        String(ep.episode_number) === needle ||
+        (ep.name ?? "").toLowerCase().includes(needle),
+    );
+  }, [episodes, q]);
+
+  /** An episode only counts as watched once it actually has saved playback. */
+  const stateFor = (n: number): "unwatched" | "started" | "watched" => {
+    const entry = positions[`s${season}e${n}`];
+    if (!entry || !entry.p || entry.p < 30) return "unwatched";
+    if (entry.d > 0 && entry.p / entry.d >= 0.9) return "watched";
+    return "started";
+  };
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#0b0b0c]">
-      <div className="border-b border-white/5 p-4">
-        <label className="mb-1.5 block text-[11px] tracking-widest text-neutral-500 uppercase">Season</label>
-        <select
-          value={season}
-          onChange={(e) => onChange(Number(e.target.value), 1)}
-          className="w-full rounded-lg border border-white/10 bg-black px-3 py-2 text-sm outline-none focus:border-[var(--accent)]"
-        >
-          {seasons
-            .filter((s) => s.season_number > 0)
-            .map((s) => (
-              <option key={s.season_number} value={s.season_number}>
-                {s.name} ({s.episode_count} eps)
-              </option>
-            ))}
-        </select>
+      <div className="space-y-3 border-b border-white/5 p-3">
+        <div>
+          <div className="mb-1.5 text-[11px] tracking-widest text-neutral-500 uppercase">Seasons</div>
+          <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+            {realSeasons.map((s) => {
+              const active = s.season_number === season;
+              return (
+                <button
+                  key={s.season_number}
+                  type="button"
+                  onClick={() => onChange(s.season_number, 1)}
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                    active ? "text-black" : "border border-white/10 bg-white/5 text-neutral-300 hover:bg-white/10"
+                  }`}
+                  style={active ? { background: "var(--accent)" } : undefined}
+                >
+                  S{s.season_number}
+                  <span className="ml-1 opacity-60">({s.episode_count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <label className="flex items-center gap-2 rounded-lg border border-white/10 bg-black px-2.5 py-1.5">
+          <Search className="h-3.5 w-3.5 text-neutral-500" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Jump to episode number or title"
+            className="w-full bg-transparent text-xs outline-none placeholder:text-neutral-600"
+          />
+        </label>
       </div>
+
       <div className="scrollbar-none flex-1 overflow-y-auto p-2">
         {isLoading && <div className="p-4 text-sm text-neutral-500">Loading episodes...</div>}
-        {episodes.map((ep: any) => {
+        {!isLoading && filtered.length === 0 && (
+          <div className="p-4 text-sm text-neutral-500">No episodes match “{q}”.</div>
+        )}
+        {filtered.map((ep) => {
           const active = ep.episode_number === episode;
-          const isWatched = watched.has(`s${season}e${ep.episode_number}`);
+          const state = stateFor(ep.episode_number);
           const still = poster(ep.still_path, "w185");
           return (
             <button
@@ -62,7 +107,7 @@ export function EpisodeSelector({
             >
               <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-neutral-900">
                 {still ? (
-                  <img src={still} alt="" className="h-full w-full object-cover" />
+                  <img src={still} alt="" loading="lazy" className="h-full w-full object-cover" />
                 ) : (
                   <div className="grid h-full place-items-center text-xs text-neutral-500">Ep {ep.episode_number}</div>
                 )}
@@ -71,11 +116,28 @@ export function EpisodeSelector({
                     <Play className="h-5 w-5 fill-current" style={{ color: "var(--accent)" }} />
                   </div>
                 )}
+                {state === "started" && (
+                  <div className="absolute inset-x-0 bottom-0 h-1 bg-white/15">
+                    <div
+                      className="h-full"
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          Math.round(
+                            ((positions[`s${season}e${ep.episode_number}`]?.p ?? 0) /
+                              Math.max(1, positions[`s${season}e${ep.episode_number}`]?.d ?? 1)) * 100,
+                          ),
+                        )}%`,
+                        background: "var(--accent)",
+                      }}
+                    />
+                  </div>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[11px] font-medium text-neutral-500">E{ep.episode_number}</span>
-                  {isWatched && <Check className="h-3 w-3 text-neutral-500" />}
+                  {state === "watched" && <Check className="h-3 w-3 text-emerald-400" />}
                 </div>
                 <div className="line-clamp-1 text-sm font-medium">{ep.name}</div>
                 <div className="mt-0.5 line-clamp-2 text-xs text-neutral-500">{ep.overview}</div>
