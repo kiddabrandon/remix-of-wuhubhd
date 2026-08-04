@@ -40,7 +40,7 @@ export function Hero({ items }: { items: TmdbItem[] }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
 
-      <div className="relative z-10 flex h-full items-end px-4 pb-16 sm:items-center sm:px-12 sm:pb-0">
+      <div className="relative z-10 flex h-full items-end px-4 pb-8 sm:items-center sm:px-12 sm:pb-0">
         <motion.div
           key={item.id + "-content"}
           initial={{ opacity: 0, y: 30 }}
