@@ -60,7 +60,7 @@ export const Route = createFileRoute("/_authenticated/anime/")({
   validateSearch: zodValidator(schema),
   head: () => ({
     meta: [
-      { title: "Anime — CinehubHD" },
+      { title: "Anime — WuHubHD" },
       {
         name: "description",
         content: "Discover trending, popular, and top-rated anime. Filter by genre, year, and format.",

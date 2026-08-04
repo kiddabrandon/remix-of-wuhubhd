@@ -3,6 +3,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Search, Settings2, Bookmark, LogOut, Clock } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
+import { Notifications } from "./Notifications";
 import { useApp } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,11 +17,12 @@ export function TopNav() {
     { to: "/", label: "Discover" },
     { to: "/movies", label: "Movies" },
     { to: "/tv", label: "TV Shows" },
+    { to: "/anime", label: "Anime" },
     { to: "/search", label: "Search" },
     { to: "/history", label: "History" },
     { to: "/watchlist", label: "Watchlist" },
-    { to: "/addons", label: "Add-ons" },
   ] as const;
+
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -40,7 +42,7 @@ export function TopNav() {
             >
               ◐
             </span>
-            <span>CinehubHD</span>
+            <span>WuHubHD</span>
           </Link>
 
           <nav className="hidden gap-1 md:flex">
@@ -67,6 +69,8 @@ export function TopNav() {
                 ⌘K
               </kbd>
             </button>
+            <Notifications />
+
             <Link
               to="/history"
               className="hidden rounded-full border border-white/10 bg-white/5 p-2 text-neutral-300 transition hover:bg-white/10 hover:text-white md:inline-flex"

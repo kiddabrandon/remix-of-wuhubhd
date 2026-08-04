@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MessageCircle, X, Timer, RefreshCw } from "lucide-react";
+import { ArrowLeft, MessageCircle, X, Timer, RefreshCw, Copy, Check, Server } from "lucide-react";
 import { Player } from "@/components/Player";
 import { PartyPanel } from "@/components/PartyPanel";
 import { EpisodeSelector } from "@/components/EpisodeSelector";
@@ -10,6 +10,9 @@ import { getParty, updatePartyState } from "@/lib/party.functions";
 import { tmdbMovie, tmdbTv } from "@/lib/tmdb.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
+import { useSiteConfig } from "@/lib/site-config";
+import { orderedServers } from "@/lib/servers";
+
 
 type PartyRow = {
   code: string;
@@ -27,7 +30,7 @@ type PartyRow = {
 export const Route = createFileRoute("/_authenticated/party/$code")({
   head: () => ({
     meta: [
-      { title: "Watch Party — CinehubHD" },
+      { title: "Watch Party — WuHubHD" },
       { name: "description", content: "Watch together with friends." },
       { name: "robots", content: "noindex" },
     ],
@@ -38,10 +41,12 @@ export const Route = createFileRoute("/_authenticated/party/$code")({
 
 function PartyPage() {
   const { code } = Route.useLoaderData();
-  const { session } = useApp();
+  const { session, settings } = useApp();
+  const site = useSiteConfig();
   const [room, setRoom] = useState<PartyRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+
   const get = useServerFn(getParty);
   const update = useServerFn(updatePartyState);
   const isHost = session?.user?.id === room?.host_id;
@@ -148,6 +153,9 @@ function PartyPage() {
     (s: { season_number: number }) => s.season_number > 0,
   ) as { season_number: number; name: string; episode_count: number }[];
 
+  const partyServers = orderedServers(site.serverOrder?.length ? site.serverOrder : settings.serverOrder);
+  const activeServerId = room.server_id ?? partyServers[0]?.id ?? "";
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -174,7 +182,9 @@ function PartyPage() {
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <InviteCode code={code} />
+
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div>
           <Player
             type={playerKind}
@@ -182,32 +192,71 @@ function PartyPage() {
             season={playerKind === "tv" ? room.season_number ?? 1 : undefined}
             episode={playerKind === "tv" ? room.episode_number ?? 1 : undefined}
             title={room.title}
-            serverId={room.server_id ?? undefined}
+            serverId={activeServerId}
             youtubeKey={youtubeKey}
             lockServer={!isHost}
+            hideServerPicker
             reloadKey={room.sync_nonce ?? 0}
             onServerChange={(id) => push({ code, server_id: id })}
-            overlay={
+            overlay={({ isFullscreen }) => (
               <>
                 <StartCountdown startAt={room.start_at} />
-                <ChatOverlay code={code} open={chatOpen} onClose={() => setChatOpen(false)} />
-                <button
-                  type="button"
-                  onClick={() => setChatOpen((v) => !v)}
-                  className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs text-neutral-100 backdrop-blur hover:bg-black/90 hide-in-focus"
-                >
-                  {chatOpen ? <X className="h-3.5 w-3.5" /> : <MessageCircle className="h-3.5 w-3.5" />}
-                  Chat
-                </button>
+                {isFullscreen && (
+                  <>
+                    <ChatOverlay code={code} open={chatOpen} onClose={() => setChatOpen(false)} />
+                    <button
+                      type="button"
+                      onClick={() => setChatOpen((v) => !v)}
+                      className="absolute bottom-3 right-3 z-20 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs text-neutral-100 backdrop-blur hover:bg-black/90 hide-in-focus"
+                    >
+                      {chatOpen ? <X className="h-3.5 w-3.5" /> : <MessageCircle className="h-3.5 w-3.5" />}
+                      Chat
+                    </button>
+                  </>
+                )}
               </>
-            }
+            )}
           />
+
+          {/* Controls live below the player so they never cover the picture. */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-xs text-neutral-500">
+              <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} /> Server
+            </span>
+            <select
+              value={activeServerId}
+              disabled={!isHost}
+              onChange={(e) => push({ code, server_id: e.target.value })}
+              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs outline-none disabled:opacity-50"
+            >
+              {partyServers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+              {youtubeKey && <option value="youtube">YouTube</option>}
+            </select>
+            {!isHost && <span className="text-[11px] text-neutral-500">Host controls the server</span>}
+            <button
+              type="button"
+              onClick={() => setChatOpen((v) => !v)}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10 lg:hidden"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> {chatOpen ? "Hide chat" : "Show chat"}
+            </button>
+          </div>
 
           {isHost && (
             <HostControls
               onStart={(seconds) => push({ code, start_in: seconds })}
               onResync={() => push({ code, resync: true })}
             />
+          )}
+
+          {chatOpen && (
+            <div className="mt-4 lg:hidden">
+              <PartyPanel code={code} />
+            </div>
           )}
 
           {playerKind === "tv" && seasons.length > 0 && (
@@ -243,6 +292,53 @@ function PartyPage() {
     </div>
   );
 }
+
+function InviteCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const link = typeof window !== "undefined" ? `${window.location.origin}/party/${code}` : "";
+
+  const copy = async (value: string, kind: "code" | "link") => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(kind);
+      window.setTimeout(() => setCopied(null), 1600);
+    } catch {
+      /* clipboard blocked */
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-500">Invite code</div>
+        <div className="font-display text-2xl font-bold tracking-[0.3em]" style={{ color: "var(--accent)" }}>
+          {code}
+        </div>
+      </div>
+      <div className="ml-auto flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void copy(code, "code")}
+          className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+        >
+          {copied === "code" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied === "code" ? "Copied" : "Copy code"}
+        </button>
+        <button
+          type="button"
+          onClick={() => void copy(link, "link")}
+          className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-black"
+          style={{ background: "var(--accent)" }}
+        >
+          {copied === "link" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied === "link" ? "Link copied" : "Copy invite link"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 
 function HostControls({
   onStart,

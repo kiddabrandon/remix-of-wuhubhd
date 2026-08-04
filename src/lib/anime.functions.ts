@@ -129,12 +129,49 @@ function megaplayEmbed(episodeId: string, dub: boolean) {
   return `https://megaplay.buzz/stream/s-2/${epNum}/${dub ? "dub" : "sub"}`;
 }
 
+/** Embed providers keyed purely by AniList id + episode number (no scraping). */
+const EMBED_BUILDERS: Record<string, (anilistId: number, ep: number, dub: boolean) => string> = {
+  videasy: (id, ep, dub) => `https://player.videasy.net/anime/${id}/${ep}${dub ? "?dub=true" : ""}`,
+  vidsrccc: (id, ep, dub) => `https://vidsrc.cc/v2/embed/anime/ani${id}/${ep}/${dub ? "dub" : "sub"}`,
+};
+
+/** Encodes the AniList id + episode number so animeWatch can rebuild the embed. */
+function embedEpisodeId(anilistId: number, n: number) {
+  return `embed:${anilistId}:${n}`;
+}
+
+function parseEmbedEpisodeId(episodeId: string) {
+  const m = /^embed:(\d+):(\d+)$/.exec(episodeId);
+  if (!m) return null;
+  return { anilistId: Number(m[1]), number: Number(m[2]) };
+}
+
 export const animeEpisodes = createServerFn({ method: "GET" })
-  .inputValidator((d: { id: number; malId?: number | null; title?: string; provider?: string; dub?: boolean }) => d)
+  .inputValidator(
+    (d: {
+      id: number;
+      malId?: number | null;
+      title?: string;
+      provider?: string;
+      dub?: boolean;
+      episodeCount?: number | null;
+    }) => d,
+  )
   .handler(async ({ data }) => {
-    const provider = data.provider || "hianime";
+    const provider = data.provider || "videasy";
     const dubParam = data.dub ? "&dub=true" : "";
     try {
+      // Embed providers need no episode discovery — AniList's count is enough.
+      if (EMBED_BUILDERS[provider]) {
+        const count = Math.max(1, Number(data.episodeCount) || 12);
+        const episodes: AnimeEpisode[] = Array.from({ length: count }, (_, i) => ({
+          id: embedEpisodeId(data.id, i + 1),
+          number: i + 1,
+          title: null,
+          image: null,
+        }));
+        return { episodes, provider, dub: !!data.dub, error: null as string | null };
+      }
       // Megaplay plays HiAnime episode ids, so its episode list comes from HiAnime.
       if (provider === "hianime" || provider === "megaplay") {
         const episodes = await hianimeEpisodes(data.id, data.title, data.malId ?? undefined, !!data.dub);
@@ -159,6 +196,7 @@ export const animeEpisodes = createServerFn({ method: "GET" })
     }
   });
 
+
 type WatchResult = {
   sources: AnimeStreamSource[];
   subtitles: { url: string; lang: string }[];
@@ -170,9 +208,22 @@ type WatchResult = {
 export const animeWatch = createServerFn({ method: "GET" })
   .inputValidator((d: { episodeId: string; provider?: string; dub?: boolean }) => d)
   .handler(async ({ data }): Promise<WatchResult> => {
-    const provider = data.provider || "hianime";
+    const provider = data.provider || "videasy";
     try {
+      const builder = EMBED_BUILDERS[provider];
+      if (builder) {
+        const parsed = parseEmbedEpisodeId(data.episodeId);
+        if (!parsed) throw new Error("Invalid episode reference for this provider");
+        return {
+          sources: [],
+          subtitles: [],
+          headers: {},
+          embed: builder(parsed.anilistId, parsed.number, !!data.dub),
+          error: null,
+        };
+      }
       if (provider === "megaplay") {
+
         return {
           sources: [],
           subtitles: [],

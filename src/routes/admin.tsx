@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { NUVIO_PLUGINS, STREMIO_ADDONS } from "@/lib/addons";
+
 import {
   ArrowDown,
   ArrowUp,
@@ -60,8 +62,8 @@ import { Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin — CinehubHD" },
-      { name: "description", content: "CinehubHD administrator panel." },
+      { title: "Admin — WuHubHD" },
+      { name: "description", content: "WuHubHD administrator panel." },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -227,7 +229,7 @@ function Panel({ onSignOut }: { onSignOut: () => void }) {
             <div>
               <div className="font-display text-lg font-bold leading-none">Admin</div>
               <div className="text-[10px] uppercase tracking-widest text-neutral-500">
-                CinehubHD control panel
+                WuHubHD control panel
               </div>
             </div>
           </div>
@@ -553,11 +555,42 @@ function Dashboard() {
         <AnnouncementsCard />
         <HeroOverridesCard />
         <FlagsCard />
+        <AddonsInfoCard />
+
       </div>
       <ErrorLogsCard />
     </section>
   );
 }
+
+/** Streaming add-ons are bundled server-side; this card documents what ships. */
+function AddonsInfoCard() {
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/40 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Megaphone className="h-4 w-4 text-cyan-300" /> Built-in streaming add-ons
+      </div>
+      <p className="mt-2 text-xs text-neutral-400">
+        Stremio add-ons and Nuvio provider packs are bundled with the app and enabled by default for
+        every account. They are intentionally hidden from the frontend UI — users never install
+        anything manually.
+      </p>
+      <ul className="mt-3 space-y-1 text-xs text-neutral-300">
+        {STREMIO_ADDONS.map((a) => (
+          <li key={a.id}>
+            <span className="text-neutral-500">Stremio ·</span> {a.name}
+          </li>
+        ))}
+        {NUVIO_PLUGINS.map((a) => (
+          <li key={a.id}>
+            <span className="text-neutral-500">Nuvio ·</span> {a.name}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 
 function StatsGrid() {
   const fn = useServerFn(getAdminStats);

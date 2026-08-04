@@ -1,6 +1,6 @@
 // CinehubHD lightweight service worker.
 // Strategy: network-first for navigations, cache-first for hashed static assets.
-const CACHE = "cinehub-shell-v1";
+const CACHE = "wuhubhd-shell-v2";
 const SHELL = ["/", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

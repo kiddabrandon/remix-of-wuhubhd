@@ -17,7 +17,7 @@ const detailQO = (id: number) =>
 
 export const Route = createFileRoute("/_authenticated/anime/$id")({
   head: ({ params }) => ({
-    meta: [{ title: `Anime #${params.id} — CinehubHD` }],
+    meta: [{ title: `Anime #${params.id} — WuHubHD` }],
   }),
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto max-w-lg px-6 py-24 text-center">
@@ -43,22 +43,22 @@ function AnimeDetail() {
   const site = useSiteConfig();
   const providerIds = site.animeProviders?.length ? site.animeProviders : DEFAULT_ANIME_PROVIDERS;
   const providers = providerIds
-    .map((id) => ANIME_API_PROVIDERS.find((p) => p.id === id))
-    .filter(Boolean) as typeof ANIME_API_PROVIDERS[number][];
-  const [provider, setProvider] = useState<string>(providers[0]?.id ?? "hianime");
+    .map((pid) => ANIME_API_PROVIDERS.find((p) => p.id === pid))
+    .filter(Boolean) as (typeof ANIME_API_PROVIDERS)[number][];
+  const [provider, setProvider] = useState<string>(providers[0]?.id ?? "videasy");
   const [audio, setAudio] = useState<"sub" | "dub">("sub");
   const [selected, setSelected] = useState<string | null>(null);
-  const providerMeta = providers.find((p) => p.id === provider) ?? providers[0];
   const dubSupported = provider !== "animepahe";
   const dub = audio === "dub" && dubSupported;
   const { data: epData, isLoading: epLoading } = useQuery({
-    queryKey: ["anime", "episodes", id, data?.idMal, data?.title, provider, dub],
+    queryKey: ["anime", "episodes", id, data?.idMal, data?.title, data?.episodes, provider, dub],
     queryFn: () =>
       animeEpisodes({
         data: {
           id,
           malId: data?.idMal ?? undefined,
           title: data?.title,
+          episodeCount: data?.episodes ?? undefined,
           provider,
           dub,
         },
@@ -66,6 +66,7 @@ function AnimeDetail() {
     enabled: !!data,
     staleTime: 5 * 60_000,
   });
+
   const episodes = epData?.episodes ?? [];
   const activeId = selected ?? episodes[0]?.id ?? null;
   const activeEp = episodes.find((e) => e.id === activeId) ?? episodes[0];
@@ -167,7 +168,8 @@ function AnimeDetail() {
                     allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                     allowFullScreen
                     referrerPolicy="no-referrer"
-                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                    loading="lazy"
+
                   />
                 </div>
               ) : bestSource ? (
@@ -196,7 +198,7 @@ function AnimeDetail() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading episodes…
                   </>
                 ) : (
-                  "No episodes returned by Consumet for this provider yet."
+                  "No episodes available for this provider yet — try another provider."
                 )}
               </div>
             )}

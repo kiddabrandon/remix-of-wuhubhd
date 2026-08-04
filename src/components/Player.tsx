@@ -21,6 +21,7 @@ export function Player({
   serverId,
   onServerChange,
   lockServer = false,
+  hideServerPicker = false,
   reloadKey = 0,
   overlay,
   youtubeKey,
@@ -38,13 +39,16 @@ export function Player({
   onServerChange?: (id: string) => void;
   /** Guests in a party can't change the server. */
   lockServer?: boolean;
+  /** Hide the in-player server chip entirely (party page renders its own). */
+  hideServerPicker?: boolean;
   /** Bump to force the embed to reload (host "resync"). */
   reloadKey?: number;
   /** Rendered inside the player box so it survives fullscreen (party chat). */
-  overlay?: ReactNode;
+  overlay?: ReactNode | ((state: { isFullscreen: boolean }) => ReactNode);
   /** YouTube video id — adds YouTube as a selectable, party-syncable source. */
   youtubeKey?: string | null;
 }) {
+
   const { settings } = useApp();
   const site = useSiteConfig();
   // Admin-set global order takes precedence; user's local order is the fallback.
@@ -257,9 +261,12 @@ export function Player({
   return (
     <div
       ref={wrapRef}
-      className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/5"
+      className={`relative w-full bg-black ${
+        isFullscreen ? "h-screen overflow-hidden" : "overflow-hidden rounded-2xl ring-1 ring-white/5"
+      }`}
     >
-      <div className="relative aspect-video w-full">
+      <div className={`relative w-full ${isFullscreen ? "h-full" : "aspect-video"}`}>
+
         {!errored && active ? (
           <iframe
             ref={iframeRef}
@@ -311,7 +318,7 @@ export function Player({
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
         </button>
-        {lockServer ? (
+        {hideServerPicker ? null : lockServer ? (
           <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-300 backdrop-blur">
             <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
             {active?.name ?? "Server"} · host
@@ -365,7 +372,8 @@ export function Player({
       </div>
 
       {/* Party chat / countdown overlay — lives inside the fullscreen element. */}
-      {overlay}
+      {typeof overlay === "function" ? overlay({ isFullscreen }) : overlay}
+
 
       {/* Poster overlay while loading */}
       {poster && (
