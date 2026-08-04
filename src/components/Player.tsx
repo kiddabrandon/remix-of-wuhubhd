@@ -21,6 +21,7 @@ export function Player({
   serverId,
   onServerChange,
   lockServer = false,
+  hideServerPicker = false,
   reloadKey = 0,
   overlay,
   youtubeKey,
@@ -38,13 +39,16 @@ export function Player({
   onServerChange?: (id: string) => void;
   /** Guests in a party can't change the server. */
   lockServer?: boolean;
+  /** Hide the in-player server chip entirely (party page renders its own). */
+  hideServerPicker?: boolean;
   /** Bump to force the embed to reload (host "resync"). */
   reloadKey?: number;
   /** Rendered inside the player box so it survives fullscreen (party chat). */
-  overlay?: ReactNode;
+  overlay?: ReactNode | ((state: { isFullscreen: boolean }) => ReactNode);
   /** YouTube video id — adds YouTube as a selectable, party-syncable source. */
   youtubeKey?: string | null;
 }) {
+
   const { settings } = useApp();
   const site = useSiteConfig();
   // Admin-set global order takes precedence; user's local order is the fallback.
