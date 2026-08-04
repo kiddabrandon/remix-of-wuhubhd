@@ -30,7 +30,7 @@ type PartyRow = {
 export const Route = createFileRoute("/_authenticated/party/$code")({
   head: () => ({
     meta: [
-      { title: "Watch Party — CinehubHD" },
+      { title: "Watch Party — WuHubHD" },
       { name: "description", content: "Watch together with friends." },
       { name: "robots", content: "noindex" },
     ],
