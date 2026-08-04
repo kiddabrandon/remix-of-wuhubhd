@@ -23,7 +23,7 @@ export function Hero({ items }: { items: TmdbItem[] }) {
   const saved = inWatchlist(item.id, type);
 
   return (
-    <section className="relative h-[85vh] min-h-[560px] w-full overflow-hidden">
+    <section className="relative h-[62vh] min-h-[420px] w-full overflow-hidden sm:h-[78vh] sm:min-h-[520px]">
       <AnimatePresence mode="wait">
         <motion.div
           key={item.id}
