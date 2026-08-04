@@ -14,15 +14,22 @@ export type StreamServer = {
 };
 
 export const ANIME_API_PROVIDERS = [
-  { id: "hianime", name: "HiAnime direct", description: "Primary source with sub/dub server discovery." },
+  { id: "videasy", name: "Videasy anime", description: "AniList-keyed embed with sub/dub. Most reliable." },
+  { id: "vidsrccc", name: "Vidsrc anime", description: "AniList-keyed embed fallback with sub/dub." },
+  { id: "hianime", name: "HiAnime direct", description: "Direct scraper with sub/dub server discovery." },
   { id: "megaplay", name: "Megaplay embed", description: "HiAnime episode ids played through Megaplay." },
   { id: "gogoanime", name: "Gogoanime mirror", description: "Consumet-compatible fallback." },
   { id: "zoro", name: "Zoro / HiAnime mirror", description: "Consumet-compatible fallback." },
   { id: "animepahe", name: "AnimePahe mirror", description: "Sub-focused fallback." },
 ] as const;
 
-/** Anime playback order: HiAnime first, Megaplay as the embed fallback. */
-export const DEFAULT_ANIME_PROVIDERS = ["hianime", "megaplay"] as string[];
+/** Providers that only need the AniList id + episode number (no scraping). */
+export const ANIME_EMBED_PROVIDERS = ["videasy", "vidsrccc"] as string[];
+
+/** Anime playback order: embeds first (they always resolve), scrapers after. */
+export const DEFAULT_ANIME_PROVIDERS = ["videasy", "vidsrccc", "hianime", "megaplay"] as string[];
+
+
 
 
 // URL builder helpers. Not every provider exposes a documented embed schema;
