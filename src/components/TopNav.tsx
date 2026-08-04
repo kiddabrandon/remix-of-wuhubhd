@@ -42,7 +42,7 @@ export function TopNav() {
             >
               ◐
             </span>
-            <span>CinehubHD</span>
+            <span>WuHubHD</span>
           </Link>
 
           <nav className="hidden gap-1 md:flex">
