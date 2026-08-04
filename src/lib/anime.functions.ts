@@ -208,9 +208,22 @@ type WatchResult = {
 export const animeWatch = createServerFn({ method: "GET" })
   .inputValidator((d: { episodeId: string; provider?: string; dub?: boolean }) => d)
   .handler(async ({ data }): Promise<WatchResult> => {
-    const provider = data.provider || "hianime";
+    const provider = data.provider || "videasy";
     try {
+      const builder = EMBED_BUILDERS[provider];
+      if (builder) {
+        const parsed = parseEmbedEpisodeId(data.episodeId);
+        if (!parsed) throw new Error("Invalid episode reference for this provider");
+        return {
+          sources: [],
+          subtitles: [],
+          headers: {},
+          embed: builder(parsed.anilistId, parsed.number, !!data.dub),
+          error: null,
+        };
+      }
       if (provider === "megaplay") {
+
         return {
           sources: [],
           subtitles: [],
