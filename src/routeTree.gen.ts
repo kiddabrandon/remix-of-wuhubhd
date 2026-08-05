@@ -21,6 +21,7 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedAddonsRouteImport } from './routes/_authenticated/addons'
+import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
 import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
 import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
@@ -86,6 +87,11 @@ const AuthenticatedAddonsRoute = AuthenticatedAddonsRouteImport.update({
   path: '/addons',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPartyIndexRoute = AuthenticatedPartyIndexRouteImport.update({
+  id: '/party/',
+  path: '/party/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAnimeIndexRoute = AuthenticatedAnimeIndexRouteImport.update({
   id: '/anime/',
   path: '/anime/',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/anime/': typeof AuthenticatedAnimeIndexRoute
+  '/party/': typeof AuthenticatedPartyIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
 }
 export interface FileRoutesByTo {
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/anime': typeof AuthenticatedAnimeIndexRoute
+  '/party': typeof AuthenticatedPartyIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
 }
 export interface FileRoutesById {
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/_authenticated/party/$code': typeof AuthenticatedPartyCodeRoute
   '/_authenticated/anime/': typeof AuthenticatedAnimeIndexRoute
+  '/_authenticated/party/': typeof AuthenticatedPartyIndexRoute
   '/_authenticated/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
 }
 export interface FileRouteTypes {
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/browse/$provider'
     | '/party/$code'
     | '/anime/'
+    | '/party/'
     | '/watch/$type/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/browse/$provider'
     | '/party/$code'
     | '/anime'
+    | '/party'
     | '/watch/$type/$id'
   id:
     | '__root__'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/_authenticated/browse/$provider'
     | '/_authenticated/party/$code'
     | '/_authenticated/anime/'
+    | '/_authenticated/party/'
     | '/_authenticated/watch/$type/$id'
   fileRoutesById: FileRoutesById
 }
@@ -320,6 +332,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAddonsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/party/': {
+      id: '/_authenticated/party/'
+      path: '/party'
+      fullPath: '/party/'
+      preLoaderRoute: typeof AuthenticatedPartyIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/anime/': {
       id: '/_authenticated/anime/'
       path: '/anime'
@@ -371,6 +390,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrowseProviderRoute: typeof AuthenticatedBrowseProviderRoute
   AuthenticatedPartyCodeRoute: typeof AuthenticatedPartyCodeRoute
   AuthenticatedAnimeIndexRoute: typeof AuthenticatedAnimeIndexRoute
+  AuthenticatedPartyIndexRoute: typeof AuthenticatedPartyIndexRoute
   AuthenticatedWatchTypeIdRoute: typeof AuthenticatedWatchTypeIdRoute
 }
 
@@ -387,6 +407,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrowseProviderRoute: AuthenticatedBrowseProviderRoute,
   AuthenticatedPartyCodeRoute: AuthenticatedPartyCodeRoute,
   AuthenticatedAnimeIndexRoute: AuthenticatedAnimeIndexRoute,
+  AuthenticatedPartyIndexRoute: AuthenticatedPartyIndexRoute,
   AuthenticatedWatchTypeIdRoute: AuthenticatedWatchTypeIdRoute,
 }
 
