@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthenticatedYoutubeRouteImport } from './routes/_authenticated/youtube'
 import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
 import { Route as AuthenticatedTvRouteImport } from './routes/_authenticated/tv'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -21,6 +22,7 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedAddonsRouteImport } from './routes/_authenticated/addons'
+import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
 import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
 import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
@@ -50,6 +52,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
   getParentRoute: () => AuthRoute,
+} as any)
+const AuthenticatedYoutubeRoute = AuthenticatedYoutubeRouteImport.update({
+  id: '/youtube',
+  path: '/youtube',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedWatchlistRoute = AuthenticatedWatchlistRouteImport.update({
   id: '/watchlist',
@@ -84,6 +91,11 @@ const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
 const AuthenticatedAddonsRoute = AuthenticatedAddonsRouteImport.update({
   id: '/addons',
   path: '/addons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPartyIndexRoute = AuthenticatedPartyIndexRouteImport.update({
+  id: '/party/',
+  path: '/party/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAnimeIndexRoute = AuthenticatedAnimeIndexRouteImport.update({
@@ -125,11 +137,13 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tv': typeof AuthenticatedTvRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
+  '/youtube': typeof AuthenticatedYoutubeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/anime/$id': typeof AuthenticatedAnimeIdRoute
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/anime/': typeof AuthenticatedAnimeIndexRoute
+  '/party/': typeof AuthenticatedPartyIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
 }
 export interface FileRoutesByTo {
@@ -142,12 +156,14 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/tv': typeof AuthenticatedTvRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
+  '/youtube': typeof AuthenticatedYoutubeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/': typeof AuthenticatedIndexRoute
   '/anime/$id': typeof AuthenticatedAnimeIdRoute
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/anime': typeof AuthenticatedAnimeIndexRoute
+  '/party': typeof AuthenticatedPartyIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
 }
 export interface FileRoutesById {
@@ -162,12 +178,14 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tv': typeof AuthenticatedTvRoute
   '/_authenticated/watchlist': typeof AuthenticatedWatchlistRoute
+  '/_authenticated/youtube': typeof AuthenticatedYoutubeRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/anime/$id': typeof AuthenticatedAnimeIdRoute
   '/_authenticated/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/_authenticated/party/$code': typeof AuthenticatedPartyCodeRoute
   '/_authenticated/anime/': typeof AuthenticatedAnimeIndexRoute
+  '/_authenticated/party/': typeof AuthenticatedPartyIndexRoute
   '/_authenticated/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
 }
 export interface FileRouteTypes {
@@ -183,11 +201,13 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tv'
     | '/watchlist'
+    | '/youtube'
     | '/auth/callback'
     | '/anime/$id'
     | '/browse/$provider'
     | '/party/$code'
     | '/anime/'
+    | '/party/'
     | '/watch/$type/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -200,12 +220,14 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tv'
     | '/watchlist'
+    | '/youtube'
     | '/auth/callback'
     | '/'
     | '/anime/$id'
     | '/browse/$provider'
     | '/party/$code'
     | '/anime'
+    | '/party'
     | '/watch/$type/$id'
   id:
     | '__root__'
@@ -219,12 +241,14 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/tv'
     | '/_authenticated/watchlist'
+    | '/_authenticated/youtube'
     | '/auth/callback'
     | '/_authenticated/'
     | '/_authenticated/anime/$id'
     | '/_authenticated/browse/$provider'
     | '/_authenticated/party/$code'
     | '/_authenticated/anime/'
+    | '/_authenticated/party/'
     | '/_authenticated/watch/$type/$id'
   fileRoutesById: FileRoutesById
 }
@@ -270,6 +294,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_authenticated/youtube': {
+      id: '/_authenticated/youtube'
+      path: '/youtube'
+      fullPath: '/youtube'
+      preLoaderRoute: typeof AuthenticatedYoutubeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/watchlist': {
       id: '/_authenticated/watchlist'
@@ -320,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAddonsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/party/': {
+      id: '/_authenticated/party/'
+      path: '/party'
+      fullPath: '/party/'
+      preLoaderRoute: typeof AuthenticatedPartyIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/anime/': {
       id: '/_authenticated/anime/'
       path: '/anime'
@@ -366,11 +404,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTvRoute: typeof AuthenticatedTvRoute
   AuthenticatedWatchlistRoute: typeof AuthenticatedWatchlistRoute
+  AuthenticatedYoutubeRoute: typeof AuthenticatedYoutubeRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedAnimeIdRoute: typeof AuthenticatedAnimeIdRoute
   AuthenticatedBrowseProviderRoute: typeof AuthenticatedBrowseProviderRoute
   AuthenticatedPartyCodeRoute: typeof AuthenticatedPartyCodeRoute
   AuthenticatedAnimeIndexRoute: typeof AuthenticatedAnimeIndexRoute
+  AuthenticatedPartyIndexRoute: typeof AuthenticatedPartyIndexRoute
   AuthenticatedWatchTypeIdRoute: typeof AuthenticatedWatchTypeIdRoute
 }
 
@@ -382,11 +422,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTvRoute: AuthenticatedTvRoute,
   AuthenticatedWatchlistRoute: AuthenticatedWatchlistRoute,
+  AuthenticatedYoutubeRoute: AuthenticatedYoutubeRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedAnimeIdRoute: AuthenticatedAnimeIdRoute,
   AuthenticatedBrowseProviderRoute: AuthenticatedBrowseProviderRoute,
   AuthenticatedPartyCodeRoute: AuthenticatedPartyCodeRoute,
   AuthenticatedAnimeIndexRoute: AuthenticatedAnimeIndexRoute,
+  AuthenticatedPartyIndexRoute: AuthenticatedPartyIndexRoute,
   AuthenticatedWatchTypeIdRoute: AuthenticatedWatchTypeIdRoute,
 }
 

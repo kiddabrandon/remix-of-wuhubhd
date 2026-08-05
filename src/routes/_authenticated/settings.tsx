@@ -5,8 +5,8 @@ import { ACCENTS, AVATAR_PRESETS, useApp } from "@/lib/app-store";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — Nocturne" },
-      { name: "description", content: "Customize your Nocturne experience." },
+      { title: "Settings — WuHubHD" },
+      { name: "description", content: "Customize your WuHubHD experience." },
     ],
   }),
   component: Settings,
@@ -34,26 +34,29 @@ function Settings() {
       <h1 className="font-display text-4xl font-bold tracking-tight">Settings</h1>
       <p className="mt-1 text-sm text-neutral-400">Personalize the vibe and the player.</p>
 
-      <section className="mt-10 rounded-2xl border border-white/5 bg-[#0b0b0c] p-6">
+      <section className="mt-10 rounded-2xl border border-white/5 bg-[#0b0b0c] p-4 sm:p-6">
         <h2 className="text-sm font-semibold tracking-widest text-neutral-400 uppercase">Avatar</h2>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid grid-cols-3 gap-2.5 sm:grid-cols-4 lg:grid-cols-5">
           {AVATAR_PRESETS.map((a) => {
             const active = settings.avatarPreset === a.id;
             return (
               <button
                 key={a.id}
                 onClick={() => setSettings({ avatarPreset: a.id })}
-                className={`relative rounded-xl border p-4 text-left transition ${active ? "border-transparent ring-2" : "border-white/10 hover:bg-white/5"}`}
+                className={`relative flex flex-col items-center gap-2 rounded-xl border p-2.5 text-center transition ${active ? "border-transparent" : "border-white/10 hover:bg-white/5"}`}
                 style={active ? { boxShadow: "0 0 0 2px var(--accent)" } : undefined}
               >
-                <div className="mb-3 grid h-12 w-12 place-items-center rounded-full text-lg font-bold text-white" style={{ background: a.gradient }}>{a.emoji}</div>
-                <div className="text-sm font-medium">{a.label}</div>
-                {active && <Check className="absolute right-3 top-3 h-4 w-4" style={{ color: "var(--accent)" }} />}
+                <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full" style={{ background: a.gradient }}>
+                  <img src={a.image} alt={a.label} loading="lazy" className="h-full w-full object-contain p-0.5" />
+                </div>
+                <div className="w-full truncate text-[11px] font-medium">{a.label}</div>
+                {active && <Check className="absolute right-2 top-2 h-3.5 w-3.5" style={{ color: "var(--accent)" }} />}
               </button>
             );
           })}
         </div>
       </section>
+
 
       <section className="mt-6 rounded-2xl border border-white/5 bg-[#0b0b0c] p-6">
         <h2 className="text-sm font-semibold tracking-widest text-neutral-400 uppercase">Accent color</h2>

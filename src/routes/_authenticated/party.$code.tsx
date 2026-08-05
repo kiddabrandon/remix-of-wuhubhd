@@ -182,8 +182,6 @@ function PartyPage() {
         </Link>
       </div>
 
-      <InviteCode code={code} />
-
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div>
           <Player
@@ -253,6 +251,10 @@ function PartyPage() {
             />
           )}
 
+          <div className="mt-4">
+            <InviteCode code={code} />
+          </div>
+
           {chatOpen && (
             <div className="mt-4 lg:hidden">
               <PartyPanel code={code} />
@@ -260,7 +262,7 @@ function PartyPage() {
           )}
 
           {playerKind === "tv" && seasons.length > 0 && (
-            <div className="mt-6 h-[520px]">
+            <div className="mt-6 h-[60vh] min-h-[380px] sm:h-[520px]">
               <EpisodeSelector
                 tvId={room.content_id}
                 seasons={seasons}

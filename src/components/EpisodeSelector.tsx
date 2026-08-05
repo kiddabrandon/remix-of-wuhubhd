@@ -52,41 +52,32 @@ export function EpisodeSelector({
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#0b0b0c]">
-      <div className="space-y-3 border-b border-white/5 p-3">
-        <div>
-          <div className="mb-1.5 text-[11px] tracking-widest text-neutral-500 uppercase">Seasons</div>
-          <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-            {realSeasons.map((s) => {
-              const active = s.season_number === season;
-              return (
-                <button
-                  key={s.season_number}
-                  type="button"
-                  onClick={() => onChange(s.season_number, 1)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    active ? "text-black" : "border border-white/10 bg-white/5 text-neutral-300 hover:bg-white/10"
-                  }`}
-                  style={active ? { background: "var(--accent)" } : undefined}
-                >
-                  S{s.season_number}
-                  <span className="ml-1 opacity-60">({s.episode_count})</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#0b0b0c]">
+      <div className="grid gap-2 border-b border-white/5 p-3 sm:grid-cols-2">
+        {/* Season dropdown — scales to shows with 20+ seasons/arcs. */}
+        <select
+          value={season}
+          onChange={(e) => onChange(Number(e.target.value), 1)}
+          className="w-full min-w-0 rounded-lg border border-white/10 bg-black px-2.5 py-2 text-xs text-neutral-100 outline-none focus:border-white/25"
+        >
+          {realSeasons.map((s) => (
+            <option key={s.season_number} value={s.season_number}>
+              {s.name || `Season ${s.season_number}`} ({s.episode_count})
+            </option>
+          ))}
+        </select>
 
-        <label className="flex items-center gap-2 rounded-lg border border-white/10 bg-black px-2.5 py-1.5">
-          <Search className="h-3.5 w-3.5 text-neutral-500" />
+        <label className="flex min-w-0 items-center gap-2 rounded-lg border border-white/10 bg-black px-2.5 py-2">
+          <Search className="h-3.5 w-3.5 shrink-0 text-neutral-500" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Jump to episode number or title"
-            className="w-full bg-transparent text-xs outline-none placeholder:text-neutral-600"
+            placeholder="Jump to episode or title"
+            className="w-full min-w-0 bg-transparent text-xs outline-none placeholder:text-neutral-600"
           />
         </label>
       </div>
+
 
       <div className="scrollbar-none flex-1 overflow-y-auto p-2">
         {isLoading && <div className="p-4 text-sm text-neutral-500">Loading episodes...</div>}
