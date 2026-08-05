@@ -177,6 +177,26 @@ export function BottomDock() {
                   hint="Saved titles"
                   accent="#FF3B57"
                 />
+                <SheetTile
+                  onClick={() => {
+                    setBrowse(false);
+                    navigate({ to: "/party" });
+                  }}
+                  icon={<Users className="h-5 w-5" />}
+                  label="Watch Party"
+                  hint="Join with an invite code"
+                  accent="#F59E0B"
+                />
+                <SheetTile
+                  onClick={() => {
+                    setBrowse(false);
+                    navigate({ to: "/youtube" });
+                  }}
+                  icon={<Youtube className="h-5 w-5" />}
+                  label="YouTube"
+                  hint="Search and watch in-app"
+                  accent="#FF0033"
+                />
               </div>
 
               <SheetTitle className="mt-6">Preferences</SheetTitle>
