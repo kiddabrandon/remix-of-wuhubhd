@@ -24,7 +24,7 @@ const VARIANT_STYLES: Record<string, string> = {
 /** Global announcements published from the backend panel. */
 export function Notifications() {
   const [open, setOpen] = useState(false);
-  const [seen, setSeen] = useState<string[]>([]);
+  const [readIds, setReadIds] = useState<string[]>([]);
   const wrapRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
 
@@ -44,8 +44,38 @@ export function Notifications() {
     refetchInterval: 120_000,
   });
 
+  // Read receipts persist per account in the profile preferences.
+  const { data: profile } = useQuery({
+    queryKey: ["announcement-reads"],
+    queryFn: async (): Promise<string[]> => {
+      const { data } = await supabase.auth.getUser();
+      const uid = data.user?.id;
+      if (!uid) return [];
+      const { data: row } = await supabase.from("profiles").select("preferences").eq("id", uid).maybeSingle();
+      const prefs = (row?.preferences ?? {}) as { readAnnouncements?: string[] };
+      return prefs.readAnnouncements ?? [];
+    },
+    staleTime: 5 * 60_000,
+  });
+
+  useEffect(() => {
+    if (profile) setReadIds((prev) => Array.from(new Set([...prev, ...profile])));
+  }, [profile]);
+
   const items = data ?? [];
-  const unread = useMemo(() => items.filter((a) => !seen.includes(a.id)).length, [items, seen]);
+  const unread = useMemo(() => items.filter((a) => !readIds.includes(a.id)).length, [items, readIds]);
+
+  const markAllRead = async () => {
+    const ids = Array.from(new Set([...readIds, ...items.map((a) => a.id)]));
+    setReadIds(ids);
+    const { data: auth } = await supabase.auth.getUser();
+    const uid = auth.user?.id;
+    if (!uid) return;
+    const { data: row } = await supabase.from("profiles").select("preferences").eq("id", uid).maybeSingle();
+    const prefs = { ...((row?.preferences ?? {}) as object), readAnnouncements: ids.slice(-200) };
+    await supabase.from("profiles").update({ preferences: prefs }).eq("id", uid);
+    void qc.invalidateQueries({ queryKey: ["announcement-reads"] });
+  };
 
   // Live updates when an admin posts or retires an announcement.
   useEffect(() => {
@@ -60,20 +90,19 @@ export function Notifications() {
     };
   }, [qc]);
 
-
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
     };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
   const toggle = () => {
     setOpen((v) => {
       const next = !v;
-      if (next) setSeen(items.map((a) => a.id));
+      if (next) void markAllRead();
       return next;
     });
   };
@@ -97,34 +126,50 @@ export function Notifications() {
         )}
       </button>
 
+      {/* Centred modal so the panel never clips on small screens. */}
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur">
-          <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
-            <Megaphone className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
-              Announcements
-            </span>
-          </div>
-          <div className="scrollbar-none max-h-80 space-y-2 overflow-y-auto p-3">
-            {items.length === 0 && (
-              <p className="px-1 py-6 text-center text-xs text-neutral-500">Nothing new right now.</p>
-            )}
-            {items.map((a) => (
-              <div
-                key={a.id}
-                className={`rounded-xl border px-3 py-2 text-xs leading-relaxed ${
-                  VARIANT_STYLES[a.variant] ?? VARIANT_STYLES.info
-                }`}
+        <div className="fixed inset-0 z-[60] grid place-items-center p-4">
+          <button
+            type="button"
+            aria-label="Close announcements"
+            onClick={() => setOpen(false)}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          />
+          <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur">
+            <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
+              <Megaphone className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                Announcements
+              </span>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="ml-auto rounded-full p-1 text-neutral-400 hover:bg-white/10 hover:text-white"
               >
-                <p>{a.message}</p>
-                <p className="mt-1 text-[10px] opacity-60">
-                  {new Date(a.created_at).toLocaleString()}
-                </p>
-              </div>
-            ))}
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="scrollbar-none max-h-[60vh] space-y-2 overflow-y-auto p-3">
+              {items.length === 0 && (
+                <p className="px-1 py-6 text-center text-xs text-neutral-500">Nothing new right now.</p>
+              )}
+              {items.map((a) => (
+                <div
+                  key={a.id}
+                  className={`rounded-xl border px-3 py-2 text-xs leading-relaxed ${
+                    VARIANT_STYLES[a.variant] ?? VARIANT_STYLES.info
+                  }`}
+                >
+                  <p className="break-words">{a.message}</p>
+                  <p className="mt-1 text-[10px] opacity-60">{new Date(a.created_at).toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
+
