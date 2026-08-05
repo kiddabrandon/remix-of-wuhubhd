@@ -217,9 +217,10 @@ export function BottomDock() {
               className="w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/95 p-4 backdrop-blur-xl"
             >
               <div className="mb-3 flex items-center gap-3 p-2">
-                <div className="grid h-10 w-10 place-items-center rounded-full text-sm font-bold text-white" style={{ background: avatar.gradient }}>
-                  {avatar.emoji}
+                <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full" style={{ background: avatar.gradient }}>
+                  <img src={avatar.image} alt={avatar.label} className="h-full w-full object-contain p-0.5" />
                 </div>
+
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold">{session?.user.user_metadata?.display_name ?? session?.user.email}</div>
                   <div className="truncate text-xs text-neutral-400">{session?.user.email}</div>
