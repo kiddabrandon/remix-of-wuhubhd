@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, Megaphone } from "lucide-react";
+import { Bell, Megaphone, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 
