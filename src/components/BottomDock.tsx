@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Home, LayoutGrid, Search, User, Film, Tv, Clock, Bookmark, Sun, LogOut, Sparkles } from "lucide-react";
+import { Home, LayoutGrid, Search, User, Film, Tv, Clock, Bookmark, Sun, LogOut, Sparkles, Users, Youtube } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { useApp } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
