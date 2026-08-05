@@ -63,9 +63,10 @@ function resolve(item: ProgressItem): Row | null {
 
   const lastKey = item.season != null && item.episode != null ? keyOf(item.season, item.episode) : null;
   const preferred =
-    (lastKey && candidates.find((c) => keyOf(c.s, c.e) === lastKey)) ??
+    (lastKey ? candidates.find((c) => keyOf(c.s, c.e) === lastKey) : undefined) ??
     // otherwise the furthest-along episode
-    candidates.sort((a, b) => (a.s - b.s) || (a.e - b.e)).at(-1)!;
+    candidates.sort((a, b) => a.s - b.s || a.e - b.e).at(-1)!;
+
 
   return {
     item,
