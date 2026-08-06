@@ -255,9 +255,21 @@ function PartyPage() {
             <InviteCode code={code} />
           </div>
 
+          {/* Mobile chat as a bottom sheet so the input sits above the keyboard. */}
           {chatOpen && (
-            <div className="mt-4 lg:hidden">
-              <PartyPanel code={code} />
+            <div className="fixed inset-0 z-[70] flex flex-col justify-end lg:hidden">
+              <button
+                type="button"
+                aria-label="Close chat"
+                onClick={() => setChatOpen(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <div
+                className="relative w-full px-2"
+                style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+              >
+                <PartyPanel code={code} />
+              </div>
             </div>
           )}
 
