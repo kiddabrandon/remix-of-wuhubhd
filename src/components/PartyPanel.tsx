@@ -176,7 +176,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
         </span>
       </div>
 
-      <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
+      <div ref={listRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3">
         {messages.length === 0 && (
           <div className="grid h-full place-items-center text-center text-xs text-neutral-500">
             Say hi. Chat, presence, and host episode changes sync live.<br />
@@ -194,7 +194,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
                   </div>
                 )}
                 <div
-                  className="rounded-2xl px-3 py-2 text-sm"
+                  className="rounded-2xl px-3 py-2 text-sm break-words"
                   style={
                     own
                       ? { background: "var(--accent-hex, #00D8FF)", color: "#001018" }
@@ -209,9 +209,15 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
         })}
       </div>
 
-      <div className="border-t border-white/10 p-2">
+      <div className="shrink-0 border-t border-white/10 p-2">
+        {error && (
+          <div className="mb-2 flex items-start gap-1.5 rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-[11px] leading-relaxed text-red-200">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="break-words">Chat error: {error}</span>
+          </div>
+        )}
         {!user ? (
-          <div className="grid h-11 place-items-center text-xs text-neutral-500">
+          <div className="grid h-11 place-items-center px-2 text-center text-xs text-neutral-500">
             Sign in to chat
           </div>
         ) : (
@@ -219,7 +225,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
             className="flex items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault();
-              send();
+              void send();
             }}
           >
             <input
@@ -227,12 +233,16 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
               onChange={(e) => setText(e.target.value)}
               placeholder="Message the party…"
               maxLength={500}
-              className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm outline-none focus:border-white/20"
+              enterKeyHint="send"
+              autoComplete="off"
+              aria-label="Chat message"
+              // 16px min font-size stops iOS Safari from zooming on focus.
+              className="min-w-0 flex-1 select-text rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-base outline-none focus:border-white/20 sm:text-sm"
             />
             <button
               type="submit"
               disabled={sending || !text.trim()}
-              className="grid h-9 w-9 place-items-center rounded-full text-black transition disabled:opacity-40"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-black transition disabled:opacity-40"
               style={{ background: "var(--accent-hex, #00D8FF)" }}
               aria-label="Send"
             >
