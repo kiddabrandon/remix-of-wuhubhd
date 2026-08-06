@@ -40,15 +40,13 @@ export const ACCENTS: { name: AccentName; label: string; value: string }[] = [
 ];
 
 export const AVATAR_PRESETS = [
-  { id: "mickey", label: "Mickey", image: mickeyAvatar.url, gradient: "linear-gradient(135deg,#f87171,#111827)" },
-  { id: "minnie", label: "Minnie", image: minnieAvatar.url, gradient: "linear-gradient(135deg,#c084fc,#f472b6)" },
-  { id: "daisy", label: "Daisy", image: daisyAvatar.url, gradient: "linear-gradient(135deg,#f472b6,#fbbf24)" },
-  { id: "goofy", label: "Goofy", image: goofyAvatar.url, gradient: "linear-gradient(135deg,#4ade80,#0ea5e9)" },
-  { id: "bugs", label: "Bugs Bunny", image: bugsAvatar.url, gradient: "linear-gradient(135deg,#94a3b8,#e2e8f0)" },
-  { id: "woody", label: "Woody Woodpecker", image: woodyAvatar.url, gradient: "linear-gradient(135deg,#ef4444,#facc15)" },
-  { id: "mickey-classic", label: "Mickey Classic", image: mickeyClassicAvatar.url, gradient: "linear-gradient(135deg,#111827,#6b7280)" },
-  { id: "donald", label: "Donald", image: donaldAvatar.url, gradient: "linear-gradient(135deg,#2563eb,#fb923c)" },
-  { id: "minnie-red", label: "Minnie Red", image: minnieRedAvatar.url, gradient: "linear-gradient(135deg,#ef4444,#fda4af)" },
+  { id: "mickey", label: "Mickey", image: mickeyAvatar, gradient: "linear-gradient(135deg,#f87171,#111827)" },
+  { id: "minnie", label: "Minnie", image: minnieAvatar, gradient: "linear-gradient(135deg,#c084fc,#f472b6)" },
+  { id: "daisy", label: "Daisy", image: daisyAvatar, gradient: "linear-gradient(135deg,#f472b6,#fbbf24)" },
+  { id: "goofy", label: "Goofy", image: goofyAvatar, gradient: "linear-gradient(135deg,#4ade80,#0ea5e9)" },
+  { id: "bugs", label: "Bugs Bunny", image: bugsAvatar, gradient: "linear-gradient(135deg,#94a3b8,#e2e8f0)" },
+  { id: "woody", label: "Woody Woodpecker", image: woodyAvatar, gradient: "linear-gradient(135deg,#ef4444,#facc15)" },
+  { id: "donald", label: "Donald", image: donaldAvatar, gradient: "linear-gradient(135deg,#2563eb,#fb923c)" },
 ] as const;
 
 export function avatarPreset(id?: string) {
