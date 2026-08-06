@@ -2,9 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Search, X, Youtube as YoutubeIcon } from "lucide-react";
+import { Search, Youtube as YoutubeIcon } from "lucide-react";
 import { searchYoutube } from "@/lib/youtube.functions";
-import { useApp } from "@/lib/app-store";
 
 export const Route = createFileRoute("/_authenticated/youtube/")({
   head: () => ({
@@ -23,7 +22,6 @@ export const Route = createFileRoute("/_authenticated/youtube/")({
 const SUGGESTIONS = ["official trailer 2026", "anime openings", "movie reviews", "behind the scenes", "top 10 movies"];
 
 function YoutubePage() {
-  const { settings } = useApp();
   const search = useServerFn(searchYoutube);
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
