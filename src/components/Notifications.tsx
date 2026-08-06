@@ -126,16 +126,16 @@ export function Notifications() {
         )}
       </button>
 
-      {/* Centred modal so the panel never clips on small screens. */}
+      {/* Anchored dropdown under the bell (original styling). */}
       {open && (
-        <div className="fixed inset-0 z-[60] grid place-items-center p-4">
+        <>
           <button
             type="button"
             aria-label="Close announcements"
             onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[55] cursor-default"
           />
-          <div className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur">
+          <div className="absolute right-0 z-[60] mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/95 shadow-2xl backdrop-blur">
             <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
               <Megaphone className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
@@ -167,7 +167,7 @@ export function Notifications() {
               ))}
             </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
