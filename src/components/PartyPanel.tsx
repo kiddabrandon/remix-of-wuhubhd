@@ -125,12 +125,23 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
     const body = text.trim();
     if (!body || !user) return;
     setSending(true);
+    setError(null);
     const optimistic = text;
     setText("");
     try {
-      await post({ data: { code, body, display_name: displayName } });
+      // Direct insert (RLS-scoped to auth.uid()) — works on any host without
+      // relying on the server-function bearer round trip.
+      const { error: insertError } = await supabase.from("party_messages").insert({
+        room_code: code,
+        user_id: user.id,
+        display_name: displayName,
+        body,
+      });
+      if (insertError) throw new Error(insertError.message);
     } catch (err) {
-      console.error(err);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[party chat] send failed:", message);
+      setError(message);
       setText(optimistic);
     } finally {
       setSending(false);
