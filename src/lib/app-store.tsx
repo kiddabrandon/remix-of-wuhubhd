@@ -21,15 +21,13 @@ import {
   upsertProgress,
 } from "@/lib/user-data.functions";
 import { DEFAULT_SERVER_ORDER } from "@/lib/servers";
-import mickeyAvatar from "@/assets/avatars/mickey.png.asset.json";
-import minnieAvatar from "@/assets/avatars/minnie.png.asset.json";
-import daisyAvatar from "@/assets/avatars/daisy.png.asset.json";
-import goofyAvatar from "@/assets/avatars/goofy.png.asset.json";
-import bugsAvatar from "@/assets/avatars/bugs.png.asset.json";
-import woodyAvatar from "@/assets/avatars/woody.png.asset.json";
-import mickeyClassicAvatar from "@/assets/avatars/mickey-classic.png.asset.json";
-import donaldAvatar from "@/assets/avatars/donald.png.asset.json";
-import minnieRedAvatar from "@/assets/avatars/minnie-red.png.asset.json";
+import mickeyAvatar from "@/assets/avatars/mickey.jpg";
+import minnieAvatar from "@/assets/avatars/minnie.jpg";
+import daisyAvatar from "@/assets/avatars/daisy.jpg";
+import goofyAvatar from "@/assets/avatars/goofy.jpg";
+import bugsAvatar from "@/assets/avatars/bugs.jpg";
+import woodyAvatar from "@/assets/avatars/woody.jpg";
+import donaldAvatar from "@/assets/avatars/donald.jpg";
 
 export type AccentName = "cyan" | "royal" | "crimson" | "forest" | "purple";
 
