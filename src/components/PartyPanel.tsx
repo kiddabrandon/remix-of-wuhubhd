@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Users, Copy, Send, Check } from "lucide-react";
+import { Users, Copy, Send, Check, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
-import { useServerFn } from "@tanstack/react-start";
-import { postPartyMessage } from "@/lib/party.functions";
 
 type Message = {
   id: string;
@@ -14,20 +12,51 @@ type Message = {
   created_at: string;
 };
 
+type ChatUser = { id: string; email?: string | null; display_name?: string | null };
+
 export function PartyPanel({ code, compact = false }: { code: string; compact?: boolean }) {
   const { session } = useApp();
-  const user = session?.user ?? null;
+  const [fallbackUser, setFallbackUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [presence, setPresence] = useState(0);
   const [text, setText] = useState("");
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const post = useServerFn(postPartyMessage);
+
+  // The app store session can be empty right after a hard refresh on Netlify,
+  // so resolve the signed-in user straight from the auth client as a fallback.
+  useEffect(() => {
+    if (session?.user) return;
+    let mounted = true;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (mounted && data.user) {
+        setFallbackUser({
+          id: data.user.id,
+          email: data.user.email,
+          display_name: (data.user.user_metadata?.display_name as string | undefined) ?? null,
+        });
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [session?.user]);
+
+  const user: ChatUser | null = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        display_name: (session.user.user_metadata?.display_name as string | undefined) ?? null,
+      }
+    : fallbackUser;
+
   const displayName = useMemo(
-    () => user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Guest",
+    () => user?.display_name || user?.email?.split("@")[0] || "Guest",
     [user],
   );
+
 
   // load history + realtime subscribe
   useEffect(() => {
