@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Users, Copy, Send, Check } from "lucide-react";
+import { Users, Copy, Send, Check, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-store";
-import { useServerFn } from "@tanstack/react-start";
-import { postPartyMessage } from "@/lib/party.functions";
 
 type Message = {
   id: string;
@@ -14,20 +12,51 @@ type Message = {
   created_at: string;
 };
 
+type ChatUser = { id: string; email?: string | null; display_name?: string | null };
+
 export function PartyPanel({ code, compact = false }: { code: string; compact?: boolean }) {
   const { session } = useApp();
-  const user = session?.user ?? null;
+  const [fallbackUser, setFallbackUser] = useState<ChatUser | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [presence, setPresence] = useState(0);
   const [text, setText] = useState("");
   const [copied, setCopied] = useState(false);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const post = useServerFn(postPartyMessage);
+
+  // The app store session can be empty right after a hard refresh on Netlify,
+  // so resolve the signed-in user straight from the auth client as a fallback.
+  useEffect(() => {
+    if (session?.user) return;
+    let mounted = true;
+    void supabase.auth.getUser().then(({ data }) => {
+      if (mounted && data.user) {
+        setFallbackUser({
+          id: data.user.id,
+          email: data.user.email,
+          display_name: (data.user.user_metadata?.display_name as string | undefined) ?? null,
+        });
+      }
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [session?.user]);
+
+  const user: ChatUser | null = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        display_name: (session.user.user_metadata?.display_name as string | undefined) ?? null,
+      }
+    : fallbackUser;
+
   const displayName = useMemo(
-    () => user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Guest",
+    () => user?.display_name || user?.email?.split("@")[0] || "Guest",
     [user],
   );
+
 
   // load history + realtime subscribe
   useEffect(() => {
@@ -96,12 +125,23 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
     const body = text.trim();
     if (!body || !user) return;
     setSending(true);
+    setError(null);
     const optimistic = text;
     setText("");
     try {
-      await post({ data: { code, body, display_name: displayName } });
+      // Direct insert (RLS-scoped to auth.uid()) — works on any host without
+      // relying on the server-function bearer round trip.
+      const { error: insertError } = await supabase.from("party_messages").insert({
+        room_code: code,
+        user_id: user.id,
+        display_name: displayName,
+        body,
+      });
+      if (insertError) throw new Error(insertError.message);
     } catch (err) {
-      console.error(err);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[party chat] send failed:", message);
+      setError(message);
       setText(optimistic);
     } finally {
       setSending(false);
@@ -110,10 +150,9 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
 
   return (
     <div
-      className={`flex flex-col rounded-2xl border border-white/10 bg-neutral-950/80 backdrop-blur ${
-        compact ? "h-[300px]" : "h-[520px]"
+      className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/80 backdrop-blur ${
+        compact ? "h-[min(70vh,420px)]" : "h-[min(80vh,520px)]"
       }`}
-
       style={{ ["--accent-hex" as never]: "#00D8FF", ["--accent-rgb" as never]: "0 216 255" }}
     >
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
@@ -137,7 +176,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
         </span>
       </div>
 
-      <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto px-3 py-3">
+      <div ref={listRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-3 py-3">
         {messages.length === 0 && (
           <div className="grid h-full place-items-center text-center text-xs text-neutral-500">
             Say hi. Chat, presence, and host episode changes sync live.<br />
@@ -155,7 +194,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
                   </div>
                 )}
                 <div
-                  className="rounded-2xl px-3 py-2 text-sm"
+                  className="rounded-2xl px-3 py-2 text-sm break-words"
                   style={
                     own
                       ? { background: "var(--accent-hex, #00D8FF)", color: "#001018" }
@@ -170,9 +209,15 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
         })}
       </div>
 
-      <div className="border-t border-white/10 p-2">
+      <div className="shrink-0 border-t border-white/10 p-2">
+        {error && (
+          <div className="mb-2 flex items-start gap-1.5 rounded-xl border border-red-400/30 bg-red-400/10 px-3 py-2 text-[11px] leading-relaxed text-red-200">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="break-words">Chat error: {error}</span>
+          </div>
+        )}
         {!user ? (
-          <div className="grid h-11 place-items-center text-xs text-neutral-500">
+          <div className="grid h-11 place-items-center px-2 text-center text-xs text-neutral-500">
             Sign in to chat
           </div>
         ) : (
@@ -180,7 +225,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
             className="flex items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault();
-              send();
+              void send();
             }}
           >
             <input
@@ -188,12 +233,16 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
               onChange={(e) => setText(e.target.value)}
               placeholder="Message the party…"
               maxLength={500}
-              className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm outline-none focus:border-white/20"
+              enterKeyHint="send"
+              autoComplete="off"
+              aria-label="Chat message"
+              // 16px min font-size stops iOS Safari from zooming on focus.
+              className="min-w-0 flex-1 select-text rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-base outline-none focus:border-white/20 sm:text-sm"
             />
             <button
               type="submit"
               disabled={sending || !text.trim()}
-              className="grid h-9 w-9 place-items-center rounded-full text-black transition disabled:opacity-40"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-black transition disabled:opacity-40"
               style={{ background: "var(--accent-hex, #00D8FF)" }}
               aria-label="Send"
             >

@@ -80,3 +80,42 @@ export const searchYoutube = createServerFn({ method: "GET" })
       return [];
     }
   });
+
+const VideoSchema = z.object({ id: z.string().min(5).max(20) });
+
+export type YoutubeVideoDetails = {
+  id: string;
+  title: string;
+  channel: string;
+  thumbnail: string;
+};
+
+/** Lightweight title/author lookup via YouTube's public oEmbed endpoint. */
+export const youtubeVideoDetails = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => VideoSchema.parse(d))
+  .handler(async ({ data }): Promise<YoutubeVideoDetails> => {
+    const fallback: YoutubeVideoDetails = {
+      id: data.id,
+      title: "YouTube video",
+      channel: "YouTube",
+      thumbnail: `https://i.ytimg.com/vi/${data.id}/hqdefault.jpg`,
+    };
+    try {
+      const res = await fetch(
+        `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(
+          `https://www.youtube.com/watch?v=${data.id}`,
+        )}`,
+        { signal: AbortSignal.timeout(8_000) },
+      );
+      if (!res.ok) return fallback;
+      const json = (await res.json()) as { title?: string; author_name?: string; thumbnail_url?: string };
+      return {
+        id: data.id,
+        title: json.title ?? fallback.title,
+        channel: json.author_name ?? fallback.channel,
+        thumbnail: json.thumbnail_url ?? fallback.thumbnail,
+      };
+    } catch {
+      return fallback;
+    }
+  });

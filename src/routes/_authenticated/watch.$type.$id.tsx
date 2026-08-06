@@ -107,6 +107,7 @@ function Watch() {
                 episode={type === "tv" ? e : undefined}
                 resumeSeconds={resumeSeconds}
                 youtubeKey={trailerKey}
+                imdbId={(data.external_ids?.imdb_id as string | undefined) ?? null}
                 title={title ?? undefined}
                 poster={bg}
                 onProgress={({ position_seconds, duration_seconds }) => {

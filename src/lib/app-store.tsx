@@ -21,15 +21,13 @@ import {
   upsertProgress,
 } from "@/lib/user-data.functions";
 import { DEFAULT_SERVER_ORDER } from "@/lib/servers";
-import mickeyAvatar from "@/assets/avatars/mickey.png.asset.json";
-import minnieAvatar from "@/assets/avatars/minnie.png.asset.json";
-import daisyAvatar from "@/assets/avatars/daisy.png.asset.json";
-import goofyAvatar from "@/assets/avatars/goofy.png.asset.json";
-import bugsAvatar from "@/assets/avatars/bugs.png.asset.json";
-import woodyAvatar from "@/assets/avatars/woody.png.asset.json";
-import mickeyClassicAvatar from "@/assets/avatars/mickey-classic.png.asset.json";
-import donaldAvatar from "@/assets/avatars/donald.png.asset.json";
-import minnieRedAvatar from "@/assets/avatars/minnie-red.png.asset.json";
+import mickeyAvatar from "@/assets/avatars/mickey.jpg";
+import minnieAvatar from "@/assets/avatars/minnie.jpg";
+import daisyAvatar from "@/assets/avatars/daisy.jpg";
+import goofyAvatar from "@/assets/avatars/goofy.jpg";
+import bugsAvatar from "@/assets/avatars/bugs.jpg";
+import woodyAvatar from "@/assets/avatars/woody.jpg";
+import donaldAvatar from "@/assets/avatars/donald.jpg";
 
 export type AccentName = "cyan" | "royal" | "crimson" | "forest" | "purple";
 
@@ -42,15 +40,13 @@ export const ACCENTS: { name: AccentName; label: string; value: string }[] = [
 ];
 
 export const AVATAR_PRESETS = [
-  { id: "mickey", label: "Mickey", image: mickeyAvatar.url, gradient: "linear-gradient(135deg,#f87171,#111827)" },
-  { id: "minnie", label: "Minnie", image: minnieAvatar.url, gradient: "linear-gradient(135deg,#c084fc,#f472b6)" },
-  { id: "daisy", label: "Daisy", image: daisyAvatar.url, gradient: "linear-gradient(135deg,#f472b6,#fbbf24)" },
-  { id: "goofy", label: "Goofy", image: goofyAvatar.url, gradient: "linear-gradient(135deg,#4ade80,#0ea5e9)" },
-  { id: "bugs", label: "Bugs Bunny", image: bugsAvatar.url, gradient: "linear-gradient(135deg,#94a3b8,#e2e8f0)" },
-  { id: "woody", label: "Woody Woodpecker", image: woodyAvatar.url, gradient: "linear-gradient(135deg,#ef4444,#facc15)" },
-  { id: "mickey-classic", label: "Mickey Classic", image: mickeyClassicAvatar.url, gradient: "linear-gradient(135deg,#111827,#6b7280)" },
-  { id: "donald", label: "Donald", image: donaldAvatar.url, gradient: "linear-gradient(135deg,#2563eb,#fb923c)" },
-  { id: "minnie-red", label: "Minnie Red", image: minnieRedAvatar.url, gradient: "linear-gradient(135deg,#ef4444,#fda4af)" },
+  { id: "mickey", label: "Mickey", image: mickeyAvatar, gradient: "linear-gradient(135deg,#f87171,#111827)" },
+  { id: "minnie", label: "Minnie", image: minnieAvatar, gradient: "linear-gradient(135deg,#c084fc,#f472b6)" },
+  { id: "daisy", label: "Daisy", image: daisyAvatar, gradient: "linear-gradient(135deg,#f472b6,#fbbf24)" },
+  { id: "goofy", label: "Goofy", image: goofyAvatar, gradient: "linear-gradient(135deg,#4ade80,#0ea5e9)" },
+  { id: "bugs", label: "Bugs Bunny", image: bugsAvatar, gradient: "linear-gradient(135deg,#94a3b8,#e2e8f0)" },
+  { id: "woody", label: "Woody Woodpecker", image: woodyAvatar, gradient: "linear-gradient(135deg,#ef4444,#facc15)" },
+  { id: "donald", label: "Donald", image: donaldAvatar, gradient: "linear-gradient(135deg,#2563eb,#fb923c)" },
 ] as const;
 
 export function avatarPreset(id?: string) {
