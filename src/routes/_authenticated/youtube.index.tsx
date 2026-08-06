@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -6,7 +6,7 @@ import { Search, X, Youtube as YoutubeIcon } from "lucide-react";
 import { searchYoutube } from "@/lib/youtube.functions";
 import { useApp } from "@/lib/app-store";
 
-export const Route = createFileRoute("/_authenticated/youtube")({
+export const Route = createFileRoute("/_authenticated/youtube/")({
   head: () => ({
     meta: [
       { title: "YouTube — WuHubHD" },
@@ -25,9 +25,9 @@ const SUGGESTIONS = ["official trailer 2026", "anime openings", "movie reviews",
 function YoutubePage() {
   const { settings } = useApp();
   const search = useServerFn(searchYoutube);
+  const navigate = useNavigate();
   const [term, setTerm] = useState("");
   const [query, setQuery] = useState("official trailer 2026");
-  const [playing, setPlaying] = useState<{ id: string; title: string } | null>(null);
 
   const { data, isFetching } = useQuery({
     queryKey: ["youtube", query],
@@ -96,34 +96,6 @@ function YoutubePage() {
         ))}
       </div>
 
-      {/* Inline player — stays above the grid so mobile doesn't have to scroll back. */}
-      {playing && (
-        <section className="mt-6">
-          <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/5">
-            <div className="relative aspect-video w-full">
-              <iframe
-                key={playing.id}
-                src={`https://www.youtube-nocookie.com/embed/${playing.id}?autoplay=${settings.autoplay ? 1 : 0}&rel=0&modestbranding=1&playsinline=1&cc_lang_pref=${settings.subtitleLang || "en"}`}
-                title={playing.title}
-                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                allowFullScreen
-                referrerPolicy="no-referrer"
-                className="absolute inset-0 h-full w-full"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setPlaying(null)}
-              aria-label="Close player"
-              className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full border border-white/15 bg-black/70 text-neutral-100 backdrop-blur hover:bg-black/90"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <h2 className="mt-3 text-sm font-semibold">{playing.title}</h2>
-        </section>
-      )}
-
       {isFetching && videos.length === 0 && (
         <p className="mt-10 text-sm text-neutral-500">Searching YouTube…</p>
       )}
@@ -136,7 +108,7 @@ function YoutubePage() {
           <button
             key={v.id}
             type="button"
-            onClick={() => setPlaying({ id: v.id, title: v.title })}
+            onClick={() => navigate({ to: "/youtube/$id", params: { id: v.id } })}
             className="group text-left"
           >
             <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/5">
