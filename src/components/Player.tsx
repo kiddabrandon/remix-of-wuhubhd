@@ -3,6 +3,8 @@ import { AlertTriangle, RefreshCw, Server, ChevronDown, Maximize2, Minimize2 } f
 import { useApp } from "@/lib/app-store";
 import { useSiteConfig } from "@/lib/site-config";
 import { orderedServers, type StreamServer } from "@/lib/servers";
+import { AddonSources } from "@/components/AddonSources";
+import { HlsPlayer } from "@/components/HlsPlayer";
 
 type ProgressPayload = {
   position_seconds: number;
@@ -25,6 +27,7 @@ export function Player({
   reloadKey = 0,
   overlay,
   youtubeKey,
+  imdbId,
 }: {
   type: "movie" | "tv";
   id: number | string;
@@ -47,6 +50,8 @@ export function Player({
   overlay?: ReactNode | ((state: { isFullscreen: boolean }) => ReactNode);
   /** YouTube video id — adds YouTube as a selectable, party-syncable source. */
   youtubeKey?: string | null;
+  /** IMDb id, used to resolve playable Stremio add-on streams. */
+  imdbId?: string | null;
 }) {
 
   const { settings } = useApp();
@@ -79,6 +84,7 @@ export function Player({
   const [errored, setErrored] = useState(false);
   const [nonce, setNonce] = useState(0);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [addonStream, setAddonStream] = useState<{ url: string; label: string } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -116,6 +122,7 @@ export function Player({
         cc_lang_pref: settings.subtitleLang || "en",
       });
       if (t > 5) yq.set("start", String(t));
+      if (typeof window !== "undefined") yq.set("origin", window.location.origin);
       return `https://www.youtube-nocookie.com/embed/${youtubeKey}?${yq.toString()}`;
     }
     const base =
@@ -267,7 +274,11 @@ export function Player({
     >
       <div className={`relative w-full ${isFullscreen ? "h-full" : "aspect-video"}`}>
 
-        {!errored && active ? (
+        {addonStream ? (
+          <div className="absolute inset-0">
+            <HlsPlayer src={addonStream.url} poster={poster ?? null} onError={() => setAddonStream(null)} />
+          </div>
+        ) : !errored && active ? (
           <iframe
             ref={iframeRef}
             key={`${active.id}-${nonce}`}
@@ -276,7 +287,8 @@ export function Player({
             allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             // Blocks the provider's pop-ups / redirect-to-ad tricks while keeping playback working.
             allowFullScreen
-            referrerPolicy="no-referrer"
+            /* YouTube refuses embeds with a stripped referrer (error 153). */
+            referrerPolicy={active.id === "youtube" ? "strict-origin-when-cross-origin" : "no-referrer"}
             loading="lazy"
             className="absolute inset-0 h-full w-full"
             onError={() => setErrored(true)}
@@ -330,7 +342,7 @@ export function Player({
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-3 py-1.5 text-xs font-medium text-neutral-100 backdrop-blur hover:bg-black/90"
             >
               <Server className="h-3.5 w-3.5" style={{ color: "var(--accent)" }} />
-              {active?.name ?? "Server"}
+              {addonStream ? addonStream.label : active?.name ?? "Server"}
               <ChevronDown className={`h-3.5 w-3.5 transition ${pickerOpen ? "rotate-180" : ""}`} />
             </button>
             {pickerOpen && (
@@ -339,6 +351,7 @@ export function Player({
                   <button
                     key={s.id}
                     onClick={() => {
+                      setAddonStream(null);
                       setActiveId(s.id);
                       setErrored(false);
                       setNonce((n) => n + 1);
@@ -365,6 +378,17 @@ export function Player({
                     </span>
                   </button>
                 ))}
+                <AddonSources
+                  type={type}
+                  imdbId={imdbId ?? null}
+                  season={season}
+                  episode={episode}
+                  onPlay={(url, label) => {
+                    setAddonStream({ url, label });
+                    setErrored(false);
+                    setPickerOpen(false);
+                  }}
+                />
               </div>
             )}
           </div>
