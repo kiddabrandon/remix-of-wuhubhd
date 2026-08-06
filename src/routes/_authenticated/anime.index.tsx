@@ -86,7 +86,7 @@ export const Route = createFileRoute("/_authenticated/anime/")({
 
 function AnimeIndex() {
   const search = Route.useSearch();
-  const navigate = useNavigate({ from: "/anime" });
+  const navigate = useNavigate({ from: "/anime/" });
   const filtered =
     !!search.q || !!search.genre || !!search.year || !!search.format || search.page > 1;
 
