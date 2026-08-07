@@ -43,13 +43,16 @@ export const ACCENTS: { name: AccentName; label: string; value: string }[] = [
 ];
 
 export const AVATAR_PRESETS = [
-  { id: "mickey", label: "Mickey", image: mickeyAvatar, gradient: "linear-gradient(135deg,#f87171,#111827)" },
-  { id: "minnie", label: "Minnie", image: minnieAvatar, gradient: "linear-gradient(135deg,#c084fc,#f472b6)" },
-  { id: "daisy", label: "Daisy", image: daisyAvatar, gradient: "linear-gradient(135deg,#f472b6,#fbbf24)" },
-  { id: "goofy", label: "Goofy", image: goofyAvatar, gradient: "linear-gradient(135deg,#4ade80,#0ea5e9)" },
-  { id: "bugs", label: "Bugs Bunny", image: bugsAvatar, gradient: "linear-gradient(135deg,#94a3b8,#e2e8f0)" },
-  { id: "woody", label: "Woody Woodpecker", image: woodyAvatar, gradient: "linear-gradient(135deg,#ef4444,#facc15)" },
-  { id: "donald", label: "Donald", image: donaldAvatar, gradient: "linear-gradient(135deg,#2563eb,#fb923c)" },
+  { id: "luffy", label: "Monkey D. Luffy", image: luffyAvatar, gradient: "linear-gradient(135deg,#dc2626,#f59e0b)" },
+  { id: "zoro", label: "Roronoa Zoro", image: zoroAvatar, gradient: "linear-gradient(135deg,#16a34a,#0f172a)" },
+  { id: "nami", label: "Nami", image: namiAvatar, gradient: "linear-gradient(135deg,#fb923c,#38bdf8)" },
+  { id: "hancock", label: "Boa Hancock", image: hancockAvatar, gradient: "linear-gradient(135deg,#f472b6,#7c2d12)" },
+  { id: "aang", label: "Aang", image: aangAvatar, gradient: "linear-gradient(135deg,#fbbf24,#f97316)" },
+  { id: "katara", label: "Katara", image: kataraAvatar, gradient: "linear-gradient(135deg,#38bdf8,#1e3a8a)" },
+  { id: "sonic", label: "Sonic", image: sonicAvatar, gradient: "linear-gradient(135deg,#2563eb,#0ea5e9)" },
+  { id: "tails", label: "Tails", image: tailsAvatar, gradient: "linear-gradient(135deg,#fbbf24,#fb923c)" },
+  { id: "spongebob", label: "SpongeBob", image: spongebobAvatar, gradient: "linear-gradient(135deg,#facc15,#22c55e)" },
+  { id: "patrick", label: "Patrick Star", image: patrickAvatar, gradient: "linear-gradient(135deg,#f472b6,#fb7185)" },
 ] as const;
 
 export function avatarPreset(id?: string) {
