@@ -180,3 +180,15 @@ body.focus-mode .hide-in-focus {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Android TV / D-pad: a strong, always-visible focus ring so the remote's
+   position on screen is obvious from across the room. */
+:root[data-tv="1"] :focus-visible,
+:root[data-tv="1"] :focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 0.5rem;
+}
+:root[data-tv="1"] {
+  font-size: 18px;
+}
