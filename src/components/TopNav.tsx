@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Settings2, Bookmark, LogOut, Clock } from "lucide-react";
+import { Search, Settings2, Bookmark, LogOut, Clock, Download } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { Notifications } from "./Notifications";
 import { useApp } from "@/lib/app-store";
@@ -84,6 +84,13 @@ export function TopNav() {
               aria-label="Watchlist"
             >
               <Bookmark className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/downloads"
+              className="hidden rounded-full border border-white/10 bg-white/5 p-2 text-neutral-300 transition hover:bg-white/10 hover:text-white md:inline-flex"
+              aria-label="Downloads"
+            >
+              <Download className="h-4 w-4" />
             </Link>
             <Link
               to="/settings"
