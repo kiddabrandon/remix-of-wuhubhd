@@ -129,7 +129,7 @@ const DEFAULT_SETTINGS: Settings = {
   subtitleLang: "en",
   focusMode: true,
   serverOrder: DEFAULT_SERVER_ORDER,
-  avatarPreset: "mickey",
+  avatarPreset: "luffy",
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
