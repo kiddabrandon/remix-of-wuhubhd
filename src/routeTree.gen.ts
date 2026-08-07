@@ -21,6 +21,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
+import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
 import { Route as AuthenticatedYoutubeIndexRouteImport } from './routes/_authenticated/youtube.index'
 import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedYoutubeIdRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
 import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
 import { Route as AuthenticatedAnimeIdRouteImport } from './routes/_authenticated/anime.$id'
+import { Route as AuthenticatedYoutubeChannelChannelIdRouteImport } from './routes/_authenticated/youtube.channel.$channelId'
 import { Route as AuthenticatedWatchTypeIdRouteImport } from './routes/_authenticated/watch.$type.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -90,6 +92,11 @@ const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDownloadsRoute = AuthenticatedDownloadsRouteImport.update({
+  id: '/downloads',
+  path: '/downloads',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedYoutubeIndexRoute =
   AuthenticatedYoutubeIndexRouteImport.update({
     id: '/youtube/',
@@ -127,6 +134,12 @@ const AuthenticatedAnimeIdRoute = AuthenticatedAnimeIdRouteImport.update({
   path: '/anime/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedYoutubeChannelChannelIdRoute =
+  AuthenticatedYoutubeChannelChannelIdRouteImport.update({
+    id: '/youtube/channel/$channelId',
+    path: '/youtube/channel/$channelId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedWatchTypeIdRoute =
   AuthenticatedWatchTypeIdRouteImport.update({
     id: '/watch/$type/$id',
@@ -138,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
   '/search': typeof AuthenticatedSearchRoute
@@ -154,10 +168,12 @@ export interface FileRoutesByFullPath {
   '/party/': typeof AuthenticatedPartyIndexRoute
   '/youtube/': typeof AuthenticatedYoutubeIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
+  '/youtube/channel/$channelId': typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
   '/search': typeof AuthenticatedSearchRoute
@@ -175,12 +191,14 @@ export interface FileRoutesByTo {
   '/party': typeof AuthenticatedPartyIndexRoute
   '/youtube': typeof AuthenticatedYoutubeIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
+  '/youtube/channel/$channelId': typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/_authenticated/downloads': typeof AuthenticatedDownloadsRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/movies': typeof AuthenticatedMoviesRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
@@ -198,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/party/': typeof AuthenticatedPartyIndexRoute
   '/_authenticated/youtube/': typeof AuthenticatedYoutubeIndexRoute
   '/_authenticated/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
+  '/_authenticated/youtube/channel/$channelId': typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -205,6 +224,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/downloads'
     | '/history'
     | '/movies'
     | '/search'
@@ -221,10 +241,12 @@ export interface FileRouteTypes {
     | '/party/'
     | '/youtube/'
     | '/watch/$type/$id'
+    | '/youtube/channel/$channelId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/admin'
     | '/auth'
+    | '/downloads'
     | '/history'
     | '/movies'
     | '/search'
@@ -242,11 +264,13 @@ export interface FileRouteTypes {
     | '/party'
     | '/youtube'
     | '/watch/$type/$id'
+    | '/youtube/channel/$channelId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/admin'
     | '/auth'
+    | '/_authenticated/downloads'
     | '/_authenticated/history'
     | '/_authenticated/movies'
     | '/_authenticated/search'
@@ -264,6 +288,7 @@ export interface FileRouteTypes {
     | '/_authenticated/party/'
     | '/_authenticated/youtube/'
     | '/_authenticated/watch/$type/$id'
+    | '/_authenticated/youtube/channel/$channelId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -358,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/downloads': {
+      id: '/_authenticated/downloads'
+      path: '/downloads'
+      fullPath: '/downloads'
+      preLoaderRoute: typeof AuthenticatedDownloadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/youtube/': {
       id: '/_authenticated/youtube/'
       path: '/youtube'
@@ -407,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnimeIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/youtube/channel/$channelId': {
+      id: '/_authenticated/youtube/channel/$channelId'
+      path: '/youtube/channel/$channelId'
+      fullPath: '/youtube/channel/$channelId'
+      preLoaderRoute: typeof AuthenticatedYoutubeChannelChannelIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/watch/$type/$id': {
       id: '/_authenticated/watch/$type/$id'
       path: '/watch/$type/$id'
@@ -418,6 +457,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDownloadsRoute: typeof AuthenticatedDownloadsRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedMoviesRoute: typeof AuthenticatedMoviesRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
@@ -434,9 +474,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPartyIndexRoute: typeof AuthenticatedPartyIndexRoute
   AuthenticatedYoutubeIndexRoute: typeof AuthenticatedYoutubeIndexRoute
   AuthenticatedWatchTypeIdRoute: typeof AuthenticatedWatchTypeIdRoute
+  AuthenticatedYoutubeChannelChannelIdRoute: typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDownloadsRoute: AuthenticatedDownloadsRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedMoviesRoute: AuthenticatedMoviesRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
@@ -453,6 +495,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPartyIndexRoute: AuthenticatedPartyIndexRoute,
   AuthenticatedYoutubeIndexRoute: AuthenticatedYoutubeIndexRoute,
   AuthenticatedWatchTypeIdRoute: AuthenticatedWatchTypeIdRoute,
+  AuthenticatedYoutubeChannelChannelIdRoute:
+    AuthenticatedYoutubeChannelChannelIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

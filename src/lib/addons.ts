@@ -1,7 +1,7 @@
-// Stremio add-ons and Nuvio providers bundled with WuHubHD.
-// Every user gets the full set — there is no add-ons page to visit.
-// "Install" hands the manifest to the Stremio/Nuvio app; in-app playback is
-// only possible for add-ons that return direct HTTP/HLS stream URLs.
+// Stremio add-ons and Nuvio provider packs bundled with WuHubHD.
+// Every user gets the full set — streams are resolved server-side and played
+// directly inside WuHubHD's own player. No install step is required for
+// anything that can return an http(s)/HLS stream.
 
 export type AddonStreamKind =
   | "http" // direct HTTP / HLS urls → playable inside WuHubHD
@@ -16,6 +16,7 @@ export type Addon = {
   manifest: string;
   /** Which platform the manifest targets. */
   platform: "stremio" | "nuvio";
+  /** Fallback capability guess, used only when the live manifest can't be read. */
   streamKind: AddonStreamKind;
 };
 
@@ -40,7 +41,7 @@ export const NUVIO_PLUGINS: Addon[] = [
 /** Everything ships enabled for every account, forever. */
 export const ALL_ADDONS: Addon[] = [...STREMIO_ADDONS, ...NUVIO_PLUGINS];
 
-/** Add-ons whose streams can be resolved and played by WuHubHD's own player. */
+/** Add-ons whose streams *might* be resolvable and played by WuHubHD's own player. */
 export const IN_APP_ADDONS: Addon[] = ALL_ADDONS.filter((a) => a.streamKind === "http");
 
 export type Compatibility = {
@@ -49,41 +50,37 @@ export type Compatibility = {
   guidance: string;
 };
 
-/** Compatibility check that drives whether an in-app player option is offered. */
+/** Fallback-only compatibility check, used until the live manifest resolves. */
 export function checkCompatibility(addon: Addon): Compatibility {
   switch (addon.streamKind) {
     case "http":
       return {
         playable: true,
         label: "Playable in app",
-        guidance:
-          "Returns direct HTTP/HLS links, so WuHubHD can stream it natively. If nothing resolves, the source has no release for this title yet — try another server.",
+        guidance: "Returns direct HTTP/HLS links, so WuHubHD streams it natively.",
       };
     case "torrent":
       return {
         playable: false,
-        label: "Needs Stremio / Nuvio",
-        guidance:
-          "This pack only returns magnet links. Browsers cannot play torrents, so install it into the Stremio or Nuvio app and play there. Tap Install to hand over the manifest.",
+        label: "Torrent pack",
+        guidance: "This pack only returns magnet links, which browsers can't play directly.",
       };
     case "subtitles":
       return {
         playable: false,
         label: "Subtitles only",
-        guidance:
-          "Supplies subtitle tracks, not video. Install it in Stremio/Nuvio; inside WuHubHD pick your subtitle language in Settings instead.",
+        guidance: "Supplies subtitle tracks, not video.",
       };
     default:
       return {
         playable: false,
         label: "Catalogue only",
-        guidance:
-          "Adds catalogues, artwork and metadata — there is no video stream to play. Install it in Stremio/Nuvio to browse those catalogues.",
+        guidance: "Adds catalogues, artwork and metadata — there is no video stream to play.",
       };
   }
 }
 
-/** stremio:// deep link that opens the install prompt in the Stremio app. */
+/** stremio:// deep link — kept only for the advanced/manual disclosure. */
 export function stremioInstallUrl(manifest: string) {
   return `stremio://${manifest.replace(/^https?:\/\//, "")}`;
 }
@@ -93,7 +90,7 @@ export function stremioWebUrl(manifest: string) {
   return `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifest)}`;
 }
 
-/** nuvio:// deep link for provider packs. */
+/** nuvio:// deep link for provider packs — kept only for the advanced disclosure. */
 export function nuvioInstallUrl(manifest: string) {
   return `nuvio://install?url=${encodeURIComponent(manifest)}`;
 }
