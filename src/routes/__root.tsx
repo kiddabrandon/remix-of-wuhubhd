@@ -19,6 +19,7 @@ import { Preloader } from "@/components/Preloader";
 
 import { registerPWA } from "@/lib/pwa-register";
 import { hydrateSiteConfigFromServer } from "@/lib/site-config";
+import { enableTvNavigation, isTvDevice } from "@/lib/tv";
 
 function NotFoundComponent() {
   return (
@@ -144,12 +145,17 @@ function RootComponent() {
   useEffect(() => {
     registerPWA();
     void hydrateSiteConfigFromServer();
-    // Installed app defaults to portrait; the player temporarily unlocks for fullscreen.
+
+    // Android TV / big-screen: enable D-pad navigation and never lock orientation.
+    if (isTvDevice()) return enableTvNavigation();
+
+    // Installed phone app defaults to portrait; the player unlocks for fullscreen.
     const orientation = (screen as unknown as { orientation?: { lock?: (o: string) => Promise<void> } })
       ?.orientation;
     void orientation?.lock?.("portrait").catch(() => {
       /* browsers outside standalone mode refuse this; harmless */
     });
+    return;
   }, []);
 
 

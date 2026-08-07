@@ -29,6 +29,7 @@ import { Route as AuthenticatedYoutubeIdRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
 import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
 import { Route as AuthenticatedAnimeIdRouteImport } from './routes/_authenticated/anime.$id'
+import { Route as AuthenticatedYoutubeChannelChannelIdRouteImport } from './routes/_authenticated/youtube.channel.$channelId'
 import { Route as AuthenticatedWatchTypeIdRouteImport } from './routes/_authenticated/watch.$type.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -133,6 +134,12 @@ const AuthenticatedAnimeIdRoute = AuthenticatedAnimeIdRouteImport.update({
   path: '/anime/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedYoutubeChannelChannelIdRoute =
+  AuthenticatedYoutubeChannelChannelIdRouteImport.update({
+    id: '/youtube/channel/$channelId',
+    path: '/youtube/channel/$channelId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedWatchTypeIdRoute =
   AuthenticatedWatchTypeIdRouteImport.update({
     id: '/watch/$type/$id',
@@ -161,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/party/': typeof AuthenticatedPartyIndexRoute
   '/youtube/': typeof AuthenticatedYoutubeIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
+  '/youtube/channel/$channelId': typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
@@ -183,6 +191,7 @@ export interface FileRoutesByTo {
   '/party': typeof AuthenticatedPartyIndexRoute
   '/youtube': typeof AuthenticatedYoutubeIndexRoute
   '/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
+  '/youtube/channel/$channelId': typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -207,6 +216,7 @@ export interface FileRoutesById {
   '/_authenticated/party/': typeof AuthenticatedPartyIndexRoute
   '/_authenticated/youtube/': typeof AuthenticatedYoutubeIndexRoute
   '/_authenticated/watch/$type/$id': typeof AuthenticatedWatchTypeIdRoute
+  '/_authenticated/youtube/channel/$channelId': typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/party/'
     | '/youtube/'
     | '/watch/$type/$id'
+    | '/youtube/channel/$channelId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/admin'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/party'
     | '/youtube'
     | '/watch/$type/$id'
+    | '/youtube/channel/$channelId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -276,6 +288,7 @@ export interface FileRouteTypes {
     | '/_authenticated/party/'
     | '/_authenticated/youtube/'
     | '/_authenticated/watch/$type/$id'
+    | '/_authenticated/youtube/channel/$channelId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnimeIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/youtube/channel/$channelId': {
+      id: '/_authenticated/youtube/channel/$channelId'
+      path: '/youtube/channel/$channelId'
+      fullPath: '/youtube/channel/$channelId'
+      preLoaderRoute: typeof AuthenticatedYoutubeChannelChannelIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/watch/$type/$id': {
       id: '/_authenticated/watch/$type/$id'
       path: '/watch/$type/$id'
@@ -454,6 +474,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPartyIndexRoute: typeof AuthenticatedPartyIndexRoute
   AuthenticatedYoutubeIndexRoute: typeof AuthenticatedYoutubeIndexRoute
   AuthenticatedWatchTypeIdRoute: typeof AuthenticatedWatchTypeIdRoute
+  AuthenticatedYoutubeChannelChannelIdRoute: typeof AuthenticatedYoutubeChannelChannelIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -474,6 +495,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPartyIndexRoute: AuthenticatedPartyIndexRoute,
   AuthenticatedYoutubeIndexRoute: AuthenticatedYoutubeIndexRoute,
   AuthenticatedWatchTypeIdRoute: AuthenticatedWatchTypeIdRoute,
+  AuthenticatedYoutubeChannelChannelIdRoute:
+    AuthenticatedYoutubeChannelChannelIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -497,13 +520,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
