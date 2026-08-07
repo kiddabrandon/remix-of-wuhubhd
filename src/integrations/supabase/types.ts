@@ -59,6 +59,90 @@ export type Database = {
         }
         Relationships: []
       }
+      download_events: {
+        Row: {
+          created_at: string
+          episode: number | null
+          id: string
+          media_type: string
+          poster_path: string | null
+          quality: string
+          season: number | null
+          status: string
+          title: string
+          tmdb_id: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          episode?: number | null
+          id?: string
+          media_type?: string
+          poster_path?: string | null
+          quality?: string
+          season?: number | null
+          status?: string
+          title: string
+          tmdb_id?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          episode?: number | null
+          id?: string
+          media_type?: string
+          poster_path?: string | null
+          quality?: string
+          season?: number | null
+          status?: string
+          title?: string
+          tmdb_id?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      download_purchases: {
+        Row: {
+          amount_kes: number
+          created_at: string
+          credits_granted: number
+          expires_at: string | null
+          id: string
+          provider: string
+          provider_ref: string | null
+          status: string
+          tier: string
+          unlimited: boolean
+          user_id: string
+        }
+        Insert: {
+          amount_kes: number
+          created_at?: string
+          credits_granted?: number
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          provider_ref?: string | null
+          status?: string
+          tier: string
+          unlimited?: boolean
+          user_id: string
+        }
+        Update: {
+          amount_kes?: number
+          created_at?: string
+          credits_granted?: number
+          expires_at?: string | null
+          id?: string
+          provider?: string
+          provider_ref?: string | null
+          status?: string
+          tier?: string
+          unlimited?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       error_logs: {
         Row: {
           created_at: string
@@ -391,6 +475,7 @@ export type Database = {
     }
     Functions: {
       admin_stats: { Args: never; Returns: Json }
+      download_entitlement: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
