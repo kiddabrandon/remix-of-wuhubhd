@@ -3,15 +3,17 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, Youtube as YoutubeIcon } from "lucide-react";
-import { searchYoutube } from "@/lib/youtube.functions";
+import { searchYoutube, searchYoutubeShorts } from "@/lib/youtube.functions";
+import { ShortsRow } from "@/components/youtube/ShortsRow";
+import { ChannelLink } from "@/components/youtube/ChannelLink";
 
 export const Route = createFileRoute("/_authenticated/youtube/")({
   head: () => ({
     meta: [
       { title: "YouTube — WuHubHD" },
-      { name: "description", content: "Search and watch YouTube videos without leaving WuHubHD." },
+      { name: "description", content: "Search and watch YouTube videos and Shorts without leaving WuHubHD." },
       { property: "og:title", content: "YouTube — WuHubHD" },
-      { property: "og:description", content: "Search YouTube and play videos inside WuHubHD." },
+      { property: "og:description", content: "Search YouTube, browse Shorts and play videos inside WuHubHD." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -23,6 +25,7 @@ const SUGGESTIONS = ["official trailer 2026", "anime openings", "movie reviews",
 
 function YoutubePage() {
   const search = useServerFn(searchYoutube);
+  const searchShorts = useServerFn(searchYoutubeShorts);
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
   const [query, setQuery] = useState("official trailer 2026");
@@ -34,7 +37,15 @@ function YoutubePage() {
     staleTime: 5 * 60_000,
   });
 
+  const { data: shortsData } = useQuery({
+    queryKey: ["youtube-shorts", query],
+    queryFn: () => searchShorts({ data: { q: query, limit: 14 } }),
+    enabled: query.trim().length > 0,
+    staleTime: 5 * 60_000,
+  });
+
   const videos = data ?? [];
+  const shorts = shortsData ?? [];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-8 sm:py-10">
@@ -94,6 +105,8 @@ function YoutubePage() {
         ))}
       </div>
 
+      <ShortsRow shorts={shorts} />
+
       {isFetching && videos.length === 0 && (
         <p className="mt-10 text-sm text-neutral-500">Searching YouTube…</p>
       )}
@@ -103,26 +116,27 @@ function YoutubePage() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {videos.map((v) => (
-          <button
-            key={v.id}
-            type="button"
-            onClick={() => navigate({ to: "/youtube/$id", params: { id: v.id } })}
-            className="group text-left"
-          >
-            <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/5">
-              <img
-                src={v.thumbnail}
-                alt={v.title}
-                loading="lazy"
-                className="h-full w-full object-cover transition group-hover:scale-[1.03]"
-              />
-            </div>
-            <div className="mt-2 line-clamp-2 text-sm font-medium">{v.title}</div>
+          <div key={v.id} className="group text-left">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/youtube/$id", params: { id: v.id } })}
+              className="block w-full text-left"
+            >
+              <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/5">
+                <img
+                  src={v.thumbnail}
+                  alt={v.title}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition group-hover:scale-[1.03]"
+                />
+              </div>
+              <div className="mt-2 line-clamp-2 text-sm font-medium">{v.title}</div>
+            </button>
             <div className="mt-0.5 truncate text-xs text-neutral-500">
-              {v.channel}
+              <ChannelLink channelId={v.channelId} name={v.channel} />
               {v.published ? ` · ${v.published}` : ""}
             </div>
-          </button>
+          </div>
         ))}
       </div>
     </div>
