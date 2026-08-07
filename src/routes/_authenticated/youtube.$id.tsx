@@ -2,14 +2,19 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft } from "lucide-react";
-import { searchYoutube, youtubeVideoDetails } from "@/lib/youtube.functions";
-import { useApp } from "@/lib/app-store";
+import { z } from "zod";
+import { searchYoutube, searchYoutubeShorts, youtubeVideoDetails } from "@/lib/youtube.functions";
+import { YoutubePlayer } from "@/components/youtube/YoutubePlayer";
+import { ChannelLink } from "@/components/youtube/ChannelLink";
+
+const WatchSearchSchema = z.object({ shorts: z.union([z.literal(1), z.literal(0)]).optional() });
 
 export const Route = createFileRoute("/_authenticated/youtube/$id")({
+  validateSearch: (s: unknown) => WatchSearchSchema.parse(s),
   head: () => ({
     meta: [
       { title: "Watch on YouTube — WuHubHD" },
-      { name: "description", content: "Play a YouTube video inside WuHubHD with related results." },
+      { name: "description", content: "Play a YouTube video or Short inside WuHubHD with related results." },
       { property: "og:title", content: "Watch on YouTube — WuHubHD" },
       {
         property: "og:description",
@@ -24,10 +29,11 @@ export const Route = createFileRoute("/_authenticated/youtube/$id")({
 
 function YoutubeWatch() {
   const { id } = Route.useParams();
-  const { settings } = useApp();
+  const { shorts: isShorts } = Route.useSearch();
   const navigate = useNavigate();
   const details = useServerFn(youtubeVideoDetails);
   const search = useServerFn(searchYoutube);
+  const searchShorts = useServerFn(searchYoutubeShorts);
 
   const { data: info } = useQuery({
     queryKey: ["youtube-video", id],
@@ -38,11 +44,63 @@ function YoutubeWatch() {
   const { data: related } = useQuery({
     queryKey: ["youtube-related", info?.channel ?? "", info?.title ?? ""],
     queryFn: () => search({ data: { q: info?.channel || info?.title || "trailers", limit: 12 } }),
-    enabled: Boolean(info),
+    enabled: Boolean(info) && !isShorts,
     staleTime: 10 * 60_000,
   });
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const { data: shortsQueue } = useQuery({
+    queryKey: ["youtube-shorts-queue", info?.title ?? id],
+    queryFn: () => searchShorts({ data: { q: info?.title || "shorts", limit: 20 } }),
+    enabled: Boolean(isShorts) && Boolean(info),
+    staleTime: 10 * 60_000,
+  });
+
+  if (isShorts) {
+    const queue = shortsQueue ?? [];
+    const idx = queue.findIndex((s) => s.id === id);
+    const goTo = (i: number) => {
+      const next = queue[i];
+      if (next) navigate({ to: "/youtube/$id", params: { id: next.id }, search: { shorts: 1 } as never });
+    };
+
+    return (
+      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center px-4 py-6">
+        <Link to="/youtube" className="mb-4 inline-flex items-center gap-1.5 self-start text-xs text-neutral-400 hover:text-white">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to YouTube
+        </Link>
+        <div
+          className="relative w-full max-w-[24rem] overflow-hidden rounded-2xl bg-black ring-1 ring-white/10"
+          style={{ aspectRatio: "9/16" }}
+          onWheel={(e) => {
+            if (idx < 0) return;
+            if (e.deltaY > 40) goTo(idx + 1);
+            else if (e.deltaY < -40) goTo(idx - 1);
+          }}
+        >
+          <YoutubePlayer key={id} videoId={id} vertical autoplay onEnded={() => goTo(idx + 1)} className="h-full w-full" />
+        </div>
+        <div className="mt-3 flex w-full max-w-[24rem] items-center justify-between text-xs text-neutral-400">
+          <button
+            type="button"
+            disabled={idx <= 0}
+            onClick={() => goTo(idx - 1)}
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 disabled:opacity-30"
+          >
+            Previous
+          </button>
+          <span className="truncate px-2">{info?.title ?? "Short"}</span>
+          <button
+            type="button"
+            disabled={idx < 0 || idx >= queue.length - 1}
+            onClick={() => goTo(idx + 1)}
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 disabled:opacity-30"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-8 sm:py-8">
@@ -57,26 +115,15 @@ function YoutubeWatch() {
         <div className="min-w-0">
           <div className="relative w-full overflow-hidden rounded-2xl bg-black ring-1 ring-white/5">
             <div className="relative aspect-video w-full">
-              <iframe
-                key={id}
-                src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=${
-                  settings.autoplay ? 1 : 0
-                }&rel=0&modestbranding=1&playsinline=1&cc_lang_pref=${settings.subtitleLang || "en"}${
-                  origin ? `&origin=${encodeURIComponent(origin)}` : ""
-                }`}
-                title={info?.title ?? "YouTube video"}
-                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                allowFullScreen
-                /* YouTube rejects embeds with a stripped referrer (error 153). */
-                referrerPolicy="strict-origin-when-cross-origin"
-                className="absolute inset-0 h-full w-full"
-              />
+              <YoutubePlayer key={id} videoId={id} autoplay className="absolute inset-0 h-full w-full" />
             </div>
           </div>
           <h1 className="mt-4 font-display text-xl font-bold leading-tight sm:text-2xl">
             {info?.title ?? "Loading…"}
           </h1>
-          <p className="mt-1 text-sm text-neutral-400">{info?.channel ?? ""}</p>
+          <p className="mt-1 text-sm text-neutral-400">
+            <ChannelLink channelId={info?.channelId ?? null} name={info?.channel ?? ""} />
+          </p>
         </div>
 
         <aside className="min-w-0">
