@@ -21,6 +21,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
+import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
 import { Route as AuthenticatedYoutubeIndexRouteImport } from './routes/_authenticated/youtube.index'
 import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
@@ -90,6 +91,11 @@ const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDownloadsRoute = AuthenticatedDownloadsRouteImport.update({
+  id: '/downloads',
+  path: '/downloads',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedYoutubeIndexRoute =
   AuthenticatedYoutubeIndexRouteImport.update({
     id: '/youtube/',
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
   '/search': typeof AuthenticatedSearchRoute
@@ -158,6 +165,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
   '/search': typeof AuthenticatedSearchRoute
@@ -181,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/_authenticated/downloads': typeof AuthenticatedDownloadsRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/movies': typeof AuthenticatedMoviesRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/downloads'
     | '/history'
     | '/movies'
     | '/search'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
   to:
     | '/admin'
     | '/auth'
+    | '/downloads'
     | '/history'
     | '/movies'
     | '/search'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin'
     | '/auth'
+    | '/_authenticated/downloads'
     | '/_authenticated/history'
     | '/_authenticated/movies'
     | '/_authenticated/search'
@@ -358,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/downloads': {
+      id: '/_authenticated/downloads'
+      path: '/downloads'
+      fullPath: '/downloads'
+      preLoaderRoute: typeof AuthenticatedDownloadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/youtube/': {
       id: '/_authenticated/youtube/'
       path: '/youtube'
@@ -418,6 +437,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDownloadsRoute: typeof AuthenticatedDownloadsRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedMoviesRoute: typeof AuthenticatedMoviesRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
@@ -437,6 +457,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDownloadsRoute: AuthenticatedDownloadsRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedMoviesRoute: AuthenticatedMoviesRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
