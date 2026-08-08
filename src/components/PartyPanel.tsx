@@ -151,8 +151,9 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
   return (
     <div
       className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/80 backdrop-blur ${
-        compact ? "h-[min(70vh,420px)]" : "h-[min(80vh,520px)]"
+        compact ? "h-[min(70dvh,420px)]" : "h-[min(80dvh,520px)]"
       }`}
+
       style={{ ["--accent-hex" as never]: "#00D8FF", ["--accent-rgb" as never]: "0 216 255" }}
     >
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
