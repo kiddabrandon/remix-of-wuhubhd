@@ -149,13 +149,30 @@ function RootComponent() {
     // Android TV / big-screen: enable D-pad navigation and never lock orientation.
     if (isTvDevice()) return enableTvNavigation();
 
-    // Installed phone app defaults to portrait; the player unlocks for fullscreen.
+    // Installed phone app stays portrait; the player unlocks for fullscreen and
+    // re-locks on exit. Re-apply the lock when the app regains focus or the OS
+    // drops the lock after an orientation change.
     const orientation = (screen as unknown as { orientation?: { lock?: (o: string) => Promise<void> } })
       ?.orientation;
-    void orientation?.lock?.("portrait").catch(() => {
-      /* browsers outside standalone mode refuse this; harmless */
-    });
-    return;
+    const lockPortrait = () => {
+      if (document.fullscreenElement) return; // fullscreen playback owns orientation
+      void orientation?.lock?.("portrait").catch(() => {
+        /* browsers outside standalone mode refuse this; harmless */
+      });
+    };
+    lockPortrait();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") lockPortrait();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("orientationchange", lockPortrait);
+    window.addEventListener("focus", lockPortrait);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("orientationchange", lockPortrait);
+      window.removeEventListener("focus", lockPortrait);
+    };
+
   }, []);
 
 

@@ -151,8 +151,9 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
   return (
     <div
       className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-950/80 backdrop-blur ${
-        compact ? "h-[min(70vh,420px)]" : "h-[min(80vh,520px)]"
+        compact ? "h-[min(70dvh,420px)]" : "h-[min(80dvh,520px)]"
       }`}
+
       style={{ ["--accent-hex" as never]: "#00D8FF", ["--accent-rgb" as never]: "0 216 255" }}
     >
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
@@ -231,6 +232,12 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onFocus={(e) => {
+                // On phones the soft keyboard covers the composer; nudge it back
+                // into view once the viewport has finished resizing.
+                const el = e.currentTarget;
+                window.setTimeout(() => el.scrollIntoView({ block: "center" }), 350);
+              }}
               placeholder="Message the party…"
               maxLength={500}
               enterKeyHint="send"
@@ -239,6 +246,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
               // 16px min font-size stops iOS Safari from zooming on focus.
               className="min-w-0 flex-1 select-text rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-base outline-none focus:border-white/20 sm:text-sm"
             />
+
             <button
               type="submit"
               disabled={sending || !text.trim()}
