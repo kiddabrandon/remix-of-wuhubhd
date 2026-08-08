@@ -232,6 +232,12 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onFocus={(e) => {
+                // On phones the soft keyboard covers the composer; nudge it back
+                // into view once the viewport has finished resizing.
+                const el = e.currentTarget;
+                window.setTimeout(() => el.scrollIntoView({ block: "center" }), 350);
+              }}
               placeholder="Message the party…"
               maxLength={500}
               enterKeyHint="send"
@@ -240,6 +246,7 @@ export function PartyPanel({ code, compact = false }: { code: string; compact?: 
               // 16px min font-size stops iOS Safari from zooming on focus.
               className="min-w-0 flex-1 select-text rounded-full border border-white/10 bg-white/5 px-4 py-2.5 text-base outline-none focus:border-white/20 sm:text-sm"
             />
+
             <button
               type="submit"
               disabled={sending || !text.trim()}
