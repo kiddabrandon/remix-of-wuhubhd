@@ -238,7 +238,7 @@ export function BottomDock() {
             >
               <div className="mb-3 flex items-center gap-3 p-2">
                 <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full" style={{ background: avatar.gradient }}>
-                  <img src={avatar.image} alt={avatar.label} className="h-full w-full object-contain p-0.5" />
+                  <img src={avatar.image} alt={avatar.label} className="h-full w-full object-cover" />
                 </div>
 
                 <div className="min-w-0">

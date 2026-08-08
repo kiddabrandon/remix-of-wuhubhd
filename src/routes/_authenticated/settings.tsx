@@ -47,7 +47,7 @@ function Settings() {
                 style={active ? { boxShadow: "0 0 0 2px var(--accent)" } : undefined}
               >
                 <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full" style={{ background: a.gradient }}>
-                  <img src={a.image} alt={a.label} loading="lazy" className="h-full w-full object-contain p-0.5" />
+                  <img src={a.image} alt={a.label} loading="lazy" className="h-full w-full object-cover" />
                 </div>
                 <div className="w-full truncate text-[11px] font-medium">{a.label}</div>
                 {active && <Check className="absolute right-2 top-2 h-3.5 w-3.5" style={{ color: "var(--accent)" }} />}

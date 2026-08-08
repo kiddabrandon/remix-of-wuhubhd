@@ -51,19 +51,19 @@ export const saveSiteConfig = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const OWNER_EMAIL = "ryanbradley639@gmail.com";
+
 export const grantSelfAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    // Bootstrap: allow the FIRST authenticated user to claim admin. After that, disabled.
+    // Only the designated owner account can hold admin, and only with a verified email.
+    const email = String((context.claims as any)?.email ?? "").toLowerCase();
+    const verified = Boolean((context.claims as any)?.email_verified ?? true);
+    if (email !== OWNER_EMAIL || !verified) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { count } = await supabaseAdmin
-      .from("user_roles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "admin");
-    if ((count ?? 0) > 0) throw new Error("Admin already exists. Ask an existing admin to grant your role.");
     const { error } = await supabaseAdmin
       .from("user_roles")
-      .insert({ user_id: context.userId, role: "admin" });
+      .upsert({ user_id: context.userId, role: "admin" }, { onConflict: "user_id,role" });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
