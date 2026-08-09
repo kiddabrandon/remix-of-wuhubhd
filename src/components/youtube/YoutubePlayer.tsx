@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   SkipBack,
   SkipForward,
+  Repeat,
 } from "lucide-react";
 
 declare global {
