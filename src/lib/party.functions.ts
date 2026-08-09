@@ -41,26 +41,15 @@ export const createParty = createServerFn({ method: "POST" })
   });
 
 export const getParty = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ code: z.string().min(4).max(12) }).parse(d))
-  .handler(async ({ data }) => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-    const client = createClient(process.env.SUPABASE_URL!, key, {
-      auth: { persistSession: false, autoRefreshToken: false, storage: undefined as never },
-      global: {
-        fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-          const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-          h.set("apikey", key);
-          return fetch(input, { ...init, headers: h });
-        },
-      },
-    });
-    const { data: row } = await client
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
       .from("party_rooms")
       .select("*")
       .eq("code", data.code.toUpperCase())
       .maybeSingle();
+    if (error) throw new Error(error.message);
     if (!row) throw new Error("Party not found");
     return row;
   });
