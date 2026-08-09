@@ -137,7 +137,12 @@ export function YoutubePlayer({
             else if (e.data === YT.PlayerState.PAUSED) setPlaying(false);
             else if (e.data === YT.PlayerState.ENDED) {
               setPlaying(false);
-              onEnded?.();
+              if (loopRef.current) {
+                e.target.seekTo?.(0, true);
+                e.target.playVideo?.();
+              } else if (autoNextRef.current) {
+                onEnded?.();
+              }
             }
           },
         },
