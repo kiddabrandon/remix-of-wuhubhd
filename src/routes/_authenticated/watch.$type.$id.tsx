@@ -11,6 +11,7 @@ import { Player } from "@/components/Player";
 import { EpisodeSelector } from "@/components/EpisodeSelector";
 import { Carousel } from "@/components/Carousel";
 import { Ambilight } from "@/components/Ambilight";
+import { DownloadButton } from "@/components/DownloadFlow";
 import { tmdbMovie, tmdbTv } from "@/lib/tmdb.functions";
 import { backdrop, poster } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
