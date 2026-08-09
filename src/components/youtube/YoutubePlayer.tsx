@@ -85,7 +85,17 @@ export function YoutubePlayer({
   const [captionsOn, setCaptionsOn] = useState(false);
   const [showBar, setShowBar] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [menu, setMenu] = useState<"speed" | "quality" | null>(null);
+  const [menu, setMenu] = useState<"speed" | "quality" | "settings" | null>(null);
+  const [loop, setLoop] = useState(false);
+  const [autoNext, setAutoNext] = useState(true);
+  const loopRef = useRef(false);
+  const autoNextRef = useRef(true);
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
+  useEffect(() => {
+    autoNextRef.current = autoNext;
+  }, [autoNext]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
