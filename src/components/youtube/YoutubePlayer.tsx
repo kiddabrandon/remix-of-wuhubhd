@@ -98,6 +98,10 @@ export function YoutubePlayer({
         playerVars: {
           autoplay: autoplay ? 1 : 0,
           rel: 0,
+          controls: 0, // our own control bar owns playback UI
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
           modestbranding: 1,
           playsinline: 1,
           enablejsapi: 1,
