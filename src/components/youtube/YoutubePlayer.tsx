@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   SkipBack,
   SkipForward,
+  Repeat,
 } from "lucide-react";
 
 declare global {
@@ -85,7 +86,17 @@ export function YoutubePlayer({
   const [captionsOn, setCaptionsOn] = useState(false);
   const [showBar, setShowBar] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [menu, setMenu] = useState<"speed" | "quality" | null>(null);
+  const [menu, setMenu] = useState<"speed" | "quality" | "settings" | null>(null);
+  const [loop, setLoop] = useState(false);
+  const [autoNext, setAutoNext] = useState(true);
+  const loopRef = useRef(false);
+  const autoNextRef = useRef(true);
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
+  useEffect(() => {
+    autoNextRef.current = autoNext;
+  }, [autoNext]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
@@ -98,6 +109,10 @@ export function YoutubePlayer({
         playerVars: {
           autoplay: autoplay ? 1 : 0,
           rel: 0,
+          controls: 0, // our own control bar owns playback UI
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
           modestbranding: 1,
           playsinline: 1,
           enablejsapi: 1,
@@ -123,7 +138,12 @@ export function YoutubePlayer({
             else if (e.data === YT.PlayerState.PAUSED) setPlaying(false);
             else if (e.data === YT.PlayerState.ENDED) {
               setPlaying(false);
-              onEnded?.();
+              if (loopRef.current) {
+                e.target.seekTo?.(0, true);
+                e.target.playVideo?.();
+              } else if (autoNextRef.current) {
+                onEnded?.();
+              }
             }
           },
         },
@@ -438,7 +458,39 @@ export function YoutubePlayer({
               </div>
             )}
 
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="Player settings"
+                onClick={() => setMenu((m) => (m === "settings" ? null : "settings"))}
+                className="rounded-full p-1.5 text-white hover:bg-white/10"
+              >
+                <Repeat className="h-4 w-4" />
+              </button>
+              {menu === "settings" && (
+                <div className="absolute bottom-9 right-0 z-10 w-40 overflow-hidden rounded-lg border border-white/10 bg-neutral-900/95 py-1 text-xs shadow-xl">
+                  <button
+                    type="button"
+                    onClick={() => setLoop((v) => !v)}
+                    className="flex w-full items-center justify-between px-3 py-1.5 text-left text-neutral-200 hover:bg-white/10"
+                  >
+                    Loop video
+                    <span className={loop ? "text-[var(--accent)]" : "text-neutral-500"}>{loop ? "On" : "Off"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAutoNext((v) => !v)}
+                    className="flex w-full items-center justify-between px-3 py-1.5 text-left text-neutral-200 hover:bg-white/10"
+                  >
+                    Autoplay next
+                    <span className={autoNext ? "text-[var(--accent)]" : "text-neutral-500"}>{autoNext ? "On" : "Off"}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button type="button" aria-label="Picture in picture" onClick={togglePip} className="hidden rounded-full p-1.5 text-white hover:bg-white/10 sm:inline-flex">
+
               <PictureInPicture2 className="h-4 w-4" />
             </button>
 

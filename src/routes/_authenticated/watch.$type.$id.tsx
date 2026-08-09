@@ -11,6 +11,7 @@ import { Player } from "@/components/Player";
 import { EpisodeSelector } from "@/components/EpisodeSelector";
 import { Carousel } from "@/components/Carousel";
 import { Ambilight } from "@/components/Ambilight";
+import { DownloadButton } from "@/components/DownloadFlow";
 import { tmdbMovie, tmdbTv } from "@/lib/tmdb.functions";
 import { backdrop, poster } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
@@ -177,6 +178,17 @@ function Watch() {
                   {saved ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
                   {saved ? "In Watchlist" : "Add to Watchlist"}
                 </button>
+                <DownloadButton
+                  open={false}
+                  onClose={() => {}}
+                  title={title ?? "Untitled"}
+                  tmdbId={idNum}
+                  mediaType={type}
+                  {...(type === "tv" ? { season: s, episode: e } : {})}
+                  posterPath={data.poster_path ?? null}
+                  streamUrl={typeof window !== "undefined" ? window.location.href : ""}
+                />
+
                 <button
                   onClick={() => setSettings({ focusMode: !settings.focusMode })}
                   className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm text-neutral-300 hover:bg-white/10"

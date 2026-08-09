@@ -22,14 +22,28 @@ export type Addon = {
 
 export const STREMIO_ADDONS: Addon[] = [
   { id: "torrentio", name: "Torrentio", description: "Torrent streams from public trackers.", manifest: "https://torrentio.strem.fun/manifest.json", platform: "stremio", streamKind: "torrent" },
+  { id: "comet", name: "Comet", description: "Debrid-powered stream aggregator.", manifest: "https://comet.elfhosted.com/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "mediafusion", name: "MediaFusion", description: "Multi-source streams and catalogues.", manifest: "https://mediafusion.elfhosted.com/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "aiostreams", name: "AIOStreams", description: "All-in-one aggregated stream results.", manifest: "https://aiostreams.elfhosted.com/stremio/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "orion", name: "Orion", description: "Orion indexer-backed streams.", manifest: "https://5a0d1888fa64-orion.baby-beamup.club/manifest.json", platform: "stremio", streamKind: "torrent" },
+  { id: "duckkota-tools", name: "Duckkota Tools", description: "Stremio utility tools pack.", manifest: "https://duckkota.gitlab.io/stremio-tools/manifest.json", platform: "stremio", streamKind: "metadata" },
+  { id: "meteor-weebs", name: "Meteor for the Weebs", description: "Anime-focused stream provider.", manifest: "https://meteorfortheweebs.midnightignite.me/stremio/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "ytztvio", name: "YTZ TV", description: "Live TV channels and streams.", manifest: "https://ytztvio.galacticcapsule.workers.dev/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "aniscraper", name: "AniScraper", description: "Anime scraper with direct links.", manifest: "https://aniscraper.nmtl.app/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "streampeak", name: "StreamPeak", description: "Direct HTTP stream provider.", manifest: "https://addon.streampeak.workers.dev/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "stream-store", name: "Stream Store", description: "Curated stream store.", manifest: "https://stremio-stream-store.vercel.app/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "gemini-recommender", name: "Gemini Recommender", description: "AI-powered recommendations.", manifest: "https://stremio-gemini-recommender.vercel.app/manifest.json", platform: "stremio", streamKind: "metadata" },
+  { id: "anime-kitsu", name: "Anime Kitsu", description: "Anime catalogues powered by Kitsu.", manifest: "https://anime-kitsu.strem.fun/manifest.json", platform: "stremio", streamKind: "metadata" },
+  { id: "hdhub", name: "HDHub", description: "HD releases in 2160p/1080p/720p.", manifest: "https://hdhub.thevolecitor.qzz.io/eyJ0b3Jib3giOiJ1bnNldCIsInF1YWxpdGllcyI6IjIxNjBwLDEwODBwLDcyMHAiLCJzb3J0IjoiZGVzYyJ9/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "nebulastreams", name: "NebulaStreams", description: "Aggregated direct streams.", manifest: "https://nebulastreams.onrender.com/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "jackettio", name: "Jackettio", description: "Jackett-powered torrent search.", manifest: "https://jackettio.elfhosted.com/manifest.json", platform: "stremio", streamKind: "torrent" },
+  { id: "streamx", name: "StreamX", description: "Direct stream aggregator.", manifest: "https://streamx.electron.al/manifest.json", platform: "stremio", streamKind: "http" },
+  { id: "tmdb-addon", name: "TMDB Addon", description: "Rich TMDB metadata and posters.", manifest: "https://94c8cb9f702d-tmdb-addon.baby-beamup.club/manifest.json", platform: "stremio", streamKind: "metadata" },
+  { id: "tpb-plus", name: "ThePirateBay+", description: "TPB torrent index.", manifest: "https://thepiratebay-plus.strem.fun/manifest.json", platform: "stremio", streamKind: "torrent" },
+  { id: "stremio-addons-net", name: "Stremio Addons Directory", description: "Community add-on directory.", manifest: "https://stremio-addons.net/api/manifest.json", platform: "stremio", streamKind: "metadata" },
   { id: "opensubtitles", name: "OpenSubtitles v3", description: "Community subtitles in every language.", manifest: "https://opensubtitles-v3.strem.io/manifest.json", platform: "stremio", streamKind: "subtitles" },
   { id: "cinemeta", name: "Cinemeta", description: "Official movie & series metadata catalogue.", manifest: "https://v3-cinemeta.strem.io/manifest.json", platform: "stremio", streamKind: "metadata" },
-  { id: "watchhub", name: "WatchHub", description: "Where to stream, rent, or buy legally.", manifest: "https://watchhub.strem.io/manifest.json", platform: "stremio", streamKind: "metadata" },
   { id: "public-domain", name: "Public Domain Movies", description: "Free, legal classics — direct HTTP streams.", manifest: "https://public-domain-movies.now.sh/manifest.json", platform: "stremio", streamKind: "http" },
-  { id: "youtube", name: "YouTube", description: "YouTube channels and videos inside Stremio.", manifest: "https://v3-channels.strem.io/manifest.json", platform: "stremio", streamKind: "metadata" },
-  { id: "anime-kitsu", name: "Anime Kitsu", description: "Anime catalogues powered by Kitsu.", manifest: "https://anime-kitsu.strem.fun/manifest.json", platform: "stremio", streamKind: "metadata" },
-  { id: "trakt", name: "Trakt", description: "Sync your Trakt lists and history.", manifest: "https://497aa58fb47a-trakt.baby-beamup.club/manifest.json", platform: "stremio", streamKind: "metadata" },
-  { id: "tmdb-addon", name: "TMDB Addon", description: "Rich TMDB metadata and posters.", manifest: "https://94c8cb9f702d-tmdb-addon.baby-beamup.club/manifest.json", platform: "stremio", streamKind: "metadata" },
 ];
 
 export const NUVIO_PLUGINS: Addon[] = [
