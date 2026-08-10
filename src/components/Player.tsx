@@ -381,6 +381,7 @@ export function Player({
                 <AddonSources
                   type={type}
                   imdbId={imdbId ?? null}
+                  tmdbId={id}
                   season={season}
                   episode={episode}
                   onPlay={(url, label) => {
