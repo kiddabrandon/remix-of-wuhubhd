@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ApiAddonProxyRouteImport } from './routes/api/addon-proxy'
 import { Route as AuthenticatedYoutubeTestRouteImport } from './routes/_authenticated/youtube-test'
 import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
 import { Route as AuthenticatedTvRouteImport } from './routes/_authenticated/tv'
@@ -55,6 +56,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
   getParentRoute: () => AuthRoute,
+} as any)
+const ApiAddonProxyRoute = ApiAddonProxyRouteImport.update({
+  id: '/api/addon-proxy',
+  path: '/api/addon-proxy',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedYoutubeTestRoute =
   AuthenticatedYoutubeTestRouteImport.update({
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/tv': typeof AuthenticatedTvRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/youtube-test': typeof AuthenticatedYoutubeTestRoute
+  '/api/addon-proxy': typeof ApiAddonProxyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/anime/$id': typeof AuthenticatedAnimeIdRoute
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/tv': typeof AuthenticatedTvRoute
   '/watchlist': typeof AuthenticatedWatchlistRoute
   '/youtube-test': typeof AuthenticatedYoutubeTestRoute
+  '/api/addon-proxy': typeof ApiAddonProxyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/': typeof AuthenticatedIndexRoute
   '/anime/$id': typeof AuthenticatedAnimeIdRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/_authenticated/tv': typeof AuthenticatedTvRoute
   '/_authenticated/watchlist': typeof AuthenticatedWatchlistRoute
   '/_authenticated/youtube-test': typeof AuthenticatedYoutubeTestRoute
+  '/api/addon-proxy': typeof ApiAddonProxyRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/anime/$id': typeof AuthenticatedAnimeIdRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/tv'
     | '/watchlist'
     | '/youtube-test'
+    | '/api/addon-proxy'
     | '/auth/callback'
     | '/anime/$id'
     | '/browse/$provider'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/tv'
     | '/watchlist'
     | '/youtube-test'
+    | '/api/addon-proxy'
     | '/auth/callback'
     | '/'
     | '/anime/$id'
@@ -278,6 +289,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tv'
     | '/_authenticated/watchlist'
     | '/_authenticated/youtube-test'
+    | '/api/addon-proxy'
     | '/auth/callback'
     | '/_authenticated/'
     | '/_authenticated/anime/$id'
@@ -295,6 +307,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRouteWithChildren
+  ApiAddonProxyRoute: typeof ApiAddonProxyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -333,6 +346,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/api/addon-proxy': {
+      id: '/api/addon-proxy'
+      path: '/api/addon-proxy'
+      fullPath: '/api/addon-proxy'
+      preLoaderRoute: typeof ApiAddonProxyRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/youtube-test': {
       id: '/_authenticated/youtube-test'
@@ -516,6 +536,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AdminRoute: AdminRoute,
   AuthRoute: AuthRouteWithChildren,
+  ApiAddonProxyRoute: ApiAddonProxyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
