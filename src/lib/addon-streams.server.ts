@@ -21,18 +21,38 @@ type ManifestInfo = {
 const manifestCache = new Map<string, Promise<ManifestInfo>>();
 
 function timedFetch(url: string, ms = ADDON_TIMEOUT_MS) {
-  return fetch(url, { signal: AbortSignal.timeout(ms) });
+  return fetch(url, {
+    signal: AbortSignal.timeout(ms),
+    headers: {
+      accept: "application/json,*/*",
+      // Some add-on hosts sit behind bot protection that rejects blank agents.
+      "user-agent": "WuHubHD/1.0 (+addon-client)",
+    },
+  });
+}
+
+/** Parses JSON defensively so bot-protection HTML yields a readable error. */
+async function readJson<T>(res: Response, label: string): Promise<T> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    if (/^\s*</.test(text)) {
+      throw new Error(`${label} returned a web page instead of data — endpoint is blocked or offline.`);
+    }
+    throw new Error(`${label} returned an unreadable response (${text.slice(0, 60).trim()}).`);
+  }
 }
 
 async function loadManifest(addon: Addon): Promise<ManifestInfo> {
   const res = await timedFetch(addon.manifest);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = (await res.json()) as {
+  if (!res.ok) throw new Error(`Manifest returned HTTP ${res.status}`);
+  const json = await readJson<{
     resources?: (string | { name: string })[];
     types?: string[];
     id?: string;
     name?: string;
-  };
+  }>(res, "Manifest");
   const isStremioManifest =
     Array.isArray(json.resources) && Array.isArray(json.types) && typeof json.id === "string";
   return {
