@@ -121,8 +121,8 @@ export async function fetchStremioStreams(
 ): Promise<AddonStream[]> {
   const base = addon.manifest.replace(/\/manifest\.json$/, "");
   const res = await timedFetch(`${base}/stream/${type}/${encodeURIComponent(id)}.json`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = (await res.json()) as {
+  if (!res.ok) throw new Error(`Stream endpoint returned HTTP ${res.status}`);
+  const json = await readJson<{
     streams?: {
       name?: string;
       title?: string;
@@ -130,7 +130,7 @@ export async function fetchStremioStreams(
       url?: string;
       infoHash?: string;
     }[];
-  };
+  }>(res, "Stream endpoint");
 
   return (json.streams ?? [])
     .map((s) => {
