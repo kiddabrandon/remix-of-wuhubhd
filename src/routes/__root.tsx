@@ -18,6 +18,7 @@ import { PWAInstall } from "@/components/PWAInstall";
 import { Preloader } from "@/components/Preloader";
 
 import { registerPWA } from "@/lib/pwa-register";
+import { trackGuestVisit } from "@/lib/visitors";
 import { hydrateSiteConfigFromServer } from "@/lib/site-config";
 import { enableTvNavigation, isTvDevice } from "@/lib/tv";
 
@@ -145,6 +146,8 @@ function RootComponent() {
   useEffect(() => {
     registerPWA();
     void hydrateSiteConfigFromServer();
+    void trackGuestVisit();
+
 
     // Android TV / big-screen: enable D-pad navigation and never lock orientation.
     if (isTvDevice()) return enableTvNavigation();

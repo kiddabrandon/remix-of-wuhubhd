@@ -145,6 +145,15 @@ function StreamRow({
   onPlay: (url: string, label: string) => void;
 }) {
   const isMagnet = s.kind === "magnet";
+  const haystack = `${s.name} ${s.description}`;
+  const audio = /\bdual[\s-]?audio\b/i.test(haystack)
+    ? "Sub + Dub"
+    : /\b(dub|dubbed|eng[\s-]?dub)\b/i.test(haystack)
+      ? "Dub"
+      : /\b(sub|subbed|subtitled|softsub|hardsub)\b/i.test(haystack)
+        ? "Sub"
+        : null;
+
 
   return (
     <div className="rounded-lg px-2 py-2 transition hover:bg-white/5">
