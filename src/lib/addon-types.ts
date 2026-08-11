@@ -53,9 +53,16 @@ export type AddonStatusReport = {
 /** Timeout applied to every individual add-on network call. */
 export const ADDON_TIMEOUT_MS = 5_000;
 
-/** Builds an external-player deep link for magnet / raw torrent sources. */
-export function externalPlayerUrl(app: "vlc" | "mpv" | "web", url: string) {
-  if (app === "vlc") return `vlc://${url}`;
-  if (app === "mpv") return `mpv://${url}`;
-  return url;
+/**
+ * Builds an SPlayer deep link for magnet / raw torrent sources. SPlayer is the
+ * only external player WuHubHD hands off to.
+ */
+export function externalPlayerUrl(url: string) {
+  return `splayer://play?url=${encodeURIComponent(url)}`;
 }
+
+/** Web fallback when SPlayer isn't installed. */
+export function externalPlayerWebUrl(url: string) {
+  return `https://splayer.org/play?url=${encodeURIComponent(url)}`;
+}
+

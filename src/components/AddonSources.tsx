@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ALL_ADDONS, installUrl, stremioWebUrl, type Addon } from "@/lib/addons";
 import { getAddonStatus, resolveAllAddonStreams } from "@/lib/addon-streams.functions";
-import { externalPlayerUrl, type AddonStream } from "@/lib/addon-types";
+import { externalPlayerUrl, externalPlayerWebUrl, type AddonStream } from "@/lib/addon-types";
 
 /**
  * Add-on sources shown inside the player's server picker.
@@ -145,6 +145,15 @@ function StreamRow({
   onPlay: (url: string, label: string) => void;
 }) {
   const isMagnet = s.kind === "magnet";
+  const haystack = `${s.name} ${s.description}`;
+  const audio = /\bdual[\s-]?audio\b/i.test(haystack)
+    ? "Sub + Dub"
+    : /\b(dub|dubbed|eng[\s-]?dub)\b/i.test(haystack)
+      ? "Dub"
+      : /\b(sub|subbed|subtitled|softsub|hardsub)\b/i.test(haystack)
+        ? "Sub"
+        : null;
+
 
   return (
     <div className="rounded-lg px-2 py-2 transition hover:bg-white/5">
@@ -183,20 +192,27 @@ function StreamRow({
         >
           {s.kindLabel}
         </span>
+        {audio && (
+          <span className="rounded-full bg-fuchsia-400/15 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-fuchsia-200">
+            {audio}
+          </span>
+        )}
         {isMagnet && (
           <>
-            <span className="text-[9px] text-neutral-500">Needs an external player:</span>
+            <span className="text-[9px] text-neutral-500">Opens in SPlayer:</span>
             <a
-              href={externalPlayerUrl("vlc", s.url)}
+              href={externalPlayerUrl(s.url)}
               className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[9px]"
             >
-              VLC
+              Open in SPlayer
             </a>
             <a
-              href={externalPlayerUrl("mpv", s.url)}
+              href={externalPlayerWebUrl(s.url)}
+              target="_blank"
+              rel="noreferrer"
               className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[9px]"
             >
-              MPV
+              Get SPlayer
             </a>
             <button
               type="button"
@@ -207,6 +223,7 @@ function StreamRow({
             </button>
           </>
         )}
+
       </div>
     </div>
   );

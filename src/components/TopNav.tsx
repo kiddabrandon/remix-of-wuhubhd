@@ -99,7 +99,7 @@ export function TopNav() {
             >
               <Settings2 className="h-4 w-4" />
             </Link>
-            {session && (
+            {session ? (
               <button
                 onClick={signOut}
                 className="hidden rounded-full border border-white/10 bg-white/5 p-2 text-neutral-300 transition hover:bg-red-500/20 hover:text-red-200 md:inline-flex"
@@ -107,6 +107,14 @@ export function TopNav() {
               >
                 <LogOut className="h-4 w-4" />
               </button>
+            ) : (
+              <Link
+                to="/auth"
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-black"
+                style={{ background: "var(--accent)" }}
+              >
+                Sign in
+              </Link>
             )}
           </div>
         </div>

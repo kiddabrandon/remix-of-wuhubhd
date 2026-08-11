@@ -191,6 +191,33 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_visits: {
+        Row: {
+          first_seen: string
+          id: string
+          last_seen: string
+          user_agent: string | null
+          visitor_id: string
+          visits: number
+        }
+        Insert: {
+          first_seen?: string
+          id?: string
+          last_seen?: string
+          user_agent?: string | null
+          visitor_id: string
+          visits?: number
+        }
+        Update: {
+          first_seen?: string
+          id?: string
+          last_seen?: string
+          user_agent?: string | null
+          visitor_id?: string
+          visits?: number
+        }
+        Relationships: []
+      }
       hero_overrides: {
         Row: {
           backdrop_path: string | null
@@ -474,7 +501,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_guest_stats: { Args: never; Returns: Json }
       admin_stats: { Args: never; Returns: Json }
+      admin_user_emails: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          last_sign_in_at: string
+        }[]
+      }
       download_entitlement: { Args: never; Returns: Json }
       has_role: {
         Args: {
@@ -484,6 +520,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      track_guest_visit: {
+        Args: { _user_agent?: string; _visitor_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "super_admin"

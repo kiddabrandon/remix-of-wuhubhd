@@ -137,14 +137,8 @@ export const recordDownload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RecordDownloadInput.parse(d))
   .handler(async ({ context, data }) => {
-    const { data: ent, error: entError } = await context.supabase.rpc("download_entitlement");
-    if (entError) throw new Error(entError.message);
-    const entitlement = (ent ?? {}) as Partial<Entitlement>;
-    const unlimited = !!entitlement.unlimited;
-    const remaining = entitlement.remaining ?? 0;
-    if (!unlimited && remaining <= 0) {
-      throw new Error("No download credits remaining. Purchase a plan to continue.");
-    }
+    // Downloads are free for every signed-in account for now — no credit gate.
+
 
     const { data: row, error } = await context.supabase
       .from("download_events")

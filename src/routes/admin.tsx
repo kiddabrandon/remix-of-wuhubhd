@@ -47,6 +47,8 @@ import {
   deleteFlag,
   listErrorLogs,
   clearErrorLogs,
+  listUserEmails,
+  getGuestStats,
 } from "@/lib/admin.functions";
 import { AdminAIPanel } from "@/components/AdminAIPanel";
 
@@ -550,6 +552,8 @@ function Dashboard() {
         Requires a signed-in admin account. Server functions enforce the role.
       </p>
       <StatsGrid />
+      <AudienceCard />
+
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <HealthCard />
         <AnnouncementsCard />
@@ -560,6 +564,55 @@ function Dashboard() {
       </div>
       <ErrorLogsCard />
     </section>
+  );
+}
+
+/** Account emails + anonymous visitor counts. */
+function AudienceCard() {
+  const emailsFn = useServerFn(listUserEmails);
+  const guestsFn = useServerFn(getGuestStats);
+  const emails = useQuery({ queryKey: ["admin", "emails"], queryFn: () => emailsFn(), retry: false });
+  const guests = useQuery({ queryKey: ["admin", "guests"], queryFn: () => guestsFn(), retry: false, refetchInterval: 60_000 });
+
+  return (
+    <div className="mt-6 rounded-xl border border-white/10 bg-black/40 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <UsersIcon className="h-4 w-4 text-cyan-300" /> Audience
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: "Accounts", value: emails.data?.length ?? "—" },
+          { label: "Guests (no account)", value: guests.data?.total ?? "—" },
+          { label: "Guests 24h", value: guests.data?.active24h ?? "—" },
+          { label: "Guest visits", value: guests.data?.visits ?? "—" },
+        ].map((it) => (
+          <div key={it.label} className="rounded-lg border border-white/10 bg-black/50 p-3">
+            <div className="text-[10px] uppercase tracking-widest text-neutral-500">{it.label}</div>
+            <div className="mt-1 font-display text-xl font-bold text-white">{String(it.value)}</div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 text-[10px] uppercase tracking-widest text-neutral-500">User emails</div>
+      <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto text-xs">
+        {(emails.data ?? []).map((u) => (
+          <li
+            key={u.email}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-black/50 px-3 py-2"
+          >
+            <span className="min-w-0 truncate">{u.email}</span>
+            <span className="shrink-0 text-neutral-500">
+              joined {new Date(u.created_at).toLocaleDateString()}
+            </span>
+          </li>
+        ))}
+        {emails.data?.length === 0 && (
+          <li className="rounded-lg border border-dashed border-white/10 p-4 text-center text-neutral-500">
+            No accounts yet.
+          </li>
+        )}
+      </ul>
+      {emails.isError && <ErrHint error={emails.error} />}
+    </div>
   );
 }
 
