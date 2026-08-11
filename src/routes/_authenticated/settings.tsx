@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Check, LogOut, UserPlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { ACCENTS, AVATAR_PRESETS, useApp } from "@/lib/app-store";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -26,6 +28,62 @@ const SUB_LANGS = [
   { v: "hi", l: "Hindi" },
 ];
 
+function AccountSection() {
+  const [email, setEmail] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+      setReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setEmail(s?.user?.email ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <section className="mt-10 rounded-2xl border border-white/5 bg-[#0b0b0c] p-4 sm:p-6">
+      <h2 className="text-sm font-semibold tracking-widest text-neutral-400 uppercase">Account</h2>
+      {email ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold">{email}</div>
+            <p className="text-xs text-neutral-500">Your watchlist, history and parties sync to this account.</p>
+          </div>
+          <button
+            onClick={async () => {
+              await supabase.auth.signOut();
+            }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-neutral-200 transition hover:bg-red-500/20 hover:text-red-200"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Sign out
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-sm font-semibold">You're browsing as a guest</div>
+            <p className="text-xs text-neutral-500">
+              Create a free account whenever you want to sync your watchlist, continue watching and watch parties across
+              devices. Nothing is required to keep browsing.
+            </p>
+          </div>
+          <Link
+            to="/auth"
+            search={{ next: "/settings" }}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-black"
+            style={{ background: "var(--accent)" }}
+          >
+            <UserPlus className="h-3.5 w-3.5" /> Create an account
+          </Link>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function Settings() {
   const { settings, setSettings } = useApp();
 
@@ -33,6 +91,10 @@ function Settings() {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-8">
       <h1 className="font-display text-4xl font-bold tracking-tight">Settings</h1>
       <p className="mt-1 text-sm text-neutral-400">Personalize the vibe and the player.</p>
+
+      <AccountSection />
+
+
 
       <section className="mt-10 rounded-2xl border border-white/5 bg-[#0b0b0c] p-4 sm:p-6">
         <h2 className="text-sm font-semibold tracking-widest text-neutral-400 uppercase">Avatar</h2>
