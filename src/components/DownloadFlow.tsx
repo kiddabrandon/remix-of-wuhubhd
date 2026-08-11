@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Download, ExternalLink, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DOWNLOAD_TIERS, QUALITIES, splayerUrl, splayerWebFallbackUrl, type TierId } from "@/lib/downloads";
-import { getEntitlement, startPurchase, confirmPurchase, recordDownload } from "@/lib/downloads.functions";
+import { QUALITIES, splayerUrl, splayerWebFallbackUrl } from "@/lib/downloads";
+import { recordDownload } from "@/lib/downloads.functions";
 
 export type DownloadFlowProps = {
   open: boolean;
@@ -18,42 +18,14 @@ export type DownloadFlowProps = {
   streamUrl: string;
 };
 
-type Step = "check" | "pay" | "quality" | "handoff";
+type Step = "quality" | "handoff";
 
 export function DownloadFlow({ open, onClose, title, tmdbId, mediaType, season, episode, posterPath, streamUrl }: DownloadFlowProps) {
   const qc = useQueryClient();
-  const [step, setStep] = useState<Step>("check");
-  const [purchaseId, setPurchaseId] = useState<string | null>(null);
-  const [amountKes, setAmountKes] = useState<number | null>(null);
-  const [providerRef, setProviderRef] = useState("");
+  const [step, setStep] = useState<Step>("quality");
   const [quality, setQuality] = useState<string>("720p");
   const [handoffUrl, setHandoffUrl] = useState<string | null>(null);
   const [handoffWeb, setHandoffWeb] = useState<string | null>(null);
-
-  const entitlement = useQuery({
-    queryKey: ["download-entitlement"],
-    queryFn: () => getEntitlement(),
-    enabled: open,
-  });
-
-  const buy = useMutation({
-    mutationFn: (tier: TierId) => startPurchase({ data: { tier } }),
-    onSuccess: (row) => {
-      qc.invalidateQueries({ queryKey: ["download-purchases"] });
-      setPurchaseId(row.id);
-      setAmountKes(row.amount_kes);
-      setStep("pay");
-    },
-  });
-
-  const confirm = useMutation({
-    mutationFn: () => confirmPurchase({ data: { purchaseId: purchaseId as string, providerRef } }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["download-purchases"] });
-      qc.invalidateQueries({ queryKey: ["download-entitlement"] });
-      setStep("quality");
-    },
-  });
 
   const record = useMutation({
     mutationFn: () =>
@@ -70,20 +42,14 @@ export function DownloadFlow({ open, onClose, title, tmdbId, mediaType, season, 
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["download-events"] });
-      qc.invalidateQueries({ queryKey: ["download-entitlement"] });
       setHandoffUrl(splayerUrl(streamUrl, title));
       setHandoffWeb(splayerWebFallbackUrl(streamUrl, title));
       setStep("handoff");
     },
   });
 
-  const hasCredits = entitlement.data?.unlimited || (entitlement.data?.remaining ?? 0) > 0;
-
   const reset = () => {
-    setStep("check");
-    setPurchaseId(null);
-    setAmountKes(null);
-    setProviderRef("");
+    setStep("quality");
     setQuality("720p");
     setHandoffUrl(null);
     setHandoffWeb(null);
@@ -93,6 +59,7 @@ export function DownloadFlow({ open, onClose, title, tmdbId, mediaType, season, 
     reset();
     onClose();
   };
+
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && close()}>
