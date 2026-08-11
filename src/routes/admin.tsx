@@ -47,6 +47,8 @@ import {
   deleteFlag,
   listErrorLogs,
   clearErrorLogs,
+  listUserEmails,
+  getGuestStats,
 } from "@/lib/admin.functions";
 import { AdminAIPanel } from "@/components/AdminAIPanel";
 
