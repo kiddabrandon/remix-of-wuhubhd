@@ -185,18 +185,20 @@ function StreamRow({
         </span>
         {isMagnet && (
           <>
-            <span className="text-[9px] text-neutral-500">Needs an external player:</span>
+            <span className="text-[9px] text-neutral-500">Opens in SPlayer:</span>
             <a
-              href={externalPlayerUrl("vlc", s.url)}
+              href={externalPlayerUrl(s.url)}
               className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[9px]"
             >
-              VLC
+              Open in SPlayer
             </a>
             <a
-              href={externalPlayerUrl("mpv", s.url)}
+              href={externalPlayerWebUrl(s.url)}
+              target="_blank"
+              rel="noreferrer"
               className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[9px]"
             >
-              MPV
+              Get SPlayer
             </a>
             <button
               type="button"
@@ -207,6 +209,7 @@ function StreamRow({
             </button>
           </>
         )}
+
       </div>
     </div>
   );
