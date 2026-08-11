@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ALL_ADDONS, installUrl, stremioWebUrl, type Addon } from "@/lib/addons";
 import { getAddonStatus, resolveAllAddonStreams } from "@/lib/addon-streams.functions";
-import { externalPlayerUrl, type AddonStream } from "@/lib/addon-types";
+import { externalPlayerUrl, externalPlayerWebUrl, type AddonStream } from "@/lib/addon-types";
 
 /**
  * Add-on sources shown inside the player's server picker.
