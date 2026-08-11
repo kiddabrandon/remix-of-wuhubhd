@@ -192,6 +192,11 @@ function StreamRow({
         >
           {s.kindLabel}
         </span>
+        {audio && (
+          <span className="rounded-full bg-fuchsia-400/15 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-fuchsia-200">
+            {audio}
+          </span>
+        )}
         {isMagnet && (
           <>
             <span className="text-[9px] text-neutral-500">Opens in SPlayer:</span>
