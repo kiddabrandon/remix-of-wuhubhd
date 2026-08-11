@@ -16,6 +16,8 @@ export type StreamServer = {
 export const ANIME_API_PROVIDERS = [
   { id: "videasy", name: "Videasy anime", description: "AniList-keyed embed with sub/dub. Most reliable." },
   { id: "vidsrccc", name: "Vidsrc anime", description: "AniList-keyed embed fallback with sub/dub." },
+  { id: "hianime", name: "HiAnime", description: "HiAnime episode list with separate sub and dub tracks." },
+  { id: "megaplay", name: "HiAnime · Megaplay", description: "Megaplay mirror of HiAnime, sub/dub aware." },
   { id: "animepahe", name: "AnimePahe mirror", description: "Sub-focused fallback." },
 ] as const;
 
@@ -23,7 +25,8 @@ export const ANIME_API_PROVIDERS = [
 export const ANIME_EMBED_PROVIDERS = ["videasy", "vidsrccc"] as string[];
 
 /** Anime playback order: embeds first (they always resolve), scrapers after. */
-export const DEFAULT_ANIME_PROVIDERS = ["videasy", "vidsrccc", "animepahe"] as string[];
+export const DEFAULT_ANIME_PROVIDERS = ["videasy", "vidsrccc", "hianime", "megaplay", "animepahe"] as string[];
+
 
 
 
