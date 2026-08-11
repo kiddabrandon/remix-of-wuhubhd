@@ -567,7 +567,6 @@ function Dashboard() {
   );
 }
 
-/** Streaming add-ons are bundled server-side; this card documents what ships. */
 /** Account emails + anonymous visitor counts. */
 function AudienceCard() {
   const emailsFn = useServerFn(listUserEmails);
