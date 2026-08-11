@@ -281,3 +281,28 @@ export const getAdminStats = createServerFn({ method: "GET" })
     };
   });
 
+
+// ---------- Audience (emails + anonymous visitors) ----------
+export const listUserEmails = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await ensureAdmin(context.supabase, context.userId);
+    const { data, error } = await (context.supabase as any).rpc("admin_user_emails");
+    if (error) throw new Error(error.message);
+    return (data ?? []) as { email: string; created_at: string; last_sign_in_at: string | null }[];
+  });
+
+export const getGuestStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await ensureAdmin(context.supabase, context.userId);
+    const { data, error } = await (context.supabase as any).rpc("admin_guest_stats");
+    if (error) throw new Error(error.message);
+    const s = (data ?? {}) as { total?: number; active24h?: number; active7d?: number; visits?: number };
+    return {
+      total: s.total ?? 0,
+      active24h: s.active24h ?? 0,
+      active7d: s.active7d ?? 0,
+      visits: s.visits ?? 0,
+    };
+  });
