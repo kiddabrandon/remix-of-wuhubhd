@@ -183,6 +183,7 @@ function Watch() {
                   onClose={() => {}}
                   title={title ?? "Untitled"}
                   tmdbId={idNum}
+                  imdbId={(data.external_ids?.imdb_id as string | undefined) ?? null}
                   mediaType={type}
                   {...(type === "tv" ? { season: s, episode: e } : {})}
                   posterPath={data.poster_path ?? null}
