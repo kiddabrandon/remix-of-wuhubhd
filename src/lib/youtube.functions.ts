@@ -550,7 +550,7 @@ export const youtubeVideoInfo = createServerFn({ method: "GET" })
 
 /** A trending-ish Shorts feed for the dedicated Shorts page. */
 export const shortsFeed = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => SearchSchema.partial({ q: true }).parse(d ?? {}))
+  .inputValidator((d: unknown) => z.object({ q: z.string().max(120).optional(), limit: z.number().int().min(1).max(40).optional() }).parse(d ?? {}))
   .handler(async ({ data }): Promise<YoutubeShort[]> => {
     const q = data.q?.trim() || "shorts";
     const res = await searchYoutubeShorts({ data: { q, limit: data.limit ?? 30 } });
