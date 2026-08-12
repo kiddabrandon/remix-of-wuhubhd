@@ -385,3 +385,174 @@ export const youtubeChannel = createServerFn({ method: "GET" })
       return null;
     }
   });
+
+// ---------------------------------------------------------------------------
+// Channel search + rich video metadata
+// ---------------------------------------------------------------------------
+
+export type YoutubeChannelResult = {
+  id: string;
+  title: string;
+  avatar: string;
+  subscribers: string | null;
+  videoCount: string | null;
+  description: string;
+};
+
+type ChannelRenderer = {
+  channelId?: string;
+  title?: { simpleText?: string; runs?: { text?: string }[] };
+  thumbnail?: { thumbnails?: { url: string; width: number }[] };
+  videoCountText?: { simpleText?: string; runs?: { text?: string }[] };
+  subscriberCountText?: { simpleText?: string };
+  descriptionSnippet?: { runs?: { text?: string }[] };
+};
+
+/** Search YouTube channels (the "Channels" filter on youtube.com). */
+export const searchYoutubeChannels = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => SearchSchema.parse(d))
+  .handler(async ({ data }): Promise<YoutubeChannelResult[]> => {
+    const limit = data.limit ?? 16;
+    try {
+      const res = await fetch(`https://www.youtube.com/youtubei/v1/search?key=${INNERTUBE_KEY}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          context: WEB_CONTEXT,
+          query: data.q,
+          params: "EgIQAg%3D%3D", // channels only
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) return [];
+      const json = (await res.json()) as {
+        contents?: {
+          twoColumnSearchResultsRenderer?: {
+            primaryContents?: {
+              sectionListRenderer?: { contents?: { itemSectionRenderer?: { contents?: { channelRenderer?: ChannelRenderer }[] } }[] };
+            };
+          };
+        };
+      };
+      const sections =
+        json.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents ?? [];
+      const out: YoutubeChannelResult[] = [];
+      for (const section of sections) {
+        for (const item of section.itemSectionRenderer?.contents ?? []) {
+          const c = item.channelRenderer;
+          if (!c?.channelId) continue;
+          const raw = c.thumbnail?.thumbnails?.at(-1)?.url ?? "";
+          out.push({
+            id: c.channelId,
+            title: c.title?.simpleText ?? c.title?.runs?.map((r) => r.text ?? "").join("") ?? "Channel",
+            avatar: raw.startsWith("//") ? `https:${raw}` : raw,
+            subscribers: c.subscriberCountText?.simpleText ?? null,
+            videoCount:
+              c.videoCountText?.simpleText ??
+              c.videoCountText?.runs?.map((r) => r.text ?? "").join("") ??
+              null,
+            description: c.descriptionSnippet?.runs?.map((r) => r.text ?? "").join("") ?? "",
+          });
+          if (out.length >= limit) return out;
+        }
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  });
+
+export type YoutubeVideoInfo = YoutubeVideoDetails & {
+  views: string | null;
+  published: string | null;
+  likes: string | null;
+  description: string;
+  subscribers: string | null;
+  channelAvatar: string | null;
+};
+
+/** Full watch-page metadata (views, date, likes, description) via InnerTube `next`. */
+export const youtubeVideoInfo = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => VideoSchema.parse(d))
+  .handler(async ({ data }): Promise<YoutubeVideoInfo> => {
+    const base: YoutubeVideoInfo = {
+      id: data.id,
+      title: "YouTube video",
+      channel: "YouTube",
+      channelId: null,
+      thumbnail: `https://i.ytimg.com/vi/${data.id}/hqdefault.jpg`,
+      views: null,
+      published: null,
+      likes: null,
+      description: "",
+      subscribers: null,
+      channelAvatar: null,
+    };
+    try {
+      const res = await fetch(`https://www.youtube.com/youtubei/v1/next?key=${INNERTUBE_KEY}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ context: WEB_CONTEXT, videoId: data.id }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) return base;
+      const json = (await res.json()) as Record<string, unknown>;
+
+      // Walk the results blob for the two renderers we care about.
+      let primary: any = null;
+      let secondary: any = null;
+      const contents =
+        (json as any)?.contents?.twoColumnWatchNextResults?.results?.results?.contents ?? [];
+      for (const c of contents) {
+        if (c?.videoPrimaryInfoRenderer) primary = c.videoPrimaryInfoRenderer;
+        if (c?.videoSecondaryInfoRenderer) secondary = c.videoSecondaryInfoRenderer;
+      }
+
+      const runsText = (v: any): string =>
+        v?.simpleText ?? (Array.isArray(v?.runs) ? v.runs.map((r: any) => r?.text ?? "").join("") : "");
+
+      const owner = secondary?.owner?.videoOwnerRenderer;
+      const likeButton =
+        primary?.videoActions?.menuRenderer?.topLevelButtons?.find(
+          (b: any) => b?.segmentedLikeDislikeButtonViewModel || b?.toggleButtonRenderer,
+        );
+      const likes =
+        likeButton?.segmentedLikeDislikeButtonViewModel?.likeButtonViewModel?.likeButtonViewModel
+          ?.toggleButtonViewModel?.toggleButtonViewModel?.defaultButtonViewModel?.buttonViewModel?.title ??
+        runsText(likeButton?.toggleButtonRenderer?.defaultText) ??
+        null;
+
+      const avatarRaw = owner?.thumbnail?.thumbnails?.at?.(-1)?.url ?? null;
+
+      return {
+        id: data.id,
+        title: runsText(primary?.title) || base.title,
+        channel: runsText(owner?.title) || base.channel,
+        channelId: owner?.navigationEndpoint?.browseEndpoint?.browseId ?? null,
+        thumbnail: base.thumbnail,
+        views: runsText(primary?.viewCount?.videoViewCountRenderer?.viewCount) || null,
+        published:
+          runsText(primary?.dateText) ||
+          runsText(primary?.relativeDateText) ||
+          null,
+        likes: likes || null,
+        description:
+          runsText(secondary?.attributedDescription) ||
+          runsText(secondary?.description) ||
+          "",
+        subscribers: runsText(owner?.subscriberCountText) || null,
+        channelAvatar: avatarRaw ? (avatarRaw.startsWith("//") ? `https:${avatarRaw}` : avatarRaw) : null,
+      };
+    } catch {
+      return base;
+    }
+  });
+
+/** A trending-ish Shorts feed for the dedicated Shorts page. */
+export const shortsFeed = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => SearchSchema.partial({ q: true }).parse(d ?? {}))
+  .handler(async ({ data }): Promise<YoutubeShort[]> => {
+    const q = data.q?.trim() || "shorts";
+    const res = await searchYoutubeShorts({ data: { q, limit: data.limit ?? 30 } });
+    return res;
+  });
