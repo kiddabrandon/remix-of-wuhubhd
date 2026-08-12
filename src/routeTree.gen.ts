@@ -26,6 +26,7 @@ import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedYoutubeIndexRouteImport } from './routes/_authenticated/youtube.index'
 import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
+import { Route as AuthenticatedYoutubeShortsRouteImport } from './routes/_authenticated/youtube.shorts'
 import { Route as AuthenticatedYoutubeIdRouteImport } from './routes/_authenticated/youtube.$id'
 import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
 import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
@@ -119,6 +120,12 @@ const AuthenticatedAnimeIndexRoute = AuthenticatedAnimeIndexRouteImport.update({
   path: '/anime/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedYoutubeShortsRoute =
+  AuthenticatedYoutubeShortsRouteImport.update({
+    id: '/youtube/shorts',
+    path: '/youtube/shorts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedYoutubeIdRoute = AuthenticatedYoutubeIdRouteImport.update({
   id: '/youtube/$id',
   path: '/youtube/$id',
@@ -171,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/youtube/$id': typeof AuthenticatedYoutubeIdRoute
+  '/youtube/shorts': typeof AuthenticatedYoutubeShortsRoute
   '/anime/': typeof AuthenticatedAnimeIndexRoute
   '/party/': typeof AuthenticatedPartyIndexRoute
   '/youtube/': typeof AuthenticatedYoutubeIndexRoute
@@ -195,6 +203,7 @@ export interface FileRoutesByTo {
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/youtube/$id': typeof AuthenticatedYoutubeIdRoute
+  '/youtube/shorts': typeof AuthenticatedYoutubeShortsRoute
   '/anime': typeof AuthenticatedAnimeIndexRoute
   '/party': typeof AuthenticatedPartyIndexRoute
   '/youtube': typeof AuthenticatedYoutubeIndexRoute
@@ -221,6 +230,7 @@ export interface FileRoutesById {
   '/_authenticated/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/_authenticated/party/$code': typeof AuthenticatedPartyCodeRoute
   '/_authenticated/youtube/$id': typeof AuthenticatedYoutubeIdRoute
+  '/_authenticated/youtube/shorts': typeof AuthenticatedYoutubeShortsRoute
   '/_authenticated/anime/': typeof AuthenticatedAnimeIndexRoute
   '/_authenticated/party/': typeof AuthenticatedPartyIndexRoute
   '/_authenticated/youtube/': typeof AuthenticatedYoutubeIndexRoute
@@ -247,6 +257,7 @@ export interface FileRouteTypes {
     | '/browse/$provider'
     | '/party/$code'
     | '/youtube/$id'
+    | '/youtube/shorts'
     | '/anime/'
     | '/party/'
     | '/youtube/'
@@ -271,6 +282,7 @@ export interface FileRouteTypes {
     | '/browse/$provider'
     | '/party/$code'
     | '/youtube/$id'
+    | '/youtube/shorts'
     | '/anime'
     | '/party'
     | '/youtube'
@@ -296,6 +308,7 @@ export interface FileRouteTypes {
     | '/_authenticated/browse/$provider'
     | '/_authenticated/party/$code'
     | '/_authenticated/youtube/$id'
+    | '/_authenticated/youtube/shorts'
     | '/_authenticated/anime/'
     | '/_authenticated/party/'
     | '/_authenticated/youtube/'
@@ -431,6 +444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnimeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/youtube/shorts': {
+      id: '/_authenticated/youtube/shorts'
+      path: '/youtube/shorts'
+      fullPath: '/youtube/shorts'
+      preLoaderRoute: typeof AuthenticatedYoutubeShortsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/youtube/$id': {
       id: '/_authenticated/youtube/$id'
       path: '/youtube/$id'
@@ -490,6 +510,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrowseProviderRoute: typeof AuthenticatedBrowseProviderRoute
   AuthenticatedPartyCodeRoute: typeof AuthenticatedPartyCodeRoute
   AuthenticatedYoutubeIdRoute: typeof AuthenticatedYoutubeIdRoute
+  AuthenticatedYoutubeShortsRoute: typeof AuthenticatedYoutubeShortsRoute
   AuthenticatedAnimeIndexRoute: typeof AuthenticatedAnimeIndexRoute
   AuthenticatedPartyIndexRoute: typeof AuthenticatedPartyIndexRoute
   AuthenticatedYoutubeIndexRoute: typeof AuthenticatedYoutubeIndexRoute
@@ -511,6 +532,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrowseProviderRoute: AuthenticatedBrowseProviderRoute,
   AuthenticatedPartyCodeRoute: AuthenticatedPartyCodeRoute,
   AuthenticatedYoutubeIdRoute: AuthenticatedYoutubeIdRoute,
+  AuthenticatedYoutubeShortsRoute: AuthenticatedYoutubeShortsRoute,
   AuthenticatedAnimeIndexRoute: AuthenticatedAnimeIndexRoute,
   AuthenticatedPartyIndexRoute: AuthenticatedPartyIndexRoute,
   AuthenticatedYoutubeIndexRoute: AuthenticatedYoutubeIndexRoute,
@@ -541,13 +563,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
