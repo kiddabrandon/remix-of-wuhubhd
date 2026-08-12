@@ -128,3 +128,92 @@ export async function resolveNuvioPackStreams(
 
   return results.flatMap((r) => (r.status === "fulfilled" && r.value.streams.length ? [r.value] : []));
 }
+
+export type ProviderCheck = {
+  id: string;
+  name: string;
+  ok: boolean;
+  error: string | null;
+};
+
+export type PackVerification = {
+  packId: string;
+  packName: string;
+  manifest: string;
+  manifestOk: boolean;
+  declared: number;
+  loaded: number;
+  failed: number;
+  durationMs: number;
+  error: string | null;
+  providers: ProviderCheck[];
+};
+
+/**
+ * End-to-end check of a Nuvio pack: manifest fetch, then every declared
+ * provider script is downloaded and evaluated, reporting per-provider errors.
+ */
+export async function verifyNuvioPack(
+  packId: string,
+  packName: string,
+  manifestUrl: string,
+): Promise<PackVerification> {
+  const started = Date.now();
+  const base: PackVerification = {
+    packId,
+    packName,
+    manifest: manifestUrl,
+    manifestOk: false,
+    declared: 0,
+    loaded: 0,
+    failed: 0,
+    durationMs: 0,
+    error: null,
+    providers: [],
+  };
+
+  let pack: NuvioPack;
+  try {
+    pack = await fetchNuvioPack(manifestUrl);
+  } catch (e) {
+    return {
+      ...base,
+      durationMs: Date.now() - started,
+      error: e instanceof Error ? e.message : "Manifest could not be read.",
+    };
+  }
+
+  const scrapers = pack.scrapers.filter((s) => s.enabled !== false);
+  const checks = await Promise.all(
+    scrapers.map(async (s): Promise<ProviderCheck> => {
+      try {
+        const mod = await loadScraper(scriptUrlFor(manifestUrl, s.filename));
+        if (typeof mod.getStreams !== "function") {
+          return { id: s.id, name: s.name, ok: false, error: "Script loaded but exports no getStreams()." };
+        }
+        return { id: s.id, name: s.name, ok: true, error: null };
+      } catch (e) {
+        return {
+          id: s.id,
+          name: s.name,
+          ok: false,
+          error: e instanceof Error ? e.message : "Provider script failed to load.",
+        };
+      }
+    }),
+  );
+
+  const loaded = checks.filter((c) => c.ok).length;
+  return {
+    packId,
+    packName,
+    manifest: manifestUrl,
+    manifestOk: true,
+    declared: pack.scrapers.length,
+    loaded,
+    failed: checks.length - loaded,
+    durationMs: Date.now() - started,
+    error: null,
+    providers: checks,
+  };
+}
