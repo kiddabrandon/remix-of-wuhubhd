@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, ThumbsUp } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
-import { searchYoutube, searchYoutubeShorts, youtubeVideoDetails } from "@/lib/youtube.functions";
+import { searchYoutube, searchYoutubeShorts, youtubeVideoInfo } from "@/lib/youtube.functions";
 import { YoutubePlayer } from "@/components/youtube/YoutubePlayer";
 import { ChannelLink } from "@/components/youtube/ChannelLink";
 
@@ -31,7 +32,8 @@ function YoutubeWatch() {
   const { id } = Route.useParams();
   const { shorts: isShorts } = Route.useSearch();
   const navigate = useNavigate();
-  const details = useServerFn(youtubeVideoDetails);
+  const [expanded, setExpanded] = useState(false);
+  const details = useServerFn(youtubeVideoInfo);
   const search = useServerFn(searchYoutube);
   const searchShorts = useServerFn(searchYoutubeShorts);
 
@@ -121,9 +123,49 @@ function YoutubeWatch() {
           <h1 className="mt-4 font-display text-xl font-bold leading-tight sm:text-2xl">
             {info?.title ?? "Loading…"}
           </h1>
-          <p className="mt-1 text-sm text-neutral-400">
-            <ChannelLink channelId={info?.channelId ?? null} name={info?.channel ?? ""} />
-          </p>
+
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400">
+            {info?.views && (
+              <span className="inline-flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" /> {info.views}
+              </span>
+            )}
+            {info?.published && <span>{info.published}</span>}
+            {info?.likes && (
+              <span className="inline-flex items-center gap-1">
+                <ThumbsUp className="h-3.5 w-3.5" /> {info.likes}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-3 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+            {info?.channelAvatar ? (
+              <img src={info.channelAvatar} alt={info.channel} loading="lazy" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+            ) : (
+              <div className="h-10 w-10 shrink-0 rounded-full bg-neutral-800" />
+            )}
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold">
+                <ChannelLink channelId={info?.channelId ?? null} name={info?.channel ?? ""} />
+              </div>
+              {info?.subscribers && <div className="truncate text-[11px] text-neutral-500">{info.subscribers}</div>}
+            </div>
+          </div>
+
+          {info?.description ? (
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <p className={`whitespace-pre-wrap break-words text-sm text-neutral-300 ${expanded ? "" : "line-clamp-3"}`}>
+                {info.description}
+              </p>
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-2 text-xs font-semibold text-neutral-400 hover:text-white"
+              >
+                {expanded ? "Show less" : "Show more"}
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <aside className="min-w-0">

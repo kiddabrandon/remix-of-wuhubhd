@@ -59,3 +59,22 @@ export const getAddonStatus = createServerFn({ method: "GET" }).handler(
     return checkAllAddons();
   },
 );
+
+/**
+ * Deep verification of the Nuvio provider packs (Yoru, D3adlyRocket, …):
+ * manifest reachability plus per-provider script load, with clear diagnostics.
+ */
+export const verifyProviderPacks = createServerFn({ method: "GET" }).handler(async () => {
+  const { NUVIO_PLUGINS } = await import("@/lib/addons");
+  const { verifyNuvioPack } = await import("@/lib/nuvio.server");
+  const results = await Promise.all(
+    NUVIO_PLUGINS.map((p) => verifyNuvioPack(p.id, p.name, p.manifest)),
+  );
+  return {
+    checkedAt: new Date().toISOString(),
+    packs: results,
+    totalProviders: results.reduce((n, r) => n + r.declared, 0),
+    totalLoaded: results.reduce((n, r) => n + r.loaded, 0),
+    totalFailed: results.reduce((n, r) => n + r.failed, 0),
+  };
+});

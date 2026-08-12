@@ -23,9 +23,11 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
+import { Route as AuthenticatedAddonCheckRouteImport } from './routes/_authenticated/addon-check'
 import { Route as AuthenticatedYoutubeIndexRouteImport } from './routes/_authenticated/youtube.index'
 import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
+import { Route as AuthenticatedYoutubeShortsRouteImport } from './routes/_authenticated/youtube.shorts'
 import { Route as AuthenticatedYoutubeIdRouteImport } from './routes/_authenticated/youtube.$id'
 import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
 import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
@@ -103,6 +105,11 @@ const AuthenticatedDownloadsRoute = AuthenticatedDownloadsRouteImport.update({
   path: '/downloads',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAddonCheckRoute = AuthenticatedAddonCheckRouteImport.update({
+  id: '/addon-check',
+  path: '/addon-check',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedYoutubeIndexRoute =
   AuthenticatedYoutubeIndexRouteImport.update({
     id: '/youtube/',
@@ -119,6 +126,12 @@ const AuthenticatedAnimeIndexRoute = AuthenticatedAnimeIndexRouteImport.update({
   path: '/anime/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedYoutubeShortsRoute =
+  AuthenticatedYoutubeShortsRouteImport.update({
+    id: '/youtube/shorts',
+    path: '/youtube/shorts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedYoutubeIdRoute = AuthenticatedYoutubeIdRouteImport.update({
   id: '/youtube/$id',
   path: '/youtube/$id',
@@ -157,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/addon-check': typeof AuthenticatedAddonCheckRoute
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
@@ -171,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/youtube/$id': typeof AuthenticatedYoutubeIdRoute
+  '/youtube/shorts': typeof AuthenticatedYoutubeShortsRoute
   '/anime/': typeof AuthenticatedAnimeIndexRoute
   '/party/': typeof AuthenticatedPartyIndexRoute
   '/youtube/': typeof AuthenticatedYoutubeIndexRoute
@@ -180,6 +195,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/addon-check': typeof AuthenticatedAddonCheckRoute
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
@@ -195,6 +211,7 @@ export interface FileRoutesByTo {
   '/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/party/$code': typeof AuthenticatedPartyCodeRoute
   '/youtube/$id': typeof AuthenticatedYoutubeIdRoute
+  '/youtube/shorts': typeof AuthenticatedYoutubeShortsRoute
   '/anime': typeof AuthenticatedAnimeIndexRoute
   '/party': typeof AuthenticatedPartyIndexRoute
   '/youtube': typeof AuthenticatedYoutubeIndexRoute
@@ -206,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRouteWithChildren
+  '/_authenticated/addon-check': typeof AuthenticatedAddonCheckRoute
   '/_authenticated/downloads': typeof AuthenticatedDownloadsRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/movies': typeof AuthenticatedMoviesRoute
@@ -221,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/browse/$provider': typeof AuthenticatedBrowseProviderRoute
   '/_authenticated/party/$code': typeof AuthenticatedPartyCodeRoute
   '/_authenticated/youtube/$id': typeof AuthenticatedYoutubeIdRoute
+  '/_authenticated/youtube/shorts': typeof AuthenticatedYoutubeShortsRoute
   '/_authenticated/anime/': typeof AuthenticatedAnimeIndexRoute
   '/_authenticated/party/': typeof AuthenticatedPartyIndexRoute
   '/_authenticated/youtube/': typeof AuthenticatedYoutubeIndexRoute
@@ -233,6 +252,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/auth'
+    | '/addon-check'
     | '/downloads'
     | '/history'
     | '/movies'
@@ -247,6 +267,7 @@ export interface FileRouteTypes {
     | '/browse/$provider'
     | '/party/$code'
     | '/youtube/$id'
+    | '/youtube/shorts'
     | '/anime/'
     | '/party/'
     | '/youtube/'
@@ -256,6 +277,7 @@ export interface FileRouteTypes {
   to:
     | '/admin'
     | '/auth'
+    | '/addon-check'
     | '/downloads'
     | '/history'
     | '/movies'
@@ -271,6 +293,7 @@ export interface FileRouteTypes {
     | '/browse/$provider'
     | '/party/$code'
     | '/youtube/$id'
+    | '/youtube/shorts'
     | '/anime'
     | '/party'
     | '/youtube'
@@ -281,6 +304,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin'
     | '/auth'
+    | '/_authenticated/addon-check'
     | '/_authenticated/downloads'
     | '/_authenticated/history'
     | '/_authenticated/movies'
@@ -296,6 +320,7 @@ export interface FileRouteTypes {
     | '/_authenticated/browse/$provider'
     | '/_authenticated/party/$code'
     | '/_authenticated/youtube/$id'
+    | '/_authenticated/youtube/shorts'
     | '/_authenticated/anime/'
     | '/_authenticated/party/'
     | '/_authenticated/youtube/'
@@ -410,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDownloadsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/addon-check': {
+      id: '/_authenticated/addon-check'
+      path: '/addon-check'
+      fullPath: '/addon-check'
+      preLoaderRoute: typeof AuthenticatedAddonCheckRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/youtube/': {
       id: '/_authenticated/youtube/'
       path: '/youtube'
@@ -429,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/anime'
       fullPath: '/anime/'
       preLoaderRoute: typeof AuthenticatedAnimeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/youtube/shorts': {
+      id: '/_authenticated/youtube/shorts'
+      path: '/youtube/shorts'
+      fullPath: '/youtube/shorts'
+      preLoaderRoute: typeof AuthenticatedYoutubeShortsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/youtube/$id': {
@@ -477,6 +516,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAddonCheckRoute: typeof AuthenticatedAddonCheckRoute
   AuthenticatedDownloadsRoute: typeof AuthenticatedDownloadsRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedMoviesRoute: typeof AuthenticatedMoviesRoute
@@ -490,6 +530,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBrowseProviderRoute: typeof AuthenticatedBrowseProviderRoute
   AuthenticatedPartyCodeRoute: typeof AuthenticatedPartyCodeRoute
   AuthenticatedYoutubeIdRoute: typeof AuthenticatedYoutubeIdRoute
+  AuthenticatedYoutubeShortsRoute: typeof AuthenticatedYoutubeShortsRoute
   AuthenticatedAnimeIndexRoute: typeof AuthenticatedAnimeIndexRoute
   AuthenticatedPartyIndexRoute: typeof AuthenticatedPartyIndexRoute
   AuthenticatedYoutubeIndexRoute: typeof AuthenticatedYoutubeIndexRoute
@@ -498,6 +539,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAddonCheckRoute: AuthenticatedAddonCheckRoute,
   AuthenticatedDownloadsRoute: AuthenticatedDownloadsRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedMoviesRoute: AuthenticatedMoviesRoute,
@@ -511,6 +553,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBrowseProviderRoute: AuthenticatedBrowseProviderRoute,
   AuthenticatedPartyCodeRoute: AuthenticatedPartyCodeRoute,
   AuthenticatedYoutubeIdRoute: AuthenticatedYoutubeIdRoute,
+  AuthenticatedYoutubeShortsRoute: AuthenticatedYoutubeShortsRoute,
   AuthenticatedAnimeIndexRoute: AuthenticatedAnimeIndexRoute,
   AuthenticatedPartyIndexRoute: AuthenticatedPartyIndexRoute,
   AuthenticatedYoutubeIndexRoute: AuthenticatedYoutubeIndexRoute,

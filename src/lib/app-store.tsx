@@ -21,6 +21,16 @@ import {
   upsertProgress,
 } from "@/lib/user-data.functions";
 import { DEFAULT_SERVER_ORDER } from "@/lib/servers";
+import {
+  readGuestState,
+  removeGuestProgress,
+  saveGuestProgress,
+  saveGuestSettings,
+  takeGuestState,
+  toggleGuestWatchlist,
+  type GuestProgressItem,
+  type GuestWatchlistItem,
+} from "@/lib/guest-state";
 import luffyAvatar from "@/assets/avatars/luffy.jpg";
 import zoroAvatar from "@/assets/avatars/zoro.jpg";
 import namiAvatar from "@/assets/avatars/nami.jpg";
@@ -132,18 +142,55 @@ const DEFAULT_SETTINGS: Settings = {
   avatarPreset: "luffy",
 };
 
+/** Moves anonymous browsing data into the account right after sign-in. */
+async function migrateGuestState(qc: ReturnType<typeof useQueryClient>) {
+  const state = takeGuestState();
+  if (!state) return;
+  try {
+    if (Object.keys(state.settings).length) {
+      await saveMyPreferences({ data: { preferences: state.settings } });
+    }
+    for (const item of state.watchlist) {
+      await addWatchlist({
+        data: {
+          tmdb_id: item.id,
+          media_type: item.type,
+          title: item.title,
+          poster_path: item.poster,
+          year: item.year,
+        },
+      });
+    }
+    for (const p of state.progress) {
+      await upsertProgress({ data: p as any });
+    }
+  } catch {
+    // Never block sign-in on migration.
+  }
+  qc.invalidateQueries();
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS);
   const [session, setSession] = useState<Session | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [guestWatchlist, setGuestWatchlist] = useState<GuestWatchlistItem[]>([]);
+  const [guestProgress, setGuestProgress] = useState<GuestProgressItem[]>([]);
   const qc = useQueryClient();
 
   useEffect(() => {
     setHydrated(true);
+    const local = readGuestState();
+    setGuestWatchlist(local.watchlist);
+    setGuestProgress(local.progress);
+    if (Object.keys(local.settings).length) {
+      setSettingsState((prev) => ({ ...prev, ...(local.settings as Partial<Settings>) }));
+    }
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         setSession(s);
+        if (event === "SIGNED_IN" && s) void migrateGuestState(qc);
         if (event !== "SIGNED_OUT") qc.invalidateQueries();
       }
     });
@@ -168,7 +215,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [settings.accent]);
 
   const setSettings = useCallback((s: Partial<Settings>) => {
-    setSettingsState((prev) => ({ ...prev, ...s }));
+    setSettingsState((prev) => {
+      const next = { ...prev, ...s };
+      if (!session) saveGuestSettings(next as unknown as Record<string, unknown>);
+      return next;
+    });
     if (session) {
       const next = { ...settings, ...s };
       void saveMyPreferences({ data: { preferences: next } }).then(() => {
@@ -191,7 +242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     staleTime: 30_000,
   });
 
-  const watchlist: WatchlistItem[] = useMemo(
+  const accountWatchlist: WatchlistItem[] = useMemo(
     () =>
       (watchlistData as any[]).map((r) => ({
         id: r.tmdb_id,
@@ -203,7 +254,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [watchlistData],
   );
 
-  const progress: ProgressItem[] = useMemo(
+  const accountProgress: ProgressItem[] = useMemo(
     () =>
       (progressData as any[]).map((r) => ({
         tmdb_id: r.tmdb_id,
@@ -225,6 +276,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [progressData],
   );
 
+  const watchlist: WatchlistItem[] = session ? accountWatchlist : guestWatchlist;
+
+  const progress: ProgressItem[] = session
+    ? accountProgress
+    : guestProgress.map((p) => ({
+        tmdb_id: p.tmdb_id,
+        media_type: p.media_type,
+        title: p.title,
+        poster_path: p.poster_path ?? null,
+        backdrop_path: p.backdrop_path ?? null,
+        season: p.season,
+        episode: p.episode,
+        progress_pct: Number(p.progress_pct ?? 0),
+        position_seconds: Number(p.position_seconds ?? 0),
+        duration_seconds: Number(p.duration_seconds ?? 0),
+        fully_watched: Boolean(p.fully_watched),
+        watched_episodes: [],
+        episode_positions: {},
+        updated_at: new Date().toISOString(),
+      })) as ProgressItem[];
+
   const inWatchlist = useCallback(
     (id: number, type: "movie" | "tv") => watchlist.some((x) => x.id === id && x.type === type),
     [watchlist],
@@ -232,7 +304,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const toggleWatch = useCallback(
     async (i: WatchlistItem) => {
-      if (!session) return;
+      if (!session) {
+        setGuestWatchlist(toggleGuestWatchlist(i as GuestWatchlistItem));
+        return;
+      }
       const exists = watchlist.some((x) => x.id === i.id && x.type === i.type);
       if (exists) {
         await removeWatchlist({ data: { tmdb_id: i.id, media_type: i.type } });
@@ -259,7 +334,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const saveProgress = useCallback<AppState["saveProgress"]>(
     async (p) => {
-      if (!session) return;
+      if (!session) {
+        setGuestProgress(saveGuestProgress(p as GuestProgressItem));
+        return;
+      }
       await upsertProgress({ data: p as any });
       qc.invalidateQueries({ queryKey: ["progress"] });
     },
@@ -268,7 +346,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const removeProgress = useCallback<AppState["removeProgress"]>(
     async (p) => {
-      if (!session) return;
+      if (!session) {
+        setGuestProgress(removeGuestProgress(p.tmdb_id, p.media_type));
+        return;
+      }
       await removeProgressFn({ data: p });
       qc.invalidateQueries({ queryKey: ["progress"] });
     },
