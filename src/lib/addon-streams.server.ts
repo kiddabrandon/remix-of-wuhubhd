@@ -312,3 +312,152 @@ export async function checkAllAddons(): Promise<AddonStatusReport> {
     statuses,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Playback-readiness verification                                      */
+/* ------------------------------------------------------------------ */
+
+export type StreamProbe = {
+  addonId: string;
+  addonName: string;
+  quality: string;
+  kind: StreamKindTag;
+  kindLabel: string;
+  url: string;
+  /** true when the URL responded with playable media bytes. */
+  playable: boolean;
+  status: number | null;
+  contentType: string | null;
+  contentLength: string | null;
+  latencyMs: number;
+  /** SPlayer deep link handed to the device for this source. */
+  splayerUrl: string;
+  splayerOk: boolean;
+  error: string | null;
+};
+
+export type PlaybackCheck = {
+  label: string;
+  type: "movie" | "series";
+  resolved: number;
+  tried: number;
+  resolveErrors: { addonId: string; addonName: string; message: string }[];
+  probes: StreamProbe[];
+  playableCount: number;
+};
+
+function splayerDeepLink(url: string, title: string) {
+  return `splayer://play?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+}
+
+/** Range-requests the first bytes of a resolved URL to prove it actually plays. */
+async function probeStream(stream: AddonStream, title: string): Promise<StreamProbe> {
+  const base = {
+    addonId: stream.addonId,
+    addonName: stream.addonName,
+    quality: stream.quality,
+    kind: stream.kind,
+    kindLabel: stream.kindLabel,
+    url: stream.url,
+    splayerUrl: splayerDeepLink(stream.url, title),
+  };
+
+  if (stream.kind === "magnet") {
+    // Magnets can't be range-probed; they are valid when the URI carries a hash.
+    const ok = /^magnet:\?.*xt=urn:btih:[a-z0-9]{32,40}/i.test(stream.url);
+    return {
+      ...base,
+      playable: false,
+      status: null,
+      contentType: null,
+      contentLength: null,
+      latencyMs: 0,
+      splayerOk: ok,
+      error: ok ? "Magnet — playback requires SPlayer or a debrid account." : "Malformed magnet URI (no info hash).",
+    };
+  }
+
+  const started = Date.now();
+  try {
+    const res = await fetch(stream.url, {
+      method: "GET",
+      redirect: "follow",
+      signal: AbortSignal.timeout(ADDON_TIMEOUT_MS),
+      headers: { range: "bytes=0-1023", "user-agent": "WuHubHD/1.0 (+playback-check)" },
+    });
+    const contentType = res.headers.get("content-type");
+    const contentLength = res.headers.get("content-length");
+    const okStatus = res.status === 200 || res.status === 206;
+    const mediaish =
+      !!contentType &&
+      /(video|audio|octet-stream|mpegurl|matroska|mp4|dash\+xml)/i.test(contentType);
+    try {
+      await res.body?.cancel();
+    } catch {
+      /* ignore */
+    }
+    const playable = okStatus && mediaish;
+    return {
+      ...base,
+      playable,
+      status: res.status,
+      contentType,
+      contentLength,
+      latencyMs: Date.now() - started,
+      splayerOk: playable,
+      error: playable
+        ? null
+        : !okStatus
+          ? `Source answered HTTP ${res.status} — link is dead or expired.`
+          : `Source returned "${contentType ?? "unknown"}" instead of media — likely an error page or a login wall.`,
+    };
+  } catch (e) {
+    return {
+      ...base,
+      playable: false,
+      status: null,
+      contentType: null,
+      contentLength: null,
+      latencyMs: Date.now() - started,
+      splayerOk: false,
+      error:
+        e instanceof Error && /timeout|abort/i.test(e.message)
+          ? `No response within ${ADDON_TIMEOUT_MS / 1000}s — host unreachable or throttling.`
+          : e instanceof Error
+            ? e.message
+            : "Unknown network failure.",
+    };
+  }
+}
+
+/** Resolves a reference title and playback-checks every URL that comes back. */
+export async function verifyPlayback(input: {
+  label: string;
+  type: "movie" | "series";
+  imdbId: string;
+  tmdbId?: number;
+  season?: number;
+  episode?: number;
+  limit?: number;
+}): Promise<PlaybackCheck> {
+  const resolved = await resolveAll({
+    type: input.type,
+    imdbId: input.imdbId,
+    ...(input.tmdbId ? { tmdbId: input.tmdbId } : {}),
+    ...(input.season != null ? { season: input.season } : {}),
+    ...(input.episode != null ? { episode: input.episode } : {}),
+  });
+
+  const shortlist = resolved.streams.slice(0, input.limit ?? 10);
+  const probes = await Promise.all(shortlist.map((s) => probeStream(s, input.label)));
+
+  return {
+    label: input.label,
+    type: input.type,
+    resolved: resolved.streams.length,
+    tried: resolved.tried,
+    resolveErrors: resolved.errors,
+    probes,
+    playableCount: probes.filter((p) => p.playable).length,
+  };
+}
