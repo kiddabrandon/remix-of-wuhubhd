@@ -86,9 +86,8 @@ export function DownloadFlow({
         // Guests aren't signed in — logging is best-effort, never block the download.
       }
     },
-    onSuccess: () => {
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ["download-events"] });
-      setStep("handoff");
     },
   });
 
