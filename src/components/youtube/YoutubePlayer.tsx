@@ -70,6 +70,7 @@ export function YoutubePlayer({
   const containerId = `yt-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const wrapRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+  const readyProbeRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const playerRef = useRef<any>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
