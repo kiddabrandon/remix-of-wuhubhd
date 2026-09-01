@@ -22,8 +22,11 @@ function AddonCheck() {
   const verify = useServerFn(verifyProviderPacks);
   const status = useServerFn(getAddonStatus);
 
+  const playback = useServerFn(verifyStreamPlayback);
+
   const packs = useQuery({ queryKey: ["verify-packs"], queryFn: () => verify({}), staleTime: 60_000 });
   const addons = useQuery({ queryKey: ["addon-status"], queryFn: () => status({}), staleTime: 60_000 });
+  const streams = useQuery({ queryKey: ["verify-playback"], queryFn: () => playback({}), staleTime: 60_000 });
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">
