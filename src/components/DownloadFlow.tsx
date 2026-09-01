@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Copy, Download, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { splayerUrl, splayerWebFallbackUrl } from "@/lib/downloads";
+import { launchSplayer, splayerUrl, splayerWebFallbackUrl } from "@/lib/downloads";
 import { recordDownload } from "@/lib/downloads.functions";
 import { resolveAllAddonStreams } from "@/lib/addon-streams.functions";
 import type { AddonStream } from "@/lib/addon-types";
