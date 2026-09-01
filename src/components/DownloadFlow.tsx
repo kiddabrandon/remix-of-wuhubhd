@@ -94,7 +94,12 @@ export function DownloadFlow({
 
   const start = (stream: AddonStream | null) => {
     setPicked(stream);
+    setStep("handoff");
+    // Logging is best-effort and must never gate the handoff.
     record.mutate(stream);
+    const url = stream?.url ?? streamUrl;
+    const label = stream ? `${title} · ${stream.quality || stream.name}` : title;
+    launchSplayer(url, label);
   };
 
   const close = () => {
