@@ -74,3 +74,25 @@ export function splayerWebFallbackUrl(streamUrl: string, title: string): string 
   const params = `url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(title)}`;
   return `https://splayer.org/download?${params}`;
 }
+
+/**
+ * Opens SPlayer for a resolved stream. Browsers silently ignore unknown
+ * protocol handlers, so we detect a failed launch (page never hides) and
+ * fall back to the SPlayer web handler in a new tab.
+ */
+export function launchSplayer(streamUrl: string, title: string): void {
+  if (typeof window === "undefined" || !streamUrl) return;
+  const deepLink = splayerUrl(streamUrl, title);
+  let launched = false;
+  const onHide = () => {
+    if (document.visibilityState === "hidden") launched = true;
+  };
+  document.addEventListener("visibilitychange", onHide);
+  window.location.href = deepLink;
+  window.setTimeout(() => {
+    document.removeEventListener("visibilitychange", onHide);
+    if (!launched && !document.hidden) {
+      window.open(splayerWebFallbackUrl(streamUrl, title), "_blank", "noopener");
+    }
+  }, 1400);
+}

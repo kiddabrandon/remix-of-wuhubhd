@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
-import { getAddonStatus, verifyProviderPacks } from "@/lib/addon-streams.functions";
+import { getAddonStatus, verifyProviderPacks, verifyStreamPlayback } from "@/lib/addon-streams.functions";
 
 export const Route = createFileRoute("/_authenticated/addon-check")({
   head: () => ({
@@ -22,8 +22,11 @@ function AddonCheck() {
   const verify = useServerFn(verifyProviderPacks);
   const status = useServerFn(getAddonStatus);
 
+  const playback = useServerFn(verifyStreamPlayback);
+
   const packs = useQuery({ queryKey: ["verify-packs"], queryFn: () => verify({}), staleTime: 60_000 });
   const addons = useQuery({ queryKey: ["addon-status"], queryFn: () => status({}), staleTime: 60_000 });
+  const streams = useQuery({ queryKey: ["verify-playback"], queryFn: () => playback({}), staleTime: 60_000 });
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-8 sm:py-10">

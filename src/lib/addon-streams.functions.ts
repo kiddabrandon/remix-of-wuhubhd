@@ -78,3 +78,30 @@ export const verifyProviderPacks = createServerFn({ method: "GET" }).handler(asy
     totalFailed: results.reduce((n, r) => n + r.failed, 0),
   };
 });
+
+/**
+ * Playback-readiness verification: resolves reference titles through every
+ * add-on/pack, then range-probes each resolved URL and reports whether it is
+ * actually playable — plus the SPlayer deep link it would hand off.
+ */
+export const verifyStreamPlayback = createServerFn({ method: "GET" }).handler(async () => {
+  const { verifyPlayback } = await import("@/lib/addon-streams.server");
+  const targets = [
+    { label: "Inception (2010)", type: "movie" as const, imdbId: "tt1375666", tmdbId: 27205 },
+    {
+      label: "Game of Thrones S1E1",
+      type: "series" as const,
+      imdbId: "tt0944947",
+      tmdbId: 1399,
+      season: 1,
+      episode: 1,
+    },
+  ];
+  const checks = await Promise.all(targets.map((t) => verifyPlayback({ ...t, limit: 8 })));
+  return {
+    checkedAt: new Date().toISOString(),
+    checks,
+    totalProbed: checks.reduce((n, c) => n + c.probes.length, 0),
+    totalPlayable: checks.reduce((n, c) => n + c.playableCount, 0),
+  };
+});
