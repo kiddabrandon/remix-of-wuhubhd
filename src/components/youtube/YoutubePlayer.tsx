@@ -341,18 +341,27 @@ export function YoutubePlayer({
       onPointerDown={resetHideTimer}
       onTouchStart={resetHideTimer}
     >
-      <div id={containerId} className="absolute inset-0 h-full w-full" />
+      {/* The iframe is pushed slightly taller than the frame and shifted up so
+          YouTube's own bottom control strip sits outside the visible area and can
+          never appear underneath (or through) our control bar. */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div ref={hostRef} id={containerId} className="absolute inset-x-0 -top-[6%] h-[112%] w-full" />
+      </div>
+
+      {/* Click shield: swallows every click aimed at the embed (title bar, share,
+          watch-later, end-cards) so only our controls drive playback. */}
       <button
         type="button"
         aria-label={playing ? "Pause" : "Play"}
         onClick={togglePlay}
+        onDoubleClick={() => void toggleFullscreen()}
         className="absolute inset-0 h-full w-full cursor-pointer"
         style={{ background: "transparent" }}
       />
 
       <div
-        className={`pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-1.5 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-2.5 pb-2 pt-8 transition-opacity duration-300 sm:px-4 sm:pb-3 ${
-          showBar ? "opacity-100" : "opacity-0"
+        className={`pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-1.5 bg-gradient-to-t from-black via-black/70 to-transparent px-2.5 pb-2 pt-8 transition-opacity duration-300 sm:px-4 sm:pb-3 ${
+          showBar || !playing ? "opacity-100" : "opacity-0"
         }`}
       >
         <div className="pointer-events-auto">
