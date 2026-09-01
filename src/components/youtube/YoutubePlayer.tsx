@@ -151,9 +151,31 @@ export function YoutubePlayer({
         },
       });
       playerRef.current = player;
+
+      // Safety net: on some hosts (custom domains, strict origins) `onReady`
+      // never fires even though the player is usable — poll for the API surface
+      // so the control bar never ends up dead.
+      let tries = 0;
+      const probe = setInterval(() => {
+        tries += 1;
+        const p = playerRef.current;
+        if (cancelled || tries > 40) return clearInterval(probe);
+        if (typeof p?.getPlayerState === "function" && typeof p?.playVideo === "function") {
+          clearInterval(probe);
+          setReady(true);
+          setDuration(p.getDuration?.() ?? 0);
+          try {
+            setQualities(p.getAvailableQualityLevels?.() ?? []);
+          } catch {
+            /* ignore */
+          }
+        }
+      }, 250);
+      readyProbeRef.current = probe;
     });
     return () => {
       cancelled = true;
+      if (readyProbeRef.current) clearInterval(readyProbeRef.current);
       try {
         playerRef.current?.destroy?.();
       } catch {
