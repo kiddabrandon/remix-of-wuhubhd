@@ -104,8 +104,9 @@ export function YoutubePlayer({
   useEffect(() => {
     let cancelled = false;
     void loadYoutubeApi().then(() => {
-      if (cancelled || !window.YT?.Player) return;
-      const player = new window.YT.Player(containerId, {
+      const host = hostRef.current;
+      if (cancelled || !window.YT?.Player || !host) return;
+      const player = new window.YT.Player(host, {
         videoId,
         playerVars: {
           autoplay: autoplay ? 1 : 0,
