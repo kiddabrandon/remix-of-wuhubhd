@@ -120,9 +120,16 @@ export function DownloadFlow({
         {step === "sources" ? (
           <div>
             {!canResolve ? (
-              <p className="text-sm text-neutral-400">
-                No downloadable file could be identified for this title. Open a source in the player first, then try again.
-              </p>
+              <div className="text-sm text-neutral-400">
+                <p>No file index is available for this title, but SPlayer can still open the current source.</p>
+                <button
+                  onClick={() => start(null)}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold text-black"
+                  style={{ background: "var(--accent)" }}
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Open in SPlayer
+                </button>
+              </div>
             ) : isFetching && !resolved ? (
               <p className="flex items-center gap-2 text-sm text-neutral-400">
                 <Loader2 className="h-4 w-4 animate-spin" /> Finding downloadable files…
@@ -130,12 +137,20 @@ export function DownloadFlow({
             ) : files.length === 0 && magnets.length === 0 ? (
               <div className="text-sm text-neutral-400">
                 <p>No direct files found for this title right now.</p>
-                <button
-                  onClick={() => void refetch()}
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" /> Retry
-                </button>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => void refetch()}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" /> Retry
+                  </button>
+                  <button
+                    onClick={() => start(null)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Open current source in SPlayer
+                  </button>
+                </div>
               </div>
             ) : (
               <>
