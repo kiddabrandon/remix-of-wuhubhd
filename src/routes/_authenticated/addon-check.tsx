@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
-import { getAddonStatus, verifyProviderPacks } from "@/lib/addon-streams.functions";
+import { getAddonStatus, verifyProviderPacks, verifyStreamPlayback } from "@/lib/addon-streams.functions";
 
 export const Route = createFileRoute("/_authenticated/addon-check")({
   head: () => ({
