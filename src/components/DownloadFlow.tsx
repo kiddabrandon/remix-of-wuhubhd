@@ -184,9 +184,15 @@ export function DownloadFlow({
           </div>
         ) : (
           <div>
-            <p className="text-sm text-neutral-400">Handing off to SPlayer…</p>
+            <p className="text-sm text-neutral-400">
+              SPlayer should be opening. If nothing happened, tap below to retry.
+            </p>
             <a
               href={splayerUrl(target, label)}
+              onClick={(e) => {
+                e.preventDefault();
+                launchSplayer(target, label);
+              }}
               className="mt-3 flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold text-black"
               style={{ background: "var(--accent)" }}
             >
