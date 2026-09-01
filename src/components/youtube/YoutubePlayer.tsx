@@ -67,8 +67,9 @@ export function YoutubePlayer({
   onEnded?: () => void;
   className?: string;
 }) {
-  const containerId = useId().replace(/[:]/g, "");
+  const containerId = `yt-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const wrapRef = useRef<HTMLDivElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rafRef = useRef<number | null>(null);
