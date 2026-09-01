@@ -341,11 +341,8 @@ export function YoutubePlayer({
       onPointerDown={resetHideTimer}
       onTouchStart={resetHideTimer}
     >
-      {/* The iframe is pushed slightly taller than the frame and shifted up so
-          YouTube's own bottom control strip sits outside the visible area and can
-          never appear underneath (or through) our control bar. */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div ref={hostRef} id={containerId} className="absolute inset-x-0 -top-[6%] h-[112%] w-full" />
+        <div ref={hostRef} id={containerId} className="absolute inset-0 h-full w-full" />
       </div>
 
       {/* Click shield: swallows every click aimed at the embed (title bar, share,
