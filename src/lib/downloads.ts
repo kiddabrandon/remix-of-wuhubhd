@@ -63,36 +63,82 @@ export const QUALITIES: Quality[] = [
   { id: "4K", label: "4K", sizeHint: "~3.5GB / hr" },
 ];
 
-/** Builds the SPlayer app deep link used to hand off a resolved stream for download. */
+/** Builds the SPlayer app deep link used to hand off a resolved stream. */
 export function splayerUrl(streamUrl: string, title: string): string {
   const params = `url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(title)}`;
-  return `splayer://download?${params}`;
+  return `splayer://play?${params}`;
 }
 
-/** Web fallback if the SPlayer app isn't installed (e.g. store/landing page with the same params). */
-export function splayerWebFallbackUrl(streamUrl: string, title: string): string {
-  const params = `url=${encodeURIComponent(streamUrl)}&title=${encodeURIComponent(title)}`;
-  return `https://splayer.org/download?${params}`;
+/** Android intent URL — the only reliable way to hand a stream to an app from Chrome on Android. */
+export function splayerIntentUrl(streamUrl: string, title: string): string {
+  const clean = streamUrl.replace(/^https?:\/\//, "");
+  const scheme = streamUrl.startsWith("https") ? "https" : "http";
+  return (
+    `intent://${clean}#Intent;scheme=${scheme};type=video/*;` +
+    `S.title=${encodeURIComponent(title)};end`
+  );
+}
+
+/** Where to get SPlayer if it isn't installed. */
+export function splayerWebFallbackUrl(_streamUrl?: string, _title?: string): string {
+  return "https://splayer.org/";
+}
+
+function isMagnet(url: string) {
+  return url.startsWith("magnet:") || url.endsWith(".torrent");
 }
 
 /**
- * Opens SPlayer for a resolved stream. Browsers silently ignore unknown
- * protocol handlers, so we detect a failed launch (page never hides) and
- * fall back to the SPlayer web handler in a new tab.
+ * Triggers a real browser download of a resolved file. Cross-origin responses
+ * ignore the `download` attribute, so this still falls back to opening the file
+ * in a new tab, which is what actually saves the file on mobile browsers.
  */
-export function launchSplayer(streamUrl: string, title: string): void {
+export function browserDownload(streamUrl: string, title: string): void {
+  if (typeof document === "undefined" || !streamUrl) return;
+  if (isMagnet(streamUrl)) {
+    window.location.href = streamUrl;
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = streamUrl;
+  a.download = `${title.replace(/[\\/:*?"<>|]+/g, " ").trim()}`;
+  a.rel = "noopener";
+  a.target = "_blank";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+/**
+ * Hands a stream to SPlayer. Uses a hidden iframe (Android/desktop) or an
+ * intent URL so an unregistered scheme can never navigate the page away, and
+ * falls back to a real browser download when the app never takes focus.
+ */
+export function launchSplayer(streamUrl: string, title: string, opts?: { fallback?: boolean }): void {
   if (typeof window === "undefined" || !streamUrl) return;
-  const deepLink = splayerUrl(streamUrl, title);
+  const isAndroid = /android/i.test(navigator.userAgent);
+  const deepLink = isAndroid ? splayerIntentUrl(streamUrl, title) : splayerUrl(streamUrl, title);
   let launched = false;
   const onHide = () => {
     if (document.visibilityState === "hidden") launched = true;
   };
   document.addEventListener("visibilitychange", onHide);
-  window.location.href = deepLink;
+
+  if (isAndroid) {
+    window.location.href = deepLink;
+  } else {
+    const frame = document.createElement("iframe");
+    frame.style.display = "none";
+    frame.src = deepLink;
+    document.body.appendChild(frame);
+    window.setTimeout(() => frame.remove(), 1200);
+  }
+
   window.setTimeout(() => {
     document.removeEventListener("visibilitychange", onHide);
-    if (!launched && !document.hidden) {
-      window.open(splayerWebFallbackUrl(streamUrl, title), "_blank", "noopener");
+    if (!launched && !document.hidden && opts?.fallback !== false) {
+      // SPlayer never took over — save the file directly instead of dead-ending.
+      browserDownload(streamUrl, title);
     }
-  }, 1400);
+  }, 1600);
 }
