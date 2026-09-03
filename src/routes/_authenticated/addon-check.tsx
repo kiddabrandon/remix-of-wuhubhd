@@ -42,6 +42,7 @@ function AddonCheck() {
           onClick={() => {
             void packs.refetch();
             void addons.refetch();
+            void streams.refetch();
           }}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-semibold hover:bg-white/10"
         >
@@ -125,6 +126,70 @@ function AddonCheck() {
                       {s.ok ? `${s.latencyMs}ms${s.providers ? ` · ${s.providers} providers` : ""}` : s.error}
                     </div>
                   </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-500">
+          Playback readiness
+        </h2>
+        {streams.isPending ? (
+          <p className="mt-3 flex items-center gap-2 text-sm text-neutral-400">
+            <Loader2 className="h-4 w-4 animate-spin" /> Resolving reference titles and probing links…
+          </p>
+        ) : streams.isError ? (
+          <p className="mt-3 text-sm text-red-300">{(streams.error as Error).message}</p>
+        ) : (
+          <>
+            <p className="mt-2 text-xs text-neutral-400">
+              {streams.data?.totalPlayable} of {streams.data?.totalProbed} probed links play back
+            </p>
+            <div className="mt-3 space-y-3">
+              {(streams.data?.checks ?? []).map((c) => (
+                <div key={c.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="truncate text-sm font-semibold">{c.label}</span>
+                    <span className="shrink-0 text-[11px] text-neutral-500">
+                      {c.playableCount}/{c.probes.length} playable · {c.resolved} resolved from {c.tried} sources
+                    </span>
+                  </div>
+                  {c.probes.length === 0 && (
+                    <p className="mt-2 text-xs text-amber-300">No links resolved for this title.</p>
+                  )}
+                  <ul className="mt-2 space-y-1.5">
+                    {c.probes.map((p) => (
+                      <li key={p.url} className="flex items-start gap-2">
+                        {p.playable ? (
+                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                        ) : (
+                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />
+                        )}
+                        <div className="min-w-0">
+                          <div className="truncate text-xs font-semibold">
+                            {p.addonName} · {p.quality} · {p.kindLabel}
+                          </div>
+                          <div className="truncate text-[11px] text-neutral-500">
+                            {p.playable
+                              ? `${p.status} · ${p.contentType ?? "media"} · ${p.latencyMs}ms · SPlayer ready`
+                              : p.error}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  {c.resolveErrors.length > 0 && (
+                    <ul className="mt-2 space-y-1 border-t border-white/10 pt-2">
+                      {c.resolveErrors.map((e) => (
+                        <li key={e.addonId} className="text-[11px] text-neutral-400">
+                          <span className="text-neutral-200">{e.addonName}</span> — {e.message}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
             </div>
