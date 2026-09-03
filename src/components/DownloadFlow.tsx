@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Copy, Download, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { launchSplayer, splayerUrl, splayerWebFallbackUrl } from "@/lib/downloads";
+import { browserDownload, launchSplayer, splayerUrl, splayerWebFallbackUrl } from "@/lib/downloads";
 import { recordDownload } from "@/lib/downloads.functions";
 import { resolveAllAddonStreams } from "@/lib/addon-streams.functions";
 import type { AddonStream } from "@/lib/addon-types";
@@ -98,7 +98,10 @@ export function DownloadFlow({
     record.mutate(stream);
     const url = stream?.url ?? streamUrl;
     const label = stream ? `${title} · ${stream.quality || stream.name}` : title;
-    launchSplayer(url, label);
+    // Direct files download straight from the browser (works everywhere);
+    // magnets/torrents need an external player, so those hand off to SPlayer.
+    if (stream && stream.kind !== "magnet") browserDownload(url, label);
+    else launchSplayer(url, label);
   };
 
   const close = () => {
@@ -185,38 +188,38 @@ export function DownloadFlow({
         ) : (
           <div>
             <p className="text-sm text-neutral-400">
-              SPlayer should be opening. If nothing happened, tap below to retry.
+              {picked && picked.kind !== "magnet"
+                ? "Your download should have started. If your browser blocked it, tap below."
+                : "This source is a torrent — SPlayer should be opening to fetch it."}
             </p>
+            {(!picked || picked.kind !== "magnet") && (
+              <button
+                type="button"
+                onClick={() => browserDownload(target, label)}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold text-black"
+                style={{ background: "var(--accent)" }}
+              >
+                <Download className="h-4 w-4" /> Download file
+              </button>
+            )}
             <a
               href={splayerUrl(target, label)}
               onClick={(e) => {
                 e.preventDefault();
                 launchSplayer(target, label);
               }}
-              className="mt-3 flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-semibold text-black"
-              style={{ background: "var(--accent)" }}
+              className="mt-3 flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 py-2.5 text-sm font-semibold hover:bg-white/10"
             >
               <ExternalLink className="h-4 w-4" /> Open in SPlayer
             </a>
             <a
-              href={splayerWebFallbackUrl(target, label)}
+              href={splayerWebFallbackUrl()}
               target="_blank"
               rel="noreferrer"
               className="mt-3 block text-center text-xs text-neutral-400 underline"
             >
-              SPlayer not installed? Use the web fallback
+              SPlayer not installed? Get it here
             </a>
-            {picked && picked.kind !== "magnet" && (
-              <a
-                href={picked.url}
-                target="_blank"
-                rel="noreferrer"
-                download
-                className="mt-3 flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 py-2.5 text-sm font-semibold hover:bg-white/10"
-              >
-                <Download className="h-4 w-4" /> Download in browser
-              </a>
-            )}
             <button
               type="button"
               onClick={() => void navigator.clipboard?.writeText(target)}
