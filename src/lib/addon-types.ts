@@ -63,6 +63,6 @@ export function externalPlayerUrl(url: string) {
 
 /** Web fallback when SPlayer isn't installed. */
 export function externalPlayerWebUrl(url: string) {
-  return `https://splayer.org/play?url=${encodeURIComponent(url)}`;
+  return "https://splayer.org/";
 }
 
