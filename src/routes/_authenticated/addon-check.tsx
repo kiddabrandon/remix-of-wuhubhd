@@ -42,6 +42,7 @@ function AddonCheck() {
           onClick={() => {
             void packs.refetch();
             void addons.refetch();
+            void streams.refetch();
           }}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-semibold hover:bg-white/10"
         >
