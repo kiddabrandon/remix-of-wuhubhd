@@ -195,9 +195,13 @@ function ContinueWatching() {
 }
 
 function BecauseYouWatched() {
+  const { session } = useApp();
   const { data } = useQuery({
-    queryKey: ["recs", "byw"],
+    queryKey: ["recs", "byw", session?.user.id ?? "guest"],
     queryFn: () => becauseYouWatched(),
+    // Personalised recs need a signed-in session; guests would 401.
+    enabled: !!session,
+    retry: false,
     staleTime: 5 * 60_000,
   });
   if (!data?.results?.length) return null;
