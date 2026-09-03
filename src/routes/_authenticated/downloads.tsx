@@ -110,6 +110,13 @@ function DownloadsPage() {
       <h1 className="font-display text-4xl font-bold tracking-tight">Downloads</h1>
       <p className="mt-1 text-sm text-neutral-400">Buy credits, hand off to SPlayer, and watch offline.</p>
 
+      {!signedIn && (
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-300">
+          You're browsing as a guest. Downloads still work — create an account in Settings to keep
+          your download history and credits across devices.
+        </div>
+      )}
+
       {/* Hero: entitlement */}
       <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="min-w-0">
