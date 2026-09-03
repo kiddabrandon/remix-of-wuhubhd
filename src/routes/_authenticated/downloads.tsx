@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
+import { useApp } from "@/lib/app-store";
 import { CheckCircle2, Clock, Crown, Download, ShieldCheck, XCircle } from "lucide-react";
 import { DOWNLOAD_TIERS } from "@/lib/downloads";
 import { getEntitlement, listDownloads, listPurchases, startPurchase, confirmPurchase } from "@/lib/downloads.functions";
@@ -59,9 +60,28 @@ function DownloadsPage() {
   const [payFor, setPayFor] = useState<string | null>(null);
   const [ref, setRef] = useState("");
 
-  const entitlement = useQuery({ queryKey: ["download-entitlement"], queryFn: () => getEntitlement() });
-  const purchases = useQuery({ queryKey: ["download-purchases"], queryFn: () => listPurchases() });
-  const downloads = useQuery({ queryKey: ["download-events"], queryFn: () => listDownloads() });
+  // Guests can browse this page, but these reads are account-scoped — without a
+  // session the server fn 401s, so gate them instead of crashing the route.
+  const { session } = useApp();
+  const signedIn = !!session;
+  const entitlement = useQuery({
+    queryKey: ["download-entitlement", session?.user.id ?? "guest"],
+    queryFn: () => getEntitlement(),
+    enabled: signedIn,
+    retry: false,
+  });
+  const purchases = useQuery({
+    queryKey: ["download-purchases", session?.user.id ?? "guest"],
+    queryFn: () => listPurchases(),
+    enabled: signedIn,
+    retry: false,
+  });
+  const downloads = useQuery({
+    queryKey: ["download-events", session?.user.id ?? "guest"],
+    queryFn: () => listDownloads(),
+    enabled: signedIn,
+    retry: false,
+  });
 
   const buy = useMutation({
     mutationFn: (tier: "single" | "week" | "lifetime") => startPurchase({ data: { tier } }),
@@ -89,6 +109,13 @@ function DownloadsPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-8">
       <h1 className="font-display text-4xl font-bold tracking-tight">Downloads</h1>
       <p className="mt-1 text-sm text-neutral-400">Buy credits, hand off to SPlayer, and watch offline.</p>
+
+      {!signedIn && (
+        <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-300">
+          You're browsing as a guest. Downloads still work — create an account in Settings to keep
+          your download history and credits across devices.
+        </div>
+      )}
 
       {/* Hero: entitlement */}
       <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-6">
