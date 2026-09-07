@@ -49,6 +49,7 @@ import {
   clearErrorLogs,
   listUserEmails,
   getGuestStats,
+  listViewers,
 } from "@/lib/admin.functions";
 import { AdminAIPanel } from "@/components/AdminAIPanel";
 
@@ -553,6 +554,7 @@ function Dashboard() {
       </p>
       <StatsGrid />
       <AudienceCard />
+      <ViewersCard />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <HealthCard />
