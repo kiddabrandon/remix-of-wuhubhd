@@ -618,6 +618,115 @@ function AudienceCard() {
   );
 }
 
+/** Per-viewer watch history and saved settings. */
+function ViewersCard() {
+  const fn = useServerFn(listViewers);
+  const q = useQuery({ queryKey: ["admin", "viewers"], queryFn: () => fn(), retry: false });
+  const [open, setOpen] = useState<string | null>(null);
+  const [find, setFind] = useState("");
+
+  const rows = (q.data ?? []).filter((v) =>
+    find.trim() ? (v.email ?? "").toLowerCase().includes(find.trim().toLowerCase()) : true,
+  );
+
+  return (
+    <div className="mt-6 rounded-xl border border-white/10 bg-black/40 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Activity className="h-4 w-4 text-cyan-300" /> Viewers · history &amp; settings
+        </div>
+        <input
+          value={find}
+          onChange={(e) => setFind(e.target.value)}
+          placeholder="Search email…"
+          className="w-48 rounded-lg border border-white/10 bg-black/50 px-3 py-1.5 text-xs outline-none focus:border-cyan-400/40"
+        />
+      </div>
+      {q.isLoading && <div className="mt-3 text-xs text-neutral-500">Loading viewers…</div>}
+      <ul className="mt-3 max-h-[28rem] space-y-2 overflow-y-auto text-xs">
+        {rows.map((v) => {
+          const isOpen = open === v.id;
+          return (
+            <li key={v.id} className="rounded-lg border border-white/10 bg-black/50">
+              <button
+                onClick={() => setOpen(isOpen ? null : v.id)}
+                className="flex w-full flex-wrap items-center justify-between gap-2 px-3 py-2 text-left"
+              >
+                <span className="min-w-0 truncate font-medium">
+                  {v.email ?? v.display_name ?? v.id.slice(0, 8)}
+                </span>
+                <span className="shrink-0 text-neutral-500">
+                  {v.history.length} watched · {v.watchlist} saved
+                </span>
+              </button>
+              {isOpen && (
+                <div className="space-y-3 border-t border-white/10 px-3 py-3">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-neutral-500">
+                      Watch history
+                    </div>
+                    <ul className="mt-1 space-y-1">
+                      {v.history.map((h, i) => (
+                        <li
+                          key={`${h.title}-${i}`}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded border border-white/5 px-2 py-1"
+                        >
+                          <span className="min-w-0 truncate">
+                            {h.title}
+                            {h.season != null && h.episode != null
+                              ? ` · S${h.season} E${h.episode}`
+                              : ""}
+                          </span>
+                          <span className="shrink-0 tabular-nums text-neutral-500">
+                            {h.fully_watched ? "finished" : `${Math.round(h.progress_pct)}%`} ·{" "}
+                            {new Date(h.updated_at).toLocaleDateString()}
+                          </span>
+                        </li>
+                      ))}
+                      {!v.history.length && (
+                        <li className="text-neutral-500">Nothing watched yet.</li>
+                      )}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-neutral-500">
+                      Settings
+                    </div>
+                    <ul className="mt-1 grid gap-1 sm:grid-cols-2">
+                      {Object.entries(v.preferences).length === 0 && (
+                        <li className="text-neutral-500">Using defaults.</li>
+                      )}
+                      {Object.entries(v.preferences).map(([k, val]) => (
+                        <li
+                          key={k}
+                          className="flex items-center justify-between gap-2 rounded border border-white/5 px-2 py-1"
+                        >
+                          <span className="text-neutral-400">{k}</span>
+                          <span className="min-w-0 truncate text-right">
+                            {typeof val === "object" ? JSON.stringify(val) : String(val)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </li>
+          );
+        })}
+        {!q.isLoading && rows.length === 0 && (
+          <li className="rounded-lg border border-dashed border-white/10 p-4 text-center text-neutral-500">
+            No viewers yet.
+          </li>
+        )}
+      </ul>
+      {q.isError && <ErrHint error={q.error} />}
+    </div>
+  );
+}
+
+
+
 /** Streaming add-ons are bundled server-side; this card documents what ships. */
 function AddonsInfoCard() {
   return (
