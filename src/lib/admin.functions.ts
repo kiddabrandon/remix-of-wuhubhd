@@ -313,7 +313,7 @@ export type ViewerRow = {
   email: string | null;
   display_name: string | null;
   created_at: string;
-  preferences: Record<string, unknown>;
+  preferences: Record<string, any>;
   watchlist: number;
   history: {
     title: string;
@@ -374,7 +374,7 @@ export const listViewers = createServerFn({ method: "GET" })
       email: p.email ?? null,
       display_name: p.display_name ?? null,
       created_at: p.created_at,
-      preferences: (p.preferences ?? {}) as Record<string, unknown>,
+      preferences: (p.preferences ?? {}) as Record<string, any>,
       watchlist: wl.get(p.id) ?? 0,
       history: byUser.get(p.id) ?? [],
     }));
