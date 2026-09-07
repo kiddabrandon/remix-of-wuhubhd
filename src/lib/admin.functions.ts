@@ -306,3 +306,76 @@ export const getGuestStats = createServerFn({ method: "GET" })
       visits: s.visits ?? 0,
     };
   });
+
+// ---------- Per-viewer activity (watch history + settings) ----------
+export type ViewerRow = {
+  id: string;
+  email: string | null;
+  display_name: string | null;
+  created_at: string;
+  preferences: Record<string, any>;
+  watchlist: number;
+  history: {
+    title: string;
+    media_type: string;
+    season: number | null;
+    episode: number | null;
+    progress_pct: number;
+    fully_watched: boolean;
+    updated_at: string;
+  }[];
+};
+
+export const listViewers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<ViewerRow[]> => {
+    await ensureAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [{ data: profiles, error: pErr }, { data: progress }, { data: watchlist }] =
+      await Promise.all([
+        supabaseAdmin
+          .from("profiles")
+          .select("id, email, display_name, created_at, preferences")
+          .order("created_at", { ascending: false })
+          .limit(200),
+        supabaseAdmin
+          .from("user_progress")
+          .select(
+            "user_id, title, media_type, season, episode, progress_pct, fully_watched, updated_at",
+          )
+          .order("updated_at", { ascending: false })
+          .limit(2000),
+        supabaseAdmin.from("user_watchlists").select("user_id").limit(5000),
+      ]);
+    if (pErr) throw new Error(pErr.message);
+
+    const byUser = new Map<string, ViewerRow["history"]>();
+    for (const r of (progress ?? []) as any[]) {
+      const list = byUser.get(r.user_id) ?? [];
+      if (list.length < 25) {
+        list.push({
+          title: r.title,
+          media_type: r.media_type,
+          season: r.season,
+          episode: r.episode,
+          progress_pct: Number(r.progress_pct ?? 0),
+          fully_watched: Boolean(r.fully_watched),
+          updated_at: r.updated_at,
+        });
+      }
+      byUser.set(r.user_id, list);
+    }
+    const wl = new Map<string, number>();
+    for (const r of (watchlist ?? []) as any[]) wl.set(r.user_id, (wl.get(r.user_id) ?? 0) + 1);
+
+    return ((profiles ?? []) as any[]).map((p) => ({
+      id: p.id,
+      email: p.email ?? null,
+      display_name: p.display_name ?? null,
+      created_at: p.created_at,
+      preferences: (p.preferences ?? {}) as Record<string, any>,
+      watchlist: wl.get(p.id) ?? 0,
+      history: byUser.get(p.id) ?? [],
+    }));
+  });
