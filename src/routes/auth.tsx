@@ -5,6 +5,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { motion } from "motion/react";
 import { Loader2, Mail, Lock, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { siteUrl } from "@/lib/site";
 
 const schema = z.object({
   next: fallback(z.string(), "/").default("/"),
@@ -59,7 +60,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: siteUrl("/"),
             data: { display_name: displayName || email.split("@")[0] },
           },
         });
