@@ -87,7 +87,7 @@ function Discover() {
     ? collection.parts.map((p: any) => ({ ...p, media_type: p.media_type ?? "movie" }))
     : trendingItems;
 
-  const configuredSections = site.homeSections?.length ? site.homeSections : DEFAULT_HOME_SECTIONS;
+  const configuredSections = mergeHomeSections(site.homeSections);
   const sectionById: Record<string, React.ReactNode> = {
     continue: progress.length > 0 ? <ContinueWatching /> : null,
     tonight: <TonightsPick pool={trendingItems} />,
@@ -98,6 +98,10 @@ function Discover() {
     topTv: <Carousel title="Top Rated TV" items={topTv.results.map((r: any) => ({ ...r, media_type: "tv" }))} viewAllHref="/tv" />,
     topMovies: <Carousel title="Top Rated Movies" items={topMovies.results.map((r: any) => ({ ...r, media_type: "movie" }))} viewAllHref="/movies" />,
     popularTv: <Carousel title="Popular TV Shows" items={popTv.results.map((r: any) => ({ ...r, media_type: "tv" }))} viewAllHref="/tv" />,
+    upcomingMovies: <UpcomingRow kind="movies" title="Upcoming Movies" />,
+    upcomingTv: <UpcomingRow kind="tv" title="Upcoming TV Shows" />,
+    upcomingAnime: <UpcomingRow kind="anime" title="Upcoming Anime" />,
+    upcomingCartoons: <UpcomingRow kind="cartoons" title="Upcoming Cartoons" />,
   };
 
   return (
