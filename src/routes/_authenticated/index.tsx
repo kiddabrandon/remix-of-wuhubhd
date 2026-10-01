@@ -8,7 +8,7 @@ import { Top10Row } from "@/components/Top10Row";
 import { poster } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
 import { useSiteConfig } from "@/lib/site-config";
-import { DEFAULT_HOME_SECTIONS } from "@/lib/site-config";
+import { mergeHomeSections } from "@/lib/site-config";
 import { becauseYouWatched } from "@/lib/recommendations.functions";
 import {
   tmdbCollection,
@@ -17,6 +17,7 @@ import {
   tmdbTopRatedMovies,
   tmdbTopRatedTv,
   tmdbTrending,
+  tmdbUpcoming,
 } from "@/lib/tmdb.functions";
 
 const trendingQO = queryOptions({
@@ -211,4 +212,15 @@ function BecauseYouWatched() {
   if (!data?.results?.length) return null;
   const title = data.seed ? `Because you watched ${data.seed}` : "Recommended for you";
   return <Carousel title={title} items={data.results as any} />;
+}
+
+function UpcomingRow({ kind, title }: { kind: "movies" | "tv" | "anime" | "cartoons"; title: string }) {
+  const { data } = useQuery({
+    queryKey: ["upcoming", kind],
+    queryFn: () => tmdbUpcoming({ data: { kind } }),
+    staleTime: 30 * 60_000,
+  });
+  const items = (data?.results ?? []).map((r: any) => ({ ...r, media_type: kind === "movies" ? "movie" : "tv" }));
+  if (!items.length) return null;
+  return <Carousel title={title} items={items} />;
 }
