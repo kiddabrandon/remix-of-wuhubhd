@@ -11,6 +11,10 @@ export const DEFAULT_HOME_SECTIONS = [
   { id: "topTv", label: "Top Rated TV", enabled: true },
   { id: "topMovies", label: "Top Rated Movies", enabled: true },
   { id: "popularTv", label: "Popular TV Shows", enabled: true },
+  { id: "upcomingMovies", label: "Upcoming Movies", enabled: true },
+  { id: "upcomingTv", label: "Upcoming TV Shows", enabled: true },
+  { id: "upcomingAnime", label: "Upcoming Anime", enabled: true },
+  { id: "upcomingCartoons", label: "Upcoming Cartoons", enabled: true },
 ] as const;
 
 export type HomeSectionConfig = {
@@ -18,6 +22,13 @@ export type HomeSectionConfig = {
   label?: string;
   enabled: boolean;
 };
+
+/** Saved config + any newly-added default sections appended at the end. */
+export function mergeHomeSections(saved?: HomeSectionConfig[]): HomeSectionConfig[] {
+  if (!saved?.length) return DEFAULT_HOME_SECTIONS.map((s) => ({ ...s }));
+  const ids = new Set(saved.map((s) => s.id));
+  return [...saved, ...DEFAULT_HOME_SECTIONS.filter((d) => !ids.has(d.id)).map((s) => ({ ...s }))];
+}
 
 export type SiteConfig = {
   serverOrder?: string[];

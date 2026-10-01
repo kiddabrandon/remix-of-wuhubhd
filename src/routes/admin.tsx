@@ -27,6 +27,7 @@ import {
 import { ANIME_API_PROVIDERS, DEFAULT_ANIME_PROVIDERS, DEFAULT_SERVER_ORDER, orderedServers } from "@/lib/servers";
 import {
   DEFAULT_HOME_SECTIONS,
+  mergeHomeSections,
   loadSiteConfigLocal,
   saveSiteConfigLocal,
   type SiteConfig,
@@ -180,7 +181,7 @@ function Panel({ onSignOut }: { onSignOut: () => void }) {
   const [cfg, setCfg] = useState<SiteConfig>({
     serverOrder: initial.serverOrder?.length ? initial.serverOrder : DEFAULT_SERVER_ORDER,
     animeProviders: initial.animeProviders ?? DEFAULT_ANIME_PROVIDERS,
-    homeSections: initial.homeSections?.length ? initial.homeSections : [...DEFAULT_HOME_SECTIONS],
+    homeSections: mergeHomeSections(initial.homeSections),
     tmdbRegion: initial.tmdbRegion ?? "US",
     featuredCollection: initial.featuredCollection ?? "",
     ...initial,
@@ -302,7 +303,7 @@ function Panel({ onSignOut }: { onSignOut: () => void }) {
         />
 
         <HomeSectionsManager
-          sections={cfg.homeSections?.length ? cfg.homeSections : [...DEFAULT_HOME_SECTIONS]}
+          sections={mergeHomeSections(cfg.homeSections)}
           onChange={(homeSections) => setCfg((c) => ({ ...c, homeSections }))}
         />
 

@@ -140,3 +140,22 @@ export const tmdbTrailerKey = createServerFn({ method: "GET" })
       return { key: null };
     }
   });
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export const tmdbUpcoming = createServerFn({ method: "GET" })
+  .inputValidator((d: { kind: "movies" | "tv" | "anime" | "cartoons" }) => d)
+  .handler(async ({ data }) => {
+    const base = { language: "en-US", include_adult: "false", sort_by: "popularity.desc", page: 1 };
+    const d = today();
+    if (data.kind === "movies") {
+      return safeTmdb<{ results: any[] }>("/discover/movie", { ...base, "primary_release_date.gte": d, with_release_type: "2|3" });
+    }
+    const tv: Record<string, string | number> = { ...base, "first_air_date.gte": d };
+    if (data.kind === "anime") Object.assign(tv, { with_genres: "16", with_original_language: "ja" });
+    if (data.kind === "cartoons") Object.assign(tv, { with_genres: "16|10762", without_keywords: "210024" , with_original_language: "en" });
+    if (data.kind === "tv") Object.assign(tv, { without_genres: "16,10762,10763,10767" });
+    return safeTmdb<{ results: any[] }>("/discover/tv", tv);
+  });
