@@ -1,13 +1,16 @@
 import { useRef } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { PosterCard } from "./PosterCard";
+import { UpcomingCard } from "./UpcomingCard";
 import type { TmdbItem } from "@/lib/tmdb-utils";
 
 export function Carousel({
   title,
   items,
   viewAllHref,
+  upcoming,
 }: {
+  upcoming?: boolean;
   title: string;
   items: TmdbItem[];
   viewAllHref?: string;
@@ -62,7 +65,7 @@ export function Carousel({
         className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:px-8"
       >
         {items.map((it) => (
-          <PosterCard key={`${it.id}-${it.media_type ?? ""}`} item={it} />
+          upcoming ? <UpcomingCard key={`${it.id}-${it.media_type ?? ""}`} item={it} /> : <PosterCard key={`${it.id}-${it.media_type ?? ""}`} item={it} />
         ))}
       </div>
     </section>

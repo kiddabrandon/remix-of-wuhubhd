@@ -16,6 +16,8 @@ import { TopNav } from "@/components/TopNav";
 import { BottomDock } from "@/components/BottomDock";
 import { PWAInstall } from "@/components/PWAInstall";
 import { Preloader } from "@/components/Preloader";
+import { Toaster } from "@/components/ui/sonner";
+import { ReleaseReminders } from "@/components/ReleaseReminders";
 
 import { registerPWA } from "@/lib/pwa-register";
 import { trackGuestVisit } from "@/lib/visitors";
@@ -188,6 +190,8 @@ function RootComponent() {
           <PWAInstall />
           <main className="flex-1">
             <Outlet />
+            <Toaster position="top-center" />
+            <ReleaseReminders />
           </main>
           <BottomDock />
         </div>
