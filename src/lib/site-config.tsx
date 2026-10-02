@@ -11,6 +11,7 @@ export const DEFAULT_HOME_SECTIONS = [
   { id: "topTv", label: "Top Rated TV", enabled: true },
   { id: "topMovies", label: "Top Rated Movies", enabled: true },
   { id: "popularTv", label: "Popular TV Shows", enabled: true },
+  { id: "aiPicks", label: "AI Picks: Coming Soon", enabled: true },
   { id: "upcomingMovies", label: "Upcoming Movies", enabled: true },
   { id: "upcomingTv", label: "Upcoming TV Shows", enabled: true },
   { id: "upcomingAnime", label: "Upcoming Anime", enabled: true },
