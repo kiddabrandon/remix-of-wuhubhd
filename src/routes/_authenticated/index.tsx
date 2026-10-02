@@ -5,6 +5,7 @@ import { Hero } from "@/components/Hero";
 import { Carousel } from "@/components/Carousel";
 import { TonightsPick } from "@/components/TonightsPick";
 import { Top10Row } from "@/components/Top10Row";
+import { AiUpcomingPicks } from "@/components/AiUpcomingPicks";
 import { poster } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
 import { useSiteConfig } from "@/lib/site-config";
@@ -99,6 +100,7 @@ function Discover() {
     topTv: <Carousel title="Top Rated TV" items={topTv.results.map((r: any) => ({ ...r, media_type: "tv" }))} viewAllHref="/tv" />,
     topMovies: <Carousel title="Top Rated Movies" items={topMovies.results.map((r: any) => ({ ...r, media_type: "movie" }))} viewAllHref="/movies" />,
     popularTv: <Carousel title="Popular TV Shows" items={popTv.results.map((r: any) => ({ ...r, media_type: "tv" }))} viewAllHref="/tv" />,
+    aiPicks: <AiUpcomingPicks />,
     upcomingMovies: <UpcomingRow kind="movies" title="Upcoming Movies" />,
     upcomingTv: <UpcomingRow kind="tv" title="Upcoming TV Shows" />,
     upcomingAnime: <UpcomingRow kind="anime" title="Upcoming Anime" />,
@@ -222,5 +224,5 @@ function UpcomingRow({ kind, title }: { kind: "movies" | "tv" | "anime" | "carto
   });
   const items = (data?.results ?? []).map((r: any) => ({ ...r, media_type: kind === "movies" ? "movie" : "tv" }));
   if (!items.length) return null;
-  return <Carousel title={title} items={items} />;
+  return <Carousel title={title} items={items} upcoming />;
 }
