@@ -55,6 +55,9 @@ export const SERVERS: StreamServer[] = [
   { id: "vixsrc", name: "VixSrc", kind: "general", color: "#FF3B57", ...flat("https://vixsrc.to") },
   { id: "cineby", name: "Cineby", kind: "general", color: "#F59E0B", ...embed("https://cineby.at") },
   { id: "webstreamr", name: "WebStreamr", kind: "general", color: "#38BDF8", ...embed("https://webstreamr.com") },
+  { id: "pengu-play", name: "Pengu Play", kind: "general", color: "#7DD3FC", ...embed("https://penguplay.com") },
+  { id: "ytsvio", name: "Ytsvio", kind: "general", color: "#F97316", ...embed("https://ytsvio.com") },
+  { id: "eztv", name: "EZTV", kind: "general", color: "#84CC16", ...embed("https://eztv.re") },
   {
     id: "2embed",
     name: "2Embed",
