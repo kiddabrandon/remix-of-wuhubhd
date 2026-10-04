@@ -397,9 +397,10 @@ export const youtubeChannel = createServerFn({ method: "GET" })
             body: JSON.stringify({ context: WEB_CONTEXT, browseId: data.id, params: "EgZ2aWRlb3PyBgQKAjoA" }),
             signal: AbortSignal.timeout(10_000),
           });
-          if (r2.ok) deepFind(await r2.json(), ["videoRenderer", "gridVideoRenderer"], onItem);
+          if (r2.ok) deepFind(await r2.json(), KEYS, onItem);
         } catch { /* ignore */ }
       }
+      if (videos.length === 0) deepFind(tabs, KEYS, onItem);
       const seenV = new Set<string>();
       const uniq = videos.filter((v) => (seenV.has(v.id) ? false : (seenV.add(v.id), true)));
       videos.length = 0; videos.push(...uniq);
