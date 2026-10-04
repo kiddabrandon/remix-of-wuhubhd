@@ -67,6 +67,16 @@ type Renderer = {
   itemSectionRenderer?: { contents?: Renderer[] };
 };
 
+
+function deepFind(node: unknown, keys: string[], cb: (key: string, val: any) => void, depth = 0) {
+  if (!node || typeof node !== "object" || depth > 40) return;
+  if (Array.isArray(node)) { for (const n of node) deepFind(n, keys, cb, depth + 1); return; }
+  for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+    if (keys.includes(k) && v && typeof v === "object") cb(k, v);
+    else deepFind(v, keys, cb, depth + 1);
+  }
+}
+
 function bestThumb(thumbs?: { url: string; width: number }[], fallbackId?: string) {
   return (
     thumbs?.find((t) => t.width >= 336)?.url ??
@@ -187,20 +197,8 @@ export const searchYoutubeShorts = createServerFn({ method: "GET" })
         }
       };
 
-      const walk = (items: Renderer[] | undefined) => {
-        for (const item of items ?? []) {
-          if (item.itemSectionRenderer?.contents) {
-            walk(item.itemSectionRenderer.contents);
-            continue;
-          }
-          if (item.richItemRenderer?.content) {
-            pushFromRenderer(item.richItemRenderer.content);
-            continue;
-          }
-          pushFromRenderer(item);
-        }
-      };
-      walk(sections);
+      void sections;
+      deepFind(json, ["reelItemRenderer", "shortsLockupViewModel"], (k, v) => pushFromRenderer({ [k]: v } as Renderer));
 
       const seen = new Set<string>();
       const dedup = out.filter((s) => (seen.has(s.id) ? false : (seen.add(s.id), true)));
@@ -370,7 +368,23 @@ export const youtubeChannel = createServerFn({ method: "GET" })
             walk(item.tabRenderer.content.sectionListRenderer.contents);
         }
       };
-      walk(tabs);
+      void walk;
+      deepFind(tabs, ["videoRenderer", "gridVideoRenderer"], (_k, v) => pushVideo(v));
+      if (videos.length === 0) {
+        // Home tab may be empty; fetch the Videos tab.
+        try {
+          const r2 = await fetch(`https://www.youtube.com/youtubei/v1/browse?key=${INNERTUBE_KEY}`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ context: WEB_CONTEXT, browseId: data.id, params: "EgZ2aWRlb3PyBgQKAjoA" }),
+            signal: AbortSignal.timeout(10_000),
+          });
+          if (r2.ok) deepFind(await r2.json(), ["videoRenderer", "gridVideoRenderer"], (_k, v) => pushVideo(v));
+        } catch { /* ignore */ }
+      }
+      const seenV = new Set<string>();
+      const uniq = videos.filter((v) => (seenV.has(v.id) ? false : (seenV.add(v.id), true)));
+      videos.length = 0; videos.push(...uniq);
 
       return {
         id: meta?.externalId ?? data.id,
