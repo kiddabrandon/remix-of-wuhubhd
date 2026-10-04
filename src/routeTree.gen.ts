@@ -9,35 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as ApiAddonProxyRouteImport } from './routes/api/addon-proxy'
-import { Route as AuthenticatedYoutubeTestRouteImport } from './routes/_authenticated/youtube-test'
-import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
-import { Route as AuthenticatedTvRouteImport } from './routes/_authenticated/tv'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
-import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
-import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
-import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
 import { Route as AuthenticatedAddonCheckRouteImport } from './routes/_authenticated/addon-check'
-import { Route as AuthenticatedYoutubeIndexRouteImport } from './routes/_authenticated/youtube.index'
-import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
+import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
+import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
+import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedTvRouteImport } from './routes/_authenticated/tv'
+import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authenticated/watchlist'
+import { Route as AuthenticatedYoutubeTestRouteImport } from './routes/_authenticated/youtube-test'
+import { Route as ApiAddonProxyRouteImport } from './routes/api/addon-proxy'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedAnimeIndexRouteImport } from './routes/_authenticated/anime.index'
-import { Route as AuthenticatedYoutubeShortsRouteImport } from './routes/_authenticated/youtube.shorts'
-import { Route as AuthenticatedYoutubeIdRouteImport } from './routes/_authenticated/youtube.$id'
-import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
-import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
 import { Route as AuthenticatedAnimeIdRouteImport } from './routes/_authenticated/anime.$id'
-import { Route as AuthenticatedYoutubeChannelChannelIdRouteImport } from './routes/_authenticated/youtube.channel.$channelId'
+import { Route as AuthenticatedBrowseProviderRouteImport } from './routes/_authenticated/browse.$provider'
+import { Route as AuthenticatedPartyIndexRouteImport } from './routes/_authenticated/party.index'
+import { Route as AuthenticatedPartyCodeRouteImport } from './routes/_authenticated/party.$code'
+import { Route as AuthenticatedYoutubeIndexRouteImport } from './routes/_authenticated/youtube.index'
+import { Route as AuthenticatedYoutubeIdRouteImport } from './routes/_authenticated/youtube.$id'
+import { Route as AuthenticatedYoutubeShortsRouteImport } from './routes/_authenticated/youtube.shorts'
 import { Route as AuthenticatedWatchTypeIdRouteImport } from './routes/_authenticated/watch.$type.$id'
+import { Route as AuthenticatedYoutubeChannelChannelIdRouteImport } from './routes/_authenticated/youtube.channel.$channelId'
 
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -45,8 +44,9 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -54,50 +54,9 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
-  getParentRoute: () => AuthRoute,
-} as any)
-const ApiAddonProxyRoute = ApiAddonProxyRouteImport.update({
-  id: '/api/addon-proxy',
-  path: '/api/addon-proxy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedYoutubeTestRoute =
-  AuthenticatedYoutubeTestRouteImport.update({
-    id: '/youtube-test',
-    path: '/youtube-test',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedWatchlistRoute = AuthenticatedWatchlistRouteImport.update({
-  id: '/watchlist',
-  path: '/watchlist',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTvRoute = AuthenticatedTvRouteImport.update({
-  id: '/tv',
-  path: '/tv',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMoviesRoute = AuthenticatedMoviesRouteImport.update({
-  id: '/movies',
-  path: '/movies',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
+const AuthenticatedAddonCheckRoute = AuthenticatedAddonCheckRouteImport.update({
+  id: '/addon-check',
+  path: '/addon-check',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDownloadsRoute = AuthenticatedDownloadsRouteImport.update({
@@ -105,41 +64,60 @@ const AuthenticatedDownloadsRoute = AuthenticatedDownloadsRouteImport.update({
   path: '/downloads',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAddonCheckRoute = AuthenticatedAddonCheckRouteImport.update({
-  id: '/addon-check',
-  path: '/addon-check',
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedYoutubeIndexRoute =
-  AuthenticatedYoutubeIndexRouteImport.update({
-    id: '/youtube/',
-    path: '/youtube/',
+const AuthenticatedMoviesRoute = AuthenticatedMoviesRouteImport.update({
+  id: '/movies',
+  path: '/movies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTvRoute = AuthenticatedTvRouteImport.update({
+  id: '/tv',
+  path: '/tv',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWatchlistRoute = AuthenticatedWatchlistRouteImport.update({
+  id: '/watchlist',
+  path: '/watchlist',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedYoutubeTestRoute =
+  AuthenticatedYoutubeTestRouteImport.update({
+    id: '/youtube-test',
+    path: '/youtube-test',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPartyIndexRoute = AuthenticatedPartyIndexRouteImport.update({
-  id: '/party/',
-  path: '/party/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const ApiAddonProxyRoute = ApiAddonProxyRouteImport.update({
+  id: '/api/addon-proxy',
+  path: '/api/addon-proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AuthenticatedAnimeIndexRoute = AuthenticatedAnimeIndexRouteImport.update({
   id: '/anime/',
   path: '/anime/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedYoutubeShortsRoute =
-  AuthenticatedYoutubeShortsRouteImport.update({
-    id: '/youtube/shorts',
-    path: '/youtube/shorts',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedYoutubeIdRoute = AuthenticatedYoutubeIdRouteImport.update({
-  id: '/youtube/$id',
-  path: '/youtube/$id',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedPartyCodeRoute = AuthenticatedPartyCodeRouteImport.update({
-  id: '/party/$code',
-  path: '/party/$code',
+const AuthenticatedAnimeIdRoute = AuthenticatedAnimeIdRouteImport.update({
+  id: '/anime/$id',
+  path: '/anime/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBrowseProviderRoute =
@@ -148,21 +126,43 @@ const AuthenticatedBrowseProviderRoute =
     path: '/browse/$provider',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAnimeIdRoute = AuthenticatedAnimeIdRouteImport.update({
-  id: '/anime/$id',
-  path: '/anime/$id',
+const AuthenticatedPartyIndexRoute = AuthenticatedPartyIndexRouteImport.update({
+  id: '/party/',
+  path: '/party/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedYoutubeChannelChannelIdRoute =
-  AuthenticatedYoutubeChannelChannelIdRouteImport.update({
-    id: '/youtube/channel/$channelId',
-    path: '/youtube/channel/$channelId',
+const AuthenticatedPartyCodeRoute = AuthenticatedPartyCodeRouteImport.update({
+  id: '/party/$code',
+  path: '/party/$code',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedYoutubeIndexRoute =
+  AuthenticatedYoutubeIndexRouteImport.update({
+    id: '/youtube/',
+    path: '/youtube/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedYoutubeIdRoute = AuthenticatedYoutubeIdRouteImport.update({
+  id: '/youtube/$id',
+  path: '/youtube/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedYoutubeShortsRoute =
+  AuthenticatedYoutubeShortsRouteImport.update({
+    id: '/youtube/shorts',
+    path: '/youtube/shorts',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedWatchTypeIdRoute =
   AuthenticatedWatchTypeIdRouteImport.update({
     id: '/watch/$type/$id',
     path: '/watch/$type/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedYoutubeChannelChannelIdRoute =
+  AuthenticatedYoutubeChannelChannelIdRouteImport.update({
+    id: '/youtube/channel/$channelId',
+    path: '/youtube/channel/$channelId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -337,11 +337,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -351,11 +351,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -365,67 +365,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/api/addon-proxy': {
-      id: '/api/addon-proxy'
-      path: '/api/addon-proxy'
-      fullPath: '/api/addon-proxy'
-      preLoaderRoute: typeof ApiAddonProxyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/youtube-test': {
-      id: '/_authenticated/youtube-test'
-      path: '/youtube-test'
-      fullPath: '/youtube-test'
-      preLoaderRoute: typeof AuthenticatedYoutubeTestRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/watchlist': {
-      id: '/_authenticated/watchlist'
-      path: '/watchlist'
-      fullPath: '/watchlist'
-      preLoaderRoute: typeof AuthenticatedWatchlistRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/tv': {
-      id: '/_authenticated/tv'
-      path: '/tv'
-      fullPath: '/tv'
-      preLoaderRoute: typeof AuthenticatedTvRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/search': {
-      id: '/_authenticated/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof AuthenticatedSearchRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/movies': {
-      id: '/_authenticated/movies'
-      path: '/movies'
-      fullPath: '/movies'
-      preLoaderRoute: typeof AuthenticatedMoviesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/history': {
-      id: '/_authenticated/history'
-      path: '/history'
-      fullPath: '/history'
-      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
+    '/_authenticated/addon-check': {
+      id: '/_authenticated/addon-check'
+      path: '/addon-check'
+      fullPath: '/addon-check'
+      preLoaderRoute: typeof AuthenticatedAddonCheckRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/downloads': {
@@ -435,60 +379,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDownloadsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/addon-check': {
-      id: '/_authenticated/addon-check'
-      path: '/addon-check'
-      fullPath: '/addon-check'
-      preLoaderRoute: typeof AuthenticatedAddonCheckRouteImport
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/youtube/': {
-      id: '/_authenticated/youtube/'
-      path: '/youtube'
-      fullPath: '/youtube/'
-      preLoaderRoute: typeof AuthenticatedYoutubeIndexRouteImport
+    '/_authenticated/movies': {
+      id: '/_authenticated/movies'
+      path: '/movies'
+      fullPath: '/movies'
+      preLoaderRoute: typeof AuthenticatedMoviesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/party/': {
-      id: '/_authenticated/party/'
-      path: '/party'
-      fullPath: '/party/'
-      preLoaderRoute: typeof AuthenticatedPartyIndexRouteImport
+    '/_authenticated/search': {
+      id: '/_authenticated/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthenticatedSearchRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tv': {
+      id: '/_authenticated/tv'
+      path: '/tv'
+      fullPath: '/tv'
+      preLoaderRoute: typeof AuthenticatedTvRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/watchlist': {
+      id: '/_authenticated/watchlist'
+      path: '/watchlist'
+      fullPath: '/watchlist'
+      preLoaderRoute: typeof AuthenticatedWatchlistRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/youtube-test': {
+      id: '/_authenticated/youtube-test'
+      path: '/youtube-test'
+      fullPath: '/youtube-test'
+      preLoaderRoute: typeof AuthenticatedYoutubeTestRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/addon-proxy': {
+      id: '/api/addon-proxy'
+      path: '/api/addon-proxy'
+      fullPath: '/api/addon-proxy'
+      preLoaderRoute: typeof ApiAddonProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_authenticated/anime/': {
       id: '/_authenticated/anime/'
       path: '/anime'
       fullPath: '/anime/'
       preLoaderRoute: typeof AuthenticatedAnimeIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/youtube/shorts': {
-      id: '/_authenticated/youtube/shorts'
-      path: '/youtube/shorts'
-      fullPath: '/youtube/shorts'
-      preLoaderRoute: typeof AuthenticatedYoutubeShortsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/youtube/$id': {
-      id: '/_authenticated/youtube/$id'
-      path: '/youtube/$id'
-      fullPath: '/youtube/$id'
-      preLoaderRoute: typeof AuthenticatedYoutubeIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/party/$code': {
-      id: '/_authenticated/party/$code'
-      path: '/party/$code'
-      fullPath: '/party/$code'
-      preLoaderRoute: typeof AuthenticatedPartyCodeRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/browse/$provider': {
-      id: '/_authenticated/browse/$provider'
-      path: '/browse/$provider'
-      fullPath: '/browse/$provider'
-      preLoaderRoute: typeof AuthenticatedBrowseProviderRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/anime/$id': {
@@ -498,11 +456,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAnimeIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/youtube/channel/$channelId': {
-      id: '/_authenticated/youtube/channel/$channelId'
-      path: '/youtube/channel/$channelId'
-      fullPath: '/youtube/channel/$channelId'
-      preLoaderRoute: typeof AuthenticatedYoutubeChannelChannelIdRouteImport
+    '/_authenticated/browse/$provider': {
+      id: '/_authenticated/browse/$provider'
+      path: '/browse/$provider'
+      fullPath: '/browse/$provider'
+      preLoaderRoute: typeof AuthenticatedBrowseProviderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/party/': {
+      id: '/_authenticated/party/'
+      path: '/party'
+      fullPath: '/party/'
+      preLoaderRoute: typeof AuthenticatedPartyIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/party/$code': {
+      id: '/_authenticated/party/$code'
+      path: '/party/$code'
+      fullPath: '/party/$code'
+      preLoaderRoute: typeof AuthenticatedPartyCodeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/youtube/': {
+      id: '/_authenticated/youtube/'
+      path: '/youtube'
+      fullPath: '/youtube/'
+      preLoaderRoute: typeof AuthenticatedYoutubeIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/youtube/$id': {
+      id: '/_authenticated/youtube/$id'
+      path: '/youtube/$id'
+      fullPath: '/youtube/$id'
+      preLoaderRoute: typeof AuthenticatedYoutubeIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/youtube/shorts': {
+      id: '/_authenticated/youtube/shorts'
+      path: '/youtube/shorts'
+      fullPath: '/youtube/shorts'
+      preLoaderRoute: typeof AuthenticatedYoutubeShortsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/watch/$type/$id': {
@@ -510,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/watch/$type/$id'
       fullPath: '/watch/$type/$id'
       preLoaderRoute: typeof AuthenticatedWatchTypeIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/youtube/channel/$channelId': {
+      id: '/_authenticated/youtube/channel/$channelId'
+      path: '/youtube/channel/$channelId'
+      fullPath: '/youtube/channel/$channelId'
+      preLoaderRoute: typeof AuthenticatedYoutubeChannelChannelIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
