@@ -20,7 +20,7 @@ export function UpcomingCard({ item }: { item: TmdbItem }) {
       clearReminder(type, item.id);
       toast("Removed from watchlist");
     } else {
-      setReminder({ id: item.id, type, title: titleOf(item), date });
+      setReminder({ id: item.id, type, title: titleOf(item), date, poster: item.poster_path ?? null });
       if (typeof Notification !== "undefined" && Notification.permission === "default") {
         void Notification.requestPermission();
       }
