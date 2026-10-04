@@ -93,7 +93,7 @@ function Section({ title, items, released }: { title: string; items: Reminder[];
         {items.map((r) => (
           <div key={`${r.type}-${r.id}`} className="flex min-w-0 gap-3 rounded-2xl border border-white/10 bg-white/5 p-3">
             <div className="h-24 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-800">
-              {r.poster && <img src={poster(r.poster, "w185")} alt={r.title} loading="lazy" className="h-full w-full object-cover" />}
+              {r.poster && <img src={poster(r.poster, "w185") ?? undefined} alt={r.title} loading="lazy" className="h-full w-full object-cover" />}
             </div>
             <div className="flex min-w-0 flex-1 flex-col">
               <div className="truncate text-sm font-semibold">{r.title}</div>
