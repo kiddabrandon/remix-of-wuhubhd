@@ -1,7 +1,13 @@
 // Client-side release reminders for saved upcoming titles (works for guests and accounts).
 const KEY = "wuhub:release-reminders";
 
-export type Reminder = { id: number; type: "movie" | "tv"; title: string; date: string; notified?: boolean };
+export type Reminder = { id: number; type: "movie" | "tv"; title: string; date: string; poster?: string | null; notified?: boolean };
+
+export const REMINDERS_EVENT = "wuhub:reminders-changed";
+
+export function listReminders(): Reminder[] {
+  return Object.values(read()).sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"));
+}
 
 function read(): Record<string, Reminder> {
   if (typeof window === "undefined") return {};
@@ -13,6 +19,7 @@ function read(): Record<string, Reminder> {
 }
 function write(v: Record<string, Reminder>) {
   localStorage.setItem(KEY, JSON.stringify(v));
+  window.dispatchEvent(new Event(REMINDERS_EVENT));
 }
 
 export function setReminder(r: Reminder) {

@@ -20,6 +20,7 @@ import { Route as AuthenticatedWatchlistRouteImport } from './routes/_authentica
 import { Route as AuthenticatedTvRouteImport } from './routes/_authenticated/tv'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
+import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
 import { Route as AuthenticatedMoviesRouteImport } from './routes/_authenticated/movies'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
@@ -88,6 +89,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRemindersRoute = AuthenticatedRemindersRouteImport.update({
+  id: '/reminders',
+  path: '/reminders',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMoviesRoute = AuthenticatedMoviesRouteImport.update({
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
+  '/reminders': typeof AuthenticatedRemindersRoute
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tv': typeof AuthenticatedTvRoute
@@ -199,6 +206,7 @@ export interface FileRoutesByTo {
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/movies': typeof AuthenticatedMoviesRoute
+  '/reminders': typeof AuthenticatedRemindersRoute
   '/search': typeof AuthenticatedSearchRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tv': typeof AuthenticatedTvRoute
@@ -227,6 +235,7 @@ export interface FileRoutesById {
   '/_authenticated/downloads': typeof AuthenticatedDownloadsRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/movies': typeof AuthenticatedMoviesRoute
+  '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tv': typeof AuthenticatedTvRoute
@@ -256,6 +265,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/history'
     | '/movies'
+    | '/reminders'
     | '/search'
     | '/settings'
     | '/tv'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/history'
     | '/movies'
+    | '/reminders'
     | '/search'
     | '/settings'
     | '/tv'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/_authenticated/downloads'
     | '/_authenticated/history'
     | '/_authenticated/movies'
+    | '/_authenticated/reminders'
     | '/_authenticated/search'
     | '/_authenticated/settings'
     | '/_authenticated/tv'
@@ -412,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reminders': {
+      id: '/_authenticated/reminders'
+      path: '/reminders'
+      fullPath: '/reminders'
+      preLoaderRoute: typeof AuthenticatedRemindersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/movies': {
@@ -520,6 +539,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDownloadsRoute: typeof AuthenticatedDownloadsRoute
   AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedMoviesRoute: typeof AuthenticatedMoviesRoute
+  AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTvRoute: typeof AuthenticatedTvRoute
@@ -543,6 +563,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDownloadsRoute: AuthenticatedDownloadsRoute,
   AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedMoviesRoute: AuthenticatedMoviesRoute,
+  AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTvRoute: AuthenticatedTvRoute,
