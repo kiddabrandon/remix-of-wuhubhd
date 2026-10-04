@@ -27,10 +27,11 @@ function ShortsPage() {
   const [index, setIndex] = useState(0);
   const touchY = useRef<number | null>(null);
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, refetch } = useQuery({
     queryKey: ["shorts-feed", query],
     queryFn: () => feed({ data: { q: query, limit: 30 } }),
     staleTime: 5 * 60_000,
+    retry: 2,
   });
 
   const shorts = data ?? [];
@@ -76,7 +77,14 @@ function ShortsPage() {
       </form>
 
       {isFetching && shorts.length === 0 && <p className="mt-10 text-sm text-neutral-500">Loading Shorts…</p>}
-      {!isFetching && shorts.length === 0 && <p className="mt-10 text-sm text-neutral-500">No Shorts found. Try another search.</p>}
+      {!isFetching && shorts.length === 0 && (
+        <div className="mt-10 text-sm text-neutral-500">
+          No Shorts found.{" "}
+          <button type="button" onClick={() => void refetch()} className="underline hover:text-white">
+            Try again
+          </button>
+        </div>
+      )}
 
       {active && (
         <div className="mt-5 flex flex-col items-center">

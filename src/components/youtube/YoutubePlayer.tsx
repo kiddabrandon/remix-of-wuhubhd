@@ -59,6 +59,8 @@ export function YoutubePlayer({
       if (cancelled || !window.YT?.Player || !host) return;
       const player = new window.YT.Player(host, {
         videoId,
+        width: "100%",
+        height: "100%",
         playerVars: {
           autoplay: autoplay ? 1 : 0,
           rel: 0,
@@ -109,7 +111,16 @@ export function YoutubePlayer({
   }, [videoId]);
 
   return (
-    <div className={`relative overflow-hidden bg-black ${className}`}>
+    <div className={`relative overflow-hidden bg-black ${className} [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:h-full [&_iframe]:w-full`}>
+      <img
+        src={`https://i.ytimg.com/vi/${videoId}/${vertical ? "oardefault" : "hqdefault"}.jpg`}
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).src = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        }}
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover opacity-60"
+      />
       <div ref={hostRef} id={containerId} className="absolute inset-0 h-full w-full" />
     </div>
   );

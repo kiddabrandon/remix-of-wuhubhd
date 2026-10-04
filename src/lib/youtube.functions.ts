@@ -586,6 +586,9 @@ export const shortsFeed = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ q: z.string().max(120).optional(), limit: z.number().int().min(1).max(40).optional() }).parse(d ?? {}))
   .handler(async ({ data }): Promise<YoutubeShort[]> => {
     const q = data.q?.trim() || "shorts";
-    const res = await searchYoutubeShorts({ data: { q, limit: data.limit ?? 30 } });
+    const limit = data.limit ?? 30;
+    let res = await searchYoutubeShorts({ data: { q, limit } });
+    if (res.length === 0) res = await searchYoutubeShorts({ data: { q: `${q} #shorts`, limit } });
+    if (res.length === 0 && q !== "shorts") res = await searchYoutubeShorts({ data: { q: "trending shorts", limit } });
     return res;
   });
