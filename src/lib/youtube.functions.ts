@@ -369,9 +369,27 @@ export const youtubeChannel = createServerFn({ method: "GET" })
         }
       };
       void walk;
-      deepFind(tabs, ["videoRenderer", "gridVideoRenderer"], (_k, v) => pushVideo(v));
-      if (videos.length === 0) {
-        // Home tab may be empty; fetch the Videos tab.
+      const onItem = (k: string, v: any) => {
+        if (k !== "lockupViewModel") return pushVideo(v);
+        if (v.contentType && v.contentType !== "LOCKUP_CONTENT_TYPE_VIDEO") return;
+        const id = v.contentId as string | undefined;
+        if (!id) return;
+        const md = v.metadata?.lockupMetadataViewModel;
+        const parts: string[] = (md?.metadata?.contentMetadataViewModel?.metadataRows ?? [])
+          .flatMap((r: any) => r.metadataParts ?? []).map((p: any) => p.text?.content).filter(Boolean);
+        const srcs = v.contentImage?.thumbnailViewModel?.image?.sources as { url: string; width: number }[] | undefined;
+        videos.push({
+          id,
+          title: md?.title?.content ?? "Untitled",
+          channel: meta?.title ?? "Channel",
+          channelId: meta?.externalId ?? data.id,
+          thumbnail: bestThumb(srcs, id),
+          published: parts.join(" · ") || null,
+        });
+      };
+      const KEYS = ["videoRenderer", "gridVideoRenderer", "lockupViewModel"];
+      {
+        // Fetch the Videos tab for the full upload list.
         try {
           const r2 = await fetch(`https://www.youtube.com/youtubei/v1/browse?key=${INNERTUBE_KEY}`, {
             method: "POST",
@@ -379,7 +397,7 @@ export const youtubeChannel = createServerFn({ method: "GET" })
             body: JSON.stringify({ context: WEB_CONTEXT, browseId: data.id, params: "EgZ2aWRlb3PyBgQKAjoA" }),
             signal: AbortSignal.timeout(10_000),
           });
-          if (r2.ok) deepFind(await r2.json(), ["videoRenderer", "gridVideoRenderer"], (_k, v) => pushVideo(v));
+          if (r2.ok) deepFind(await r2.json(), ["videoRenderer", "gridVideoRenderer"], onItem);
         } catch { /* ignore */ }
       }
       const seenV = new Set<string>();
