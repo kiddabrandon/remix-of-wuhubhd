@@ -8,7 +8,7 @@ import { tmdbTrailerKey } from "@/lib/tmdb.functions";
 
 export function PosterCard({ item, size = "md" }: { item: TmdbItem; size?: "sm" | "md" | "lg" }) {
   const type = mediaTypeOf(item);
-  const w = size === "sm" ? "w-32" : size === "lg" ? "w-52" : "w-40";
+  const w = size === "sm" ? "w-32" : size === "lg" ? "w-52" : "w-[9.25rem] sm:w-44";
   const src = poster(item.poster_path, "w342");
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
 
@@ -53,9 +53,9 @@ export function PosterCard({ item, size = "md" }: { item: TmdbItem; size?: "sm" 
       onMouseLeave={onLeave}
     >
       <motion.div
-        whileHover={{ y: -4, scale: 1.03 }}
+        whileHover={{ y: -4, scale: 1.02 }}
         transition={{ type: "spring", stiffness: 300, damping: 24 }}
-        className="relative aspect-[2/3] overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/5"
+        className="relative aspect-[2/3] overflow-hidden rounded-md bg-card ring-1 ring-border transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-accent"
       >
         {src ? (
           <img
@@ -65,7 +65,7 @@ export function PosterCard({ item, size = "md" }: { item: TmdbItem; size?: "sm" 
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-neutral-500">{titleOf(item)}</div>
+          <div className="flex h-full items-center justify-center text-xs text-muted-foreground">{titleOf(item)}</div>
         )}
         {showTrailer && trailerKey && !trailerErrored && (
           <iframe
@@ -78,9 +78,9 @@ export function PosterCard({ item, size = "md" }: { item: TmdbItem; size?: "sm" 
             onError={() => setTrailerErrored(true)}
           />
         )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         {rating && (
-          <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-medium backdrop-blur">
+          <div className="absolute top-2 right-2 flex items-center gap-1 rounded bg-background/80 px-2 py-1 text-[11px] font-medium backdrop-blur">
             <Star className="h-3 w-3 fill-current" style={{ color: "var(--accent)" }} />
             <span>{rating}</span>
           </div>
@@ -90,8 +90,8 @@ export function PosterCard({ item, size = "md" }: { item: TmdbItem; size?: "sm" 
           <div className="text-xs text-neutral-400">{yearOf(item)}</div>
         </div>
       </motion.div>
-      <div className="mt-2 truncate text-sm text-neutral-200 group-hover:text-white">{titleOf(item)}</div>
-      <div className="text-xs text-neutral-500">{yearOf(item)}</div>
+      <div className="mt-2 truncate text-sm font-semibold text-foreground/90 group-hover:text-accent">{titleOf(item)}</div>
+      <div className="text-xs text-muted-foreground">{yearOf(item)} · {type === "movie" ? "Movie" : "Series"}</div>
     </Link>
   );
 }

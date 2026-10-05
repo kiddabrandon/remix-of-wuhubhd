@@ -78,15 +78,7 @@ function SearchPage() {
       )}
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {items.map((it) => (
-          <Link
-            key={`${it.media_type}-${it.id}`}
-            to="/watch/$type/$id"
-            params={{ type: it.media_type, id: String(it.id) }}
-          >
-            <PosterCard item={it as never} />
-          </Link>
-        ))}
+        {items.map((it) => <PosterCard key={`${it.media_type}-${it.id}`} item={it as never} />)}
         {!busy && items.length === 0 && !err && (
           <div className="col-span-full py-12 text-center text-sm text-neutral-500">
             Try a title, actor, or franchise.
