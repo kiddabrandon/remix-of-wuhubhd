@@ -117,7 +117,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
     ],
@@ -134,7 +134,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-black text-neutral-100 antialiased">
+      <body className="bg-background text-foreground antialiased">
         {children}
         <Scripts />
       </body>
@@ -185,7 +185,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AppProvider>
         <Preloader />
-        <div className="flex min-h-screen flex-col bg-black pb-[max(4.5rem,calc(3.5rem+env(safe-area-inset-bottom)))]">
+        <div className="flex min-h-screen flex-col bg-background pb-[max(4.5rem,calc(3.5rem+env(safe-area-inset-bottom)))] md:pb-0">
           <TopNav />
           <PWAInstall />
           <main className="flex-1">

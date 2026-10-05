@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { Play, Plus, Check, Star } from "lucide-react";
+import { Play, Plus, Check, Star, Info } from "lucide-react";
 import { backdrop, titleOf, yearOf, mediaTypeOf, type TmdbItem } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
+import { Button } from "@/components/ui/button";
 
 export function Hero({ items }: { items: TmdbItem[] }) {
   const [idx, setIdx] = useState(0);
@@ -23,7 +24,7 @@ export function Hero({ items }: { items: TmdbItem[] }) {
   const saved = inWatchlist(item.id, type);
 
   return (
-    <section className="relative h-[62vh] min-h-[420px] w-full overflow-hidden sm:h-[78vh] sm:min-h-[520px]">
+    <section className="relative h-[70svh] min-h-[500px] max-h-[760px] w-full overflow-hidden md:h-[72vh]">
       <AnimatePresence mode="wait">
         <motion.div
           key={item.id}
@@ -33,23 +34,22 @@ export function Hero({ items }: { items: TmdbItem[] }) {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="absolute inset-0"
         >
-          {bg && <img src={bg} alt="" className="h-full w-full object-cover" />}
+          {bg && <img src={bg} alt="" className="h-full w-full object-cover object-center" />}
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
+      <div className="hero-scrim absolute inset-0" />
 
-      <div className="relative z-10 flex h-full items-end px-4 pb-8 sm:items-center sm:px-12 sm:pb-0">
+      <div className="relative z-10 mx-auto flex h-full max-w-[1600px] items-end px-4 pb-16 sm:px-8 md:items-center md:px-12 md:pb-4 lg:px-16">
         <motion.div
           key={item.id + "-content"}
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-2xl"
+          className="max-w-xl pt-20 md:max-w-2xl"
         >
-          <div className="mb-3 flex items-center gap-3 text-xs text-neutral-400">
-            <span className="rounded-full border border-white/15 px-2.5 py-0.5 uppercase tracking-widest">
+          <div className="mb-4 flex items-center gap-3 text-xs font-semibold text-muted-foreground">
+            <span className="rounded border border-border bg-background/40 px-2.5 py-1 uppercase tracking-widest backdrop-blur-md">
               {type === "movie" ? "Movie" : "Series"}
             </span>
             <span>{yearOf(item)}</span>
@@ -60,22 +60,20 @@ export function Hero({ items }: { items: TmdbItem[] }) {
               </span>
             ) : null}
           </div>
-          <h1 className="font-display text-4xl leading-[1.05] font-bold tracking-tight sm:text-6xl md:text-7xl">
+          <h1 className="font-display text-4xl leading-[1.02] font-bold tracking-normal sm:text-6xl md:text-7xl">
             {titleOf(item)}
           </h1>
-          <p className="mt-4 line-clamp-3 max-w-xl text-sm text-neutral-300 sm:text-base">{item.overview}</p>
+          <p className="mt-4 line-clamp-3 max-w-xl text-sm leading-relaxed text-foreground/75 sm:text-base">{item.overview}</p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              to="/watch/$type/$id"
-              params={{ type, id: String(item.id) }}
-              className="group inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-black transition"
-              style={{ background: "var(--accent)" }}
-            >
-              <Play className="h-4 w-4 fill-current" />
-              Watch Now
-            </Link>
-            <button
+            <Button asChild size="lg" className="h-11 bg-accent px-6 font-bold text-accent-foreground hover:bg-accent/90">
+              <Link to="/watch/$type/$id" params={{ type, id: String(item.id) }}>
+                <Play className="fill-current" /> Watch now
+              </Link>
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
               onClick={() =>
                 toggleWatch({
                   id: item.id,
@@ -85,30 +83,36 @@ export function Hero({ items }: { items: TmdbItem[] }) {
                   year: yearOf(item),
                 })
               }
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium backdrop-blur transition hover:bg-white/10"
+              className="h-11 border border-border bg-secondary/75 px-6 font-semibold backdrop-blur-md hover:bg-secondary"
             >
               {saved ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               {saved ? "In Watchlist" : "Add to Watchlist"}
-            </button>
+            </Button>
+            <Button asChild variant="ghost" size="icon" className="h-11 w-11 border border-border bg-background/35 backdrop-blur-md hover:bg-secondary" aria-label="View title details">
+              <Link to="/watch/$type/$id" params={{ type, id: String(item.id) }}>
+                <Info />
+              </Link>
+            </Button>
           </div>
 
           {featured.length > 1 && (
             <div className="mt-10 flex gap-2">
               {featured.map((_, i) => (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   key={i}
                   onClick={() => setIdx(i)}
-                  className="h-0.5 w-8 overflow-hidden rounded-full bg-white/20"
+                  className="h-7 w-8 rounded-none p-0"
                   aria-label={`Go to slide ${i + 1}`}
                 >
                   <div
-                    className="h-full transition-all"
+                    className="h-0.5 w-full bg-border transition-colors"
                     style={{
-                      background: i === idx ? "var(--accent)" : "transparent",
-                      width: i === idx ? "100%" : "0%",
+                      background: i === idx ? "var(--accent)" : undefined,
                     }}
                   />
-                </button>
+                </Button>
               ))}
             </div>
           )}
