@@ -14,6 +14,7 @@ export type AnimeItem = {
   banner: string | null;
   score: number | null;
   year: number | null;
+  idMal?: number | null;
   episodes: number | null;
   format: string | null;
   genres: string[];
