@@ -17,15 +17,16 @@ export const ANIME_API_PROVIDERS = [
   { id: "videasy", name: "Videasy anime", description: "AniList-keyed embed with sub/dub. Most reliable." },
   { id: "vidsrccc", name: "Vidsrc anime", description: "AniList-keyed embed fallback with sub/dub." },
   { id: "hianime", name: "HiAnime", description: "HiAnime episode list with separate sub and dub tracks." },
-  { id: "megaplay", name: "HiAnime · Megaplay", description: "Megaplay mirror of HiAnime, sub/dub aware." },
+  { id: "megaplay", name: "Megaplay", description: "AniList-keyed Megaplay player with sub/dub." },
+  { id: "vidplay", name: "Vidplay", description: "AniList-keyed Vidplay player with sub/dub." },
   { id: "animepahe", name: "AnimePahe mirror", description: "Sub-focused fallback." },
 ] as const;
 
 /** Providers that only need the AniList id + episode number (no scraping). */
-export const ANIME_EMBED_PROVIDERS = ["videasy", "vidsrccc"] as string[];
+export const ANIME_EMBED_PROVIDERS = ["videasy", "megaplay", "vidplay", "vidsrccc"] as string[];
 
 /** Anime playback order: embeds first (they always resolve), scrapers after. */
-export const DEFAULT_ANIME_PROVIDERS = ["videasy", "vidsrccc", "hianime", "megaplay", "animepahe"] as string[];
+export const DEFAULT_ANIME_PROVIDERS = ["megaplay", "videasy", "vidplay", "vidsrccc", "hianime", "animepahe"] as string[];
 
 
 

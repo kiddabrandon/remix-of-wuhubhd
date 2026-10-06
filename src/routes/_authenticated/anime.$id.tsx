@@ -41,7 +41,9 @@ function AnimeDetail() {
   const id = Number(params.id);
   const { data, isLoading } = useQuery(detailQO(id));
   const site = useSiteConfig();
-  const providerIds = site.animeProviders?.length ? site.animeProviders : DEFAULT_ANIME_PROVIDERS;
+  // Saved admin lists may predate new providers — keep their order, append the rest.
+  const saved = (site.animeProviders ?? []).filter((p) => ANIME_API_PROVIDERS.some((a) => a.id === p));
+  const providerIds = [...saved, ...DEFAULT_ANIME_PROVIDERS.filter((p) => !saved.includes(p))];
   const providers = providerIds
     .map((pid) => ANIME_API_PROVIDERS.find((p) => p.id === pid))
     .filter(Boolean) as (typeof ANIME_API_PROVIDERS)[number][];

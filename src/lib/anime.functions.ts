@@ -132,6 +132,8 @@ function megaplayEmbed(episodeId: string, dub: boolean) {
 /** Embed providers keyed purely by AniList id + episode number (no scraping). */
 const EMBED_BUILDERS: Record<string, (anilistId: number, ep: number, dub: boolean) => string> = {
   videasy: (id, ep, dub) => `https://player.videasy.net/anime/${id}/${ep}${dub ? "?dub=true" : ""}`,
+  megaplay: (id, ep, dub) => `https://megaplay.buzz/stream/ani/${id}/${ep}/${dub ? "dub" : "sub"}`,
+  vidplay: (id, ep, dub) => `https://vidplay.to/embed/anime/${id}/${ep}/${dub ? "dub" : "sub"}`,
   vidsrccc: (id, ep, dub) => `https://vidsrc.cc/v2/embed/anime/ani${id}/${ep}/${dub ? "dub" : "sub"}`,
 };
 
@@ -173,7 +175,7 @@ export const animeEpisodes = createServerFn({ method: "GET" })
         return { episodes, provider, dub: !!data.dub, error: null as string | null };
       }
       // Megaplay plays HiAnime episode ids, so its episode list comes from HiAnime.
-      if (provider === "hianime" || provider === "megaplay") {
+      if (provider === "hianime") {
         const episodes = await hianimeEpisodes(data.id, data.title, data.malId ?? undefined, !!data.dub);
         return { episodes, provider, dub: !!data.dub, error: episodes.length ? null : "No HiAnime episodes found" };
       }

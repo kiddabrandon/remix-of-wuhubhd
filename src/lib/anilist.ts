@@ -35,6 +35,7 @@ type AniListMedia = {
   status: string | null;
   studios?: { nodes: { name: string }[] };
   trailer?: { id: string | null; site: string | null } | null;
+  nextAiringEpisode?: { episode: number } | null;
 };
 
 function mapMedia(m: AniListMedia): AnimeItem {
@@ -45,7 +46,8 @@ function mapMedia(m: AniListMedia): AnimeItem {
     banner: m.bannerImage,
     score: m.averageScore != null ? m.averageScore / 10 : null,
     year: m.seasonYear,
-    episodes: m.episodes,
+    idMal: m.idMal ?? null,
+    episodes: m.episodes ?? (m.nextAiringEpisode?.episode ? m.nextAiringEpisode.episode - 1 : null),
     format: m.format,
     genres: m.genres ?? [],
     overview: m.description ? m.description.replace(/<[^>]+>/g, "") : null,
@@ -94,6 +96,7 @@ const PAGE_FIELDS = `
   coverImage { large extraLarge color }
   bannerImage
   averageScore episodes seasonYear format genres status
+  nextAiringEpisode { episode }
 `;
 
 export async function animePopular(): Promise<AnimeItem[]> {
