@@ -3,7 +3,6 @@ import { useSuspenseQuery, useQuery, queryOptions } from "@tanstack/react-query"
 import { X } from "lucide-react";
 import { Hero } from "@/components/Hero";
 import { Carousel } from "@/components/Carousel";
-import { TonightsPick } from "@/components/TonightsPick";
 import { Top10Row } from "@/components/Top10Row";
 import { poster } from "@/lib/tmdb-utils";
 import { useApp } from "@/lib/app-store";
@@ -47,6 +46,16 @@ const popTvQO = queryOptions({
 });
 
 export const Route = createFileRoute("/_authenticated/")({
+  head: () => ({
+    meta: [
+      { title: "WuHubHD — Discover movies, TV and anime" },
+      { name: "description", content: "Trending movies, TV shows, anime and upcoming releases, all in one place." },
+      { property: "og:title", content: "WuHubHD — Discover movies, TV and anime" },
+      { property: "og:description", content: "Trending movies, TV shows, anime and upcoming releases, all in one place." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(trendingQO),
@@ -91,7 +100,7 @@ function Discover() {
   const configuredSections = mergeHomeSections(site.homeSections);
   const sectionById: Record<string, React.ReactNode> = {
     continue: progress.length > 0 ? <ContinueWatching /> : null,
-    tonight: <TonightsPick pool={trendingItems} />,
+    tonight: null,
     because: progress.length > 0 ? <BecauseYouWatched /> : null,
     top10: <Top10Row items={top10Items} />,
     trending: <Carousel title="Trending Now" items={trendingItems} viewAllHref="/movies" />,

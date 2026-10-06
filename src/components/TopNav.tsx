@@ -18,9 +18,8 @@ export function TopNav() {
     { to: "/movies", label: "Movies" },
     { to: "/tv", label: "TV Shows" },
     { to: "/anime", label: "Anime" },
-    { to: "/search", label: "Search" },
-    { to: "/history", label: "History" },
-    { to: "/watchlist", label: "Watchlist" },
+    { to: "/youtube", label: "YouTube" },
+    { to: "/reminders", label: "Reminders" },
   ] as const;
 
 
@@ -50,8 +49,8 @@ export function TopNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="rounded-full px-3 py-1.5 text-sm text-neutral-300 transition hover:bg-white/5 hover:text-white"
-                activeProps={{ className: "rounded-full px-3 py-1.5 text-sm text-white bg-white/5" }}
+                className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+                activeProps={{ className: "rounded-full px-3 py-1.5 text-sm text-foreground bg-secondary" }}
               >
                 {l.label}
               </Link>

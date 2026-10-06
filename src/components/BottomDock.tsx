@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Home, LayoutGrid, Search, User, Film, Tv, Clock, Bookmark, Sun, LogOut, Sparkles, Users, Youtube, BellRing } from "lucide-react";
+import { Home, LayoutGrid, Search, User, Film, Tv, Clock, Bookmark, Sun, LogOut, Sparkles, Users, Youtube, BellRing, Download, Settings2 } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
 import { useApp } from "@/lib/app-store";
 import { supabase } from "@/integrations/supabase/client";
@@ -207,6 +207,26 @@ export function BottomDock() {
                   hint="Search and watch in-app"
                   accent="#FF0033"
                 />
+                <SheetTile
+                  onClick={() => {
+                    setBrowse(false);
+                    navigate({ to: "/downloads" });
+                  }}
+                  icon={<Download className="h-5 w-5" />}
+                  label="Downloads"
+                  hint="Save titles offline"
+                  accent="#38BDF8"
+                />
+                <SheetTile
+                  onClick={() => {
+                    setBrowse(false);
+                    navigate({ to: "/settings" });
+                  }}
+                  icon={<Settings2 className="h-5 w-5" />}
+                  label="Settings"
+                  hint="Servers, add-ons & account"
+                  accent="#94A3B8"
+                />
               </div>
 
               <SheetTitle className="mt-6">Preferences</SheetTitle>
@@ -252,7 +272,7 @@ export function BottomDock() {
                 </div>
 
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">{session?.user.user_metadata?.display_name ?? session?.user.email}</div>
+                  <div className="truncate text-sm font-semibold">{session ? (session.user.user_metadata?.display_name ?? session.user.email) : "Guest"}</div>
                   <div className="truncate text-xs text-neutral-400">{session?.user.email}</div>
                 </div>
               </div>
@@ -265,12 +285,17 @@ export function BottomDock() {
               >
                 <Sun className="h-4 w-4" /> Settings
               </button>
-              <button
+              {session ? <button
                 onClick={signOut}
                 className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-300 hover:bg-red-500/10"
               >
                 <LogOut className="h-4 w-4" /> Sign out
-              </button>
+              </button> : <button
+                onClick={() => { setProfile(false); navigate({ to: "/auth" }); }}
+                className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-accent hover:bg-secondary"
+              >
+                <User className="h-4 w-4" /> Sign in or create account
+              </button>}
             </motion.div>
           </motion.div>
         )}

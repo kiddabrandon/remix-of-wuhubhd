@@ -3,7 +3,7 @@ import { getSiteConfig } from "@/lib/site-config.functions";
 
 export const DEFAULT_HOME_SECTIONS = [
   { id: "continue", label: "Continue Watching", enabled: true },
-  { id: "tonight", label: "Tonight's Pick", enabled: true },
+  { id: "tonight", label: "Tonight's Pick", enabled: false },
   { id: "because", label: "Because You Watched", enabled: true },
   { id: "top10", label: "Top 10", enabled: true },
   { id: "trending", label: "Trending Now", enabled: true },
