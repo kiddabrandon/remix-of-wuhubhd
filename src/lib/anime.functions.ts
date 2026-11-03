@@ -142,7 +142,8 @@ type MiruroWatch = {
 
 function mapMiruroWatch(res: MiruroWatch): Omit<WatchResult, "error"> {
   const streams = res.streams ?? [];
-  const embed = streams.find((s) => s.type === "embed" && s.url)?.url ?? null;
+  // Prefer direct HLS/MP4 over the provider's embed page — the embed iframe is
+  // often referrer-gated, while the HLS URL plays in the built-in player.
   const sources: AnimeStreamSource[] = streams
     .filter((s) => s.type !== "embed" && !!s.url)
     .map((s) => ({
@@ -150,6 +151,9 @@ function mapMiruroWatch(res: MiruroWatch): Omit<WatchResult, "error"> {
       quality: s.quality || s.server || "auto",
       isM3U8: s.type === "hls" || s.url.includes(".m3u8"),
     }));
+  const embed = sources.length
+    ? null
+    : (streams.find((s) => s.type === "embed" && s.url)?.url ?? null);
   const subtitles = (res.subtitles ?? [])
     .filter((t) => !!t.url)
     .map((t) => ({ url: t.url as string, lang: t.lang || t.label || "Subtitle" }));
@@ -167,7 +171,10 @@ async function miruroWatch(episodeId: string, audio: "sub" | "dub"): Promise<Wat
   const attempts: string[] = [];
   const tryWatch = async (apiId: string): Promise<WatchResult> => {
     attempts.push(apiId);
-    const res = await miruroFetch<MiruroWatch>(`/watch/${apiId}`, 20_000);
+    // Episode ids arrive as "watch/<provider>/<id>/<audio>/<server>" — the
+    // leading segment already names the endpoint, so don't prefix it again.
+    const path = apiId.startsWith("watch/") ? `/${apiId}` : `/watch/${apiId}`;
+    const res = await miruroFetch<MiruroWatch>(path, 20_000);
     const mapped = mapMiruroWatch(res);
     if (!mapped.sources.length && !mapped.embed) throw new Error("No playable stream returned");
     return { ...mapped, error: null };
@@ -226,6 +233,27 @@ const EMBED_BUILDERS: Record<string, (anilistId: number, ep: number, dub: boolea
   vidsrccc: (id, ep, dub) => `https://vidsrc.cc/v2/embed/anime/ani${id}/${ep}/${dub ? "dub" : "sub"}`,
 };
 
+/**
+ * Embed providers generate episode slots from the AniList count only, so they
+ * ship no titles or thumbnails. Best-effort enrichment from the Miruro catalogue.
+ */
+async function miruroEpisodeMeta(anilistId: number): Promise<Map<number, { title: string; image: string | null }>> {
+  const meta = new Map<number, { title: string; image: string | null }>();
+  try {
+    const data = await miruroFetch<MiruroEpisodesResponse>(`/episodes/${anilistId}`, 9_000);
+    for (const info of Object.values(data.providers ?? {})) {
+      const list = info?.episodes?.sub ?? info?.episodes?.dub ?? [];
+      for (const ep of list) {
+        const n = Number(ep.number) || 0;
+        if (n && !meta.has(n)) meta.set(n, { title: ep.title ?? "", image: ep.image ?? null });
+      }
+    }
+  } catch {
+    // Enrichment is optional — empty map keeps generated slots usable.
+  }
+  return meta;
+}
+
 export const animeEpisodes = createServerFn({ method: "GET" })
   .inputValidator(
     (d: {
@@ -244,12 +272,17 @@ export const animeEpisodes = createServerFn({ method: "GET" })
       // Embed providers need no episode discovery — AniList's count is enough.
       if (EMBED_BUILDERS[provider]) {
         const count = Math.max(1, Number(data.episodeCount) || 12);
-        const episodes: AnimeEpisode[] = Array.from({ length: count }, (_, i) => ({
-          id: embedEpisodeId(data.id, i + 1),
-          number: i + 1,
-          title: null,
-          image: null,
-        }));
+        const meta = await miruroEpisodeMeta(data.id);
+        const episodes: AnimeEpisode[] = Array.from({ length: count }, (_, i) => {
+          const n = i + 1;
+          const m = meta.get(n);
+          return {
+            id: embedEpisodeId(data.id, n),
+            number: n,
+            title: m?.title || null,
+            image: m?.image ?? null,
+          };
+        });
         return { episodes, provider, dub: !!data.dub, error: null as string | null };
       }
       if (isMiruroProvider(provider)) {
