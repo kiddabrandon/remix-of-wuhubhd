@@ -226,6 +226,27 @@ const EMBED_BUILDERS: Record<string, (anilistId: number, ep: number, dub: boolea
   vidsrccc: (id, ep, dub) => `https://vidsrc.cc/v2/embed/anime/ani${id}/${ep}/${dub ? "dub" : "sub"}`,
 };
 
+/**
+ * Embed providers generate episode slots from the AniList count only, so they
+ * ship no titles or thumbnails. Best-effort enrichment from the Miruro catalogue.
+ */
+async function miruroEpisodeMeta(anilistId: number): Promise<Map<number, { title: string; image: string | null }>> {
+  const meta = new Map<number, { title: string; image: string | null }>();
+  try {
+    const data = await miruroFetch<MiruroEpisodesResponse>(`/episodes/${anilistId}`, 9_000);
+    for (const info of Object.values(data.providers ?? {})) {
+      const list = info?.episodes?.sub ?? info?.episodes?.dub ?? [];
+      for (const ep of list) {
+        const n = Number(ep.number) || 0;
+        if (n && !meta.has(n)) meta.set(n, { title: ep.title ?? "", image: ep.image ?? null });
+      }
+    }
+  } catch {
+    // Enrichment is optional — empty map keeps generated slots usable.
+  }
+  return meta;
+}
+
 export const animeEpisodes = createServerFn({ method: "GET" })
   .inputValidator(
     (d: {
