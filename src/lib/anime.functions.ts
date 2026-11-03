@@ -144,7 +144,6 @@ function mapMiruroWatch(res: MiruroWatch): Omit<WatchResult, "error"> {
   const streams = res.streams ?? [];
   // Prefer direct HLS/MP4 over the provider's embed page — the embed iframe is
   // often referrer-gated, while the HLS URL plays in the built-in player.
-  const embed = streams.find((s) => s.type === "embed" && s.url)?.url ?? null;
   const sources: AnimeStreamSource[] = streams
     .filter((s) => s.type !== "embed" && !!s.url)
     .map((s) => ({
@@ -152,6 +151,9 @@ function mapMiruroWatch(res: MiruroWatch): Omit<WatchResult, "error"> {
       quality: s.quality || s.server || "auto",
       isM3U8: s.type === "hls" || s.url.includes(".m3u8"),
     }));
+  const embed = sources.length
+    ? null
+    : (streams.find((s) => s.type === "embed" && s.url)?.url ?? null);
   const subtitles = (res.subtitles ?? [])
     .filter((t) => !!t.url)
     .map((t) => ({ url: t.url as string, lang: t.lang || t.label || "Subtitle" }));
