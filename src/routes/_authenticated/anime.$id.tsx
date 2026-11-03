@@ -3,7 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Play, Star } from "lucide-react";
 import { animeById } from "@/lib/anilist";
-import { animeEpisodes, animeWatch } from "@/lib/anime.functions";
+import {
+  animeEpisodes,
+  animeWatch,
+  animeExtras,
+  type AnimeCharacter,
+  type AnimeRelated,
+} from "@/lib/anime.functions";
 import { HlsPlayer } from "@/components/HlsPlayer";
 import { useSiteConfig } from "@/lib/site-config";
 import { ANIME_API_PROVIDERS, DEFAULT_ANIME_PROVIDERS } from "@/lib/servers";
