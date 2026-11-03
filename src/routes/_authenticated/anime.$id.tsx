@@ -98,6 +98,13 @@ function AnimeDetail() {
     );
   }, [watchData]);
 
+  const { data: extras } = useQuery({
+    queryKey: ["anime", "extras", id],
+    queryFn: () => animeExtras({ data: { id } }),
+    enabled: !!data,
+    staleTime: 30 * 60_000,
+  });
+
   if (isLoading || !data) {
     return (
       <div className="grid min-h-[60vh] place-items-center text-sm text-neutral-500">
