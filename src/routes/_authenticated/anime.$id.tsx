@@ -337,7 +337,89 @@ function AnimeDetail() {
             </div>
           </aside>
         </div>
+
+        {/* AniPub-style extras */}
+        {extras && extras.characters.length > 0 && (
+          <section className="mt-12">
+            <h2 className="font-display text-lg font-semibold">Characters</h2>
+            <div className="scrollbar-none mt-4 flex gap-4 overflow-x-auto pb-2">
+              {extras.characters.map((c) => (
+                <CharacterCard key={c.name + c.role} character={c} />
+              ))}
+            </div>
+          </section>
+        )}
+        {extras && extras.relations.length > 0 && (
+          <section className="mt-10">
+            <h2 className="font-display text-lg font-semibold">Related anime</h2>
+            <div className="scrollbar-none mt-4 flex gap-4 overflow-x-auto pb-2">
+              {extras.relations.map((r) => (
+                <PosterLink
+                  key={`${r.id}-${r.relation}`}
+                  id={r.id}
+                  title={r.title}
+                  poster={r.poster}
+                  caption={r.relation}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+        {extras && extras.recommendations.length > 0 && (
+          <section className="mt-10 pb-4">
+            <h2 className="font-display text-lg font-semibold">You may also like</h2>
+            <div className="scrollbar-none mt-4 flex gap-4 overflow-x-auto pb-2">
+              {extras.recommendations.map((r) => (
+                <PosterLink key={r.id} id={r.id} title={r.title} poster={r.poster} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
+  );
+}
+
+function CharacterCard({ character: c }: { character: AnimeCharacter }) {
+  return (
+    <div className="w-28 shrink-0 text-center">
+      <div className="mx-auto aspect-square w-24 overflow-hidden rounded-full bg-neutral-900 ring-1 ring-white/10">
+        {c.image && <img src={c.image} alt={c.name} loading="lazy" className="h-full w-full object-cover" />}
+      </div>
+      <div className="mt-2 truncate text-xs font-medium text-neutral-200">{c.name}</div>
+      <div className="truncate text-[11px] text-neutral-500">
+        {c.role}
+        {c.voiceActor ? ` · ${c.voiceActor}` : ""}
+      </div>
+    </div>
+  );
+}
+
+function PosterLink({
+  id,
+  title,
+  poster,
+  caption,
+}: {
+  id: number;
+  title: string;
+  poster: string | null;
+  caption?: string;
+}) {
+  return (
+    <Link to="/anime/$id" params={{ id: String(id) }} className="group w-32 shrink-0">
+      <div className="aspect-[2/3] overflow-hidden rounded-xl bg-neutral-900 ring-1 ring-white/5">
+        {poster && (
+          <img
+            src={poster}
+            alt={title}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        )}
+      </div>
+      <div className="mt-2 truncate text-sm text-neutral-200 group-hover:text-white">{title}</div>
+      {caption && <div className="truncate text-xs text-neutral-500">{caption}</div>}
+    </Link>
   );
 }
