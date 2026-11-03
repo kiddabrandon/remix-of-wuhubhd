@@ -265,12 +265,17 @@ export const animeEpisodes = createServerFn({ method: "GET" })
       // Embed providers need no episode discovery — AniList's count is enough.
       if (EMBED_BUILDERS[provider]) {
         const count = Math.max(1, Number(data.episodeCount) || 12);
-        const episodes: AnimeEpisode[] = Array.from({ length: count }, (_, i) => ({
-          id: embedEpisodeId(data.id, i + 1),
-          number: i + 1,
-          title: null,
-          image: null,
-        }));
+        const meta = await miruroEpisodeMeta(data.id);
+        const episodes: AnimeEpisode[] = Array.from({ length: count }, (_, i) => {
+          const n = i + 1;
+          const m = meta.get(n);
+          return {
+            id: embedEpisodeId(data.id, n),
+            number: n,
+            title: m?.title || null,
+            image: m?.image ?? null,
+          };
+        });
         return { episodes, provider, dub: !!data.dub, error: null as string | null };
       }
       if (isMiruroProvider(provider)) {
