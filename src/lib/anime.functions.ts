@@ -167,7 +167,10 @@ async function miruroWatch(episodeId: string, audio: "sub" | "dub"): Promise<Wat
   const attempts: string[] = [];
   const tryWatch = async (apiId: string): Promise<WatchResult> => {
     attempts.push(apiId);
-    const res = await miruroFetch<MiruroWatch>(`/watch/${apiId}`, 20_000);
+    // Episode ids arrive as "watch/<provider>/<id>/<audio>/<server>" — the
+    // leading segment already names the endpoint, so don't prefix it again.
+    const path = apiId.startsWith("watch/") ? `/${apiId}` : `/watch/${apiId}`;
+    const res = await miruroFetch<MiruroWatch>(path, 20_000);
     const mapped = mapMiruroWatch(res);
     if (!mapped.sources.length && !mapped.embed) throw new Error("No playable stream returned");
     return { ...mapped, error: null };
