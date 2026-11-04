@@ -258,7 +258,13 @@ function AnimeDetail() {
                   <div className="text-xs text-neutral-500">Try a different provider.</div>
                 </div>
               )
-            ) : (
+            )}
+            {failedProviders.length > 0 && (
+              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
+                {failedProviders.join(", ")} couldn't play this episode — now using{" "}
+                {providers.find((p) => p.id === provider)?.name ?? provider}.
+              </div>
+            )}
 
               <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
                 {epLoading ? (
