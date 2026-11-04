@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Play, Star } from "lucide-react";
@@ -101,6 +101,12 @@ function AnimeDetail() {
       null
     );
   }, [watchData]);
+
+  // Any change of episode/provider/audio resets the fallback state.
+  const watchKey = `${activeId ?? ""}|${provider}|${dub}`;
+  useEffect(() => {
+    setStreamFailed(false);
+  }, [watchKey]);
 
   const { data: extras } = useQuery({
     queryKey: ["anime", "extras", id],
