@@ -27,6 +27,15 @@ export function HlsPlayer({
       setMsg(m);
       onError?.(m);
     };
+    // Give the stream a bounded window to become playable; a hung host should
+    // surface as an error (triggering any fallback) instead of spinning forever.
+    const readyTimer = window.setTimeout(() => {
+      setStatus((s) => {
+        if (s === "ready") return s;
+        fail("Stream took too long to load.");
+        return "error";
+      });
+    }, 20_000);
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       // Native HLS (Safari, iOS)
