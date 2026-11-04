@@ -266,6 +266,7 @@ function AnimeDetail() {
               </div>
             )}
 
+            {activeEp ? null : (
               <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
                 {epLoading ? (
                   <>
