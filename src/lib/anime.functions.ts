@@ -159,6 +159,36 @@ function mapMiruroWatch(res: MiruroWatch): Omit<WatchResult, "error"> {
 }
 
 /**
+ * Detects whether an embed page allows third-party framing. Some providers
+ * (e.g. krussdomi) ship `frame-ancestors` / X-Frame-Options headers that blank
+ * the iframe on our site — better to skip them and let the client rotate to
+ * another provider than show a white box.
+ */
+async function embedFramable(url: string, timeoutMs = 5_000): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" },
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    const xfo = (res.headers.get("x-frame-options") ?? "").toLowerCase();
+    if (xfo.includes("deny") || xfo.includes("sameorigin")) return false;
+    const csp = (res.headers.get("content-security-policy") ?? "").toLowerCase();
+    const ancestors = /frame-ancestors([^;]*)/.exec(csp)?.[1]?.trim();
+    // No directive (or a wildcard) means framing is allowed. A specific list
+    // that isn't a wildcard blocks every third-party origin, including ours.
+    if (ancestors && ancestors !== "*" && !ancestors.includes("*")) return false;
+    return true;
+  } catch {
+    return true; // probe failed — assume framable rather than hiding a working player
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
  * Resolves a playable stream for a Miruro episode. Tries the recorded source
  * provider first; on failure re-fetches the episode list and races the other
  * providers for the same episode number.
@@ -174,6 +204,7 @@ async function miruroWatch(episodeId: string, audio: "sub" | "dub"): Promise<Wat
     const path = apiId.startsWith("watch/") ? `/${apiId}` : `/watch/${apiId}`;
     const res = await miruroFetch<MiruroWatch>(path, 20_000);
     const mapped = mapMiruroWatch(res);
+    if (mapped.embed && !(await embedFramable(mapped.embed))) mapped.embed = null;
     if (!mapped.sources.length && !mapped.embed) throw new Error("No playable stream returned");
     return { ...mapped, error: null };
   };
