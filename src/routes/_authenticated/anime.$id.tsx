@@ -57,8 +57,11 @@ function AnimeDetail() {
   const [audio, setAudio] = useState<"sub" | "dub">("sub");
   const [selected, setSelected] = useState<string | null>(null);
   // Direct streams from some hosts refuse cross-site playback; when that
-  // happens we silently fall back to the provider's own embedded player.
+  // happens we fall back to the provider's own embedded player, and if that
+  // provider has nothing playable we rotate to the next one, same episode.
   const [streamFailed, setStreamFailed] = useState(false);
+  const [failedProviders, setFailedProviders] = useState<string[]>([]);
+  const [pendingNumber, setPendingNumber] = useState<number | null>(null);
   const onStreamError = useCallback(() => setStreamFailed(true), []);
   const dubSupported = provider !== "animepahe";
   const dub = audio === "dub" && dubSupported;
@@ -106,7 +109,29 @@ function AnimeDetail() {
   const watchKey = `${activeId ?? ""}|${provider}|${dub}`;
   useEffect(() => {
     setStreamFailed(false);
+    setFailedProviders([]);
   }, [watchKey]);
+
+  // Restore the chosen episode after an automatic provider rotation.
+  useEffect(() => {
+    if (pendingNumber == null || !epData) return;
+    const match = episodes.find((e) => e.number === pendingNumber);
+    if (match) setSelected(match.id);
+    setPendingNumber(null);
+  }, [epData, pendingNumber, episodes]);
+
+  // Direct stream failed and no usable embed: rotate to the next provider.
+  useEffect(() => {
+    if (!streamFailed || watchData?.embed || watchFetching || !activeEp) return;
+    const candidates = providers.filter(
+      (p) => p.id !== provider && !failedProviders.includes(p.id),
+    );
+    if (!candidates.length) return; // every provider tried — show the error
+    setFailedProviders((f) => [...f, provider]);
+    setPendingNumber(activeEp.number);
+    setProvider(candidates[0].id);
+    setSelected(null);
+  }, [streamFailed, watchData, watchFetching, activeEp, providers, provider, failedProviders]);
 
   const { data: extras } = useQuery({
     queryKey: ["anime", "extras", id],
