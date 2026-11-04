@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Play, Star } from "lucide-react";
@@ -56,6 +56,10 @@ function AnimeDetail() {
   const [provider, setProvider] = useState<string>(providers[0]?.id ?? "videasy");
   const [audio, setAudio] = useState<"sub" | "dub">("sub");
   const [selected, setSelected] = useState<string | null>(null);
+  // Direct streams from some hosts refuse cross-site playback; when that
+  // happens we silently fall back to the provider's own embedded player.
+  const [streamFailed, setStreamFailed] = useState(false);
+  const onStreamError = useCallback(() => setStreamFailed(true), []);
   const dubSupported = provider !== "animepahe";
   const dub = audio === "dub" && dubSupported;
   const { data: epData, isLoading: epLoading } = useQuery({
