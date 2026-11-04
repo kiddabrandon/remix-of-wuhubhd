@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Play, Star } from "lucide-react";
@@ -56,6 +56,13 @@ function AnimeDetail() {
   const [provider, setProvider] = useState<string>(providers[0]?.id ?? "videasy");
   const [audio, setAudio] = useState<"sub" | "dub">("sub");
   const [selected, setSelected] = useState<string | null>(null);
+  // Direct streams from some hosts refuse cross-site playback; when that
+  // happens we fall back to the provider's own embedded player, and if that
+  // provider has nothing playable we rotate to the next one, same episode.
+  const [streamFailed, setStreamFailed] = useState(false);
+  const [failedProviders, setFailedProviders] = useState<string[]>([]);
+  const [pendingNumber, setPendingNumber] = useState<number | null>(null);
+  const onStreamError = useCallback(() => setStreamFailed(true), []);
   const dubSupported = provider !== "animepahe";
   const dub = audio === "dub" && dubSupported;
   const { data: epData, isLoading: epLoading } = useQuery({
@@ -97,6 +104,34 @@ function AnimeDetail() {
       null
     );
   }, [watchData]);
+
+  // Any change of episode/provider/audio resets the fallback state.
+  const watchKey = `${activeId ?? ""}|${provider}|${dub}`;
+  useEffect(() => {
+    setStreamFailed(false);
+    setFailedProviders([]);
+  }, [watchKey]);
+
+  // Restore the chosen episode after an automatic provider rotation.
+  useEffect(() => {
+    if (pendingNumber == null || !epData) return;
+    const match = episodes.find((e) => e.number === pendingNumber);
+    if (match) setSelected(match.id);
+    setPendingNumber(null);
+  }, [epData, pendingNumber, episodes]);
+
+  // Direct stream failed and no usable embed: rotate to the next provider.
+  useEffect(() => {
+    if (!streamFailed || watchData?.embed || watchFetching || !activeEp) return;
+    const candidates = providers.filter(
+      (p) => p.id !== provider && !failedProviders.includes(p.id),
+    );
+    if (!candidates.length) return; // every provider tried — show the error
+    setFailedProviders((f) => [...f, provider]);
+    setPendingNumber(activeEp.number);
+    setProvider(candidates[0].id);
+    setSelected(null);
+  }, [streamFailed, watchData, watchFetching, activeEp, providers, provider, failedProviders]);
 
   const { data: extras } = useQuery({
     queryKey: ["anime", "extras", id],
@@ -174,39 +209,64 @@ function AnimeDetail() {
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
             {activeEp ? (
-              watchData?.embed ? (
-                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
-                  <iframe
-                    src={watchData.embed}
-                    title={`${data.title} — episode ${activeEp.number}`}
-                    className="h-full w-full"
-                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
-                    referrerPolicy="no-referrer"
-                    loading="lazy"
-
-                  />
-                </div>
-              ) : bestSource ? (
+              bestSource && !streamFailed ? (
                 bestSource.isM3U8 ? (
-                  <HlsPlayer src={bestSource.url} poster={data.banner || data.poster} />
+                  <HlsPlayer
+                    key={watchKey}
+                    src={bestSource.url}
+                    poster={data.banner || data.poster}
+                    onError={onStreamError}
+                  />
                 ) : (
                   <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
-                    <video src={bestSource.url} controls playsInline className="h-full w-full" />
+                    <video
+                      key={watchKey}
+                      src={bestSource.url}
+                      controls
+                      playsInline
+                      className="h-full w-full"
+                      onError={onStreamError}
+                    />
                   </div>
                 )
+              ) : watchData?.embed ? (
+                <div className="space-y-2">
+                  {streamFailed && (
+                    <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
+                      Direct stream unavailable — switched to {provider}'s player.
+                    </div>
+                  )}
+                  <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+                    <iframe
+                      src={watchData.embed}
+                      title={`${data.title} — episode ${activeEp.number}`}
+                      className="h-full w-full"
+                      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
               ) : watchFetching ? (
                 <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching stream…
                 </div>
               ) : (
                 <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
-                  <div>No stream available from {provider}.</div>
+                  <div>{watchData?.error || `No stream available from ${provider}.`}</div>
                   <div className="text-xs text-neutral-500">Try a different provider.</div>
                 </div>
               )
-            ) : (
+            )}
+            {failedProviders.length > 0 && (
+              <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
+                {failedProviders.join(", ")} couldn't play this episode — now using{" "}
+                {providers.find((p) => p.id === provider)?.name ?? provider}.
+              </div>
+            )}
 
+            {activeEp ? null : (
               <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
                 {epLoading ? (
                   <>

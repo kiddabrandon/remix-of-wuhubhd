@@ -27,28 +27,54 @@ export function HlsPlayer({
       setMsg(m);
       onError?.(m);
     };
+    // Give the stream a bounded window to become playable; a hung host should
+    // surface as an error (triggering any fallback) instead of spinning forever.
+    const readyTimer = window.setTimeout(() => {
+      setStatus((s) => {
+        if (s === "ready") return s;
+        fail("Stream took too long to load.");
+        return "error";
+      });
+    }, 20_000);
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       // Native HLS (Safari, iOS)
       video.src = src;
-      const onCanPlay = () => setStatus("ready");
+      const onCanPlay = () => {
+        window.clearTimeout(readyTimer);
+        setStatus("ready");
+      };
+      const onNativeError = () => fail("The stream refused to load.");
       video.addEventListener("canplay", onCanPlay);
-      return () => video.removeEventListener("canplay", onCanPlay);
+      video.addEventListener("error", onNativeError);
+      return () => {
+        window.clearTimeout(readyTimer);
+        video.removeEventListener("canplay", onCanPlay);
+        video.removeEventListener("error", onNativeError);
+      };
     }
 
     if (!Hls.isSupported()) {
+      window.clearTimeout(readyTimer);
       fail("This browser cannot play HLS streams.");
       return;
     }
 
     hls = new Hls({ enableWorker: true, lowLatencyMode: false });
-    hls.on(Hls.Events.MANIFEST_PARSED, () => setStatus("ready"));
+    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      window.clearTimeout(readyTimer);
+      setStatus("ready");
+    });
     hls.on(Hls.Events.ERROR, (_e, data) => {
-      if (data.fatal) fail(data.details || "Playback error");
+      if (data.fatal) {
+        window.clearTimeout(readyTimer);
+        fail(data.details || "Playback error");
+      }
     });
     hls.loadSource(src);
     hls.attachMedia(video);
     return () => {
+      window.clearTimeout(readyTimer);
       hls?.destroy();
     };
   }, [src, onError]);
