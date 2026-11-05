@@ -258,7 +258,7 @@ function AnimeDetail() {
                   <div className="text-xs text-neutral-500">Try a different provider.</div>
                 </div>
               )
-            )}
+            : null}
             {failedProviders.length > 0 && (
               <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
                 {failedProviders.join(", ")} couldn't play this episode — now using{" "}
