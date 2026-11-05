@@ -208,57 +208,58 @@ function AnimeDetail() {
         {/* Player + episodes */}
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
-            {activeEp ? (
-              bestSource && !streamFailed ? (
-                bestSource.isM3U8 ? (
-                  <HlsPlayer
+            {activeEp && bestSource && !streamFailed && (
+              bestSource.isM3U8 ? (
+                <HlsPlayer
+                  key={watchKey}
+                  src={bestSource.url}
+                  poster={data.banner || data.poster}
+                  onError={onStreamError}
+                />
+              ) : (
+                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+                  <video
                     key={watchKey}
                     src={bestSource.url}
-                    poster={data.banner || data.poster}
+                    controls
+                    playsInline
+                    className="h-full w-full"
                     onError={onStreamError}
                   />
-                ) : (
-                  <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
-                    <video
-                      key={watchKey}
-                      src={bestSource.url}
-                      controls
-                      playsInline
-                      className="h-full w-full"
-                      onError={onStreamError}
-                    />
-                  </div>
-                )
-              ) : watchData?.embed ? (
-                <div className="space-y-2">
-                  {streamFailed && (
-                    <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
-                      Direct stream unavailable — switched to {provider}'s player.
-                    </div>
-                  )}
-                  <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
-                    <iframe
-                      src={watchData.embed}
-                      title={`${data.title} — episode ${activeEp.number}`}
-                      className="h-full w-full"
-                      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                      allowFullScreen
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-              ) : watchFetching ? (
-                <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching stream…
-                </div>
-              ) : (
-                <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
-                  <div>{watchData?.error || `No stream available from ${provider}.`}</div>
-                  <div className="text-xs text-neutral-500">Try a different provider.</div>
                 </div>
               )
-            : null}
+            )}
+            {activeEp && (!bestSource || streamFailed) && watchData?.embed && (
+              <div className="space-y-2">
+                {streamFailed && (
+                  <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
+                    Direct stream unavailable — switched to {provider}'s player.
+                  </div>
+                )}
+                <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
+                  <iframe
+                    src={watchData.embed}
+                    title={`${data.title} — episode ${activeEp.number}`}
+                    className="h-full w-full"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            )}
+            {activeEp && (!bestSource || streamFailed) && !watchData?.embed && watchFetching && (
+              <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching stream…
+              </div>
+            )}
+            {activeEp && (!bestSource || streamFailed) && !watchData?.embed && !watchFetching && (
+              <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-xl bg-black text-sm text-neutral-400 ring-1 ring-white/10">
+                <div>{watchData?.error || `No stream available from ${provider}.`}</div>
+                <div className="text-xs text-neutral-500">Try a different provider.</div>
+              </div>
+            )}
             {failedProviders.length > 0 && (
               <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
                 {failedProviders.join(", ")} couldn't play this episode — now using{" "}
