@@ -32,7 +32,15 @@ function isMiruroProvider(provider: string) {
   return MIRURO_PROVIDERS.includes(provider);
 }
 
+/** Small TTL cache — /episodes payloads are multi-MB and re-fetched on every
+ * provider switch or watch fallback, so memoise for a few minutes. */
+const miruroCache = new Map<string, { at: number; data: unknown }>();
+const MIRURO_CACHE_TTL = 5 * 60_000;
+const MIRURO_CACHE_MAX = 24;
+
 async function miruroFetch<T>(path: string, timeoutMs = 12_000): Promise<T> {
+  const hit = miruroCache.get(path);
+  if (hit && Date.now() - hit.at < MIRURO_CACHE_TTL) return hit.data as T;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -41,7 +49,12 @@ async function miruroFetch<T>(path: string, timeoutMs = 12_000): Promise<T> {
       signal: controller.signal,
     });
     if (!res.ok) throw new Error(`Miruro ${path}: HTTP ${res.status}`);
-    return (await res.json()) as T;
+    const data = (await res.json()) as T;
+    if (miruroCache.size >= MIRURO_CACHE_MAX) {
+      miruroCache.delete(miruroCache.keys().next().value as string);
+    }
+    miruroCache.set(path, { at: Date.now(), data });
+    return data;
   } finally {
     clearTimeout(timer);
   }
