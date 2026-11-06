@@ -90,7 +90,7 @@ function AnimeDetail() {
     queryKey: ["anime", "watch", activeId, provider, dub],
     queryFn: () =>
       animeWatch({ data: { episodeId: activeId as string, provider, dub } }),
-    enabled: !!activeId,
+    enabled: !!activeId && !epLoading,
     staleTime: 60_000,
   });
 
@@ -233,11 +233,12 @@ function AnimeDetail() {
               <div className="space-y-2">
                 {streamFailed && (
                   <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-center text-[11px] text-neutral-300">
-                    Direct stream unavailable — switched to {provider}'s player.
+                    Direct stream unavailable — using the provider player instead.
                   </div>
                 )}
                 <div className="aspect-video w-full overflow-hidden rounded-xl bg-black ring-1 ring-white/10">
                   <iframe
+                    key={watchKey}
                     src={watchData.embed}
                     title={`${data.title} — episode ${activeEp.number}`}
                     className="h-full w-full"
@@ -286,6 +287,8 @@ function AnimeDetail() {
                   onChange={(e) => {
                     setProvider(e.target.value);
                     setSelected(null);
+                    setStreamFailed(false);
+                    setFailedProviders([]);
                   }}
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs outline-none"
                 >
@@ -300,6 +303,8 @@ function AnimeDetail() {
                   onClick={() => {
                     setAudio("sub");
                     setSelected(null);
+                    setStreamFailed(false);
+                    setFailedProviders([]);
                   }}
                   className={`rounded-full px-2.5 py-1 transition ${
                     audio === "sub" ? "text-black" : "text-neutral-300 hover:text-white"
@@ -315,6 +320,8 @@ function AnimeDetail() {
                   onClick={() => {
                     setAudio("dub");
                     setSelected(null);
+                    setStreamFailed(false);
+                    setFailedProviders([]);
                   }}
                   className={`rounded-full px-2.5 py-1 transition disabled:opacity-40 ${
                     audio === "dub" && dubSupported ? "text-black" : "text-neutral-300 hover:text-white"
@@ -367,7 +374,11 @@ function AnimeDetail() {
                 return (
                   <button
                     key={ep.id}
-                    onClick={() => setSelected(ep.id)}
+                    onClick={() => {
+                      setSelected(ep.id);
+                      setStreamFailed(false);
+                      setFailedProviders([]);
+                    }}
                     className={`group flex w-full items-start gap-3 rounded-xl p-2 text-left transition ${
                       active ? "bg-accent-soft ring-1 ring-[var(--accent)]" : "hover:bg-white/5"
                     }`}
