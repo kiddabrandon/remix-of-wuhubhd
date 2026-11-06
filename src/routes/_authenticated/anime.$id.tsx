@@ -23,7 +23,14 @@ const detailQO = (id: number) =>
 
 export const Route = createFileRoute("/_authenticated/anime/$id")({
   head: ({ params }) => ({
-    meta: [{ title: `Anime #${params.id} — WuHubHD` }],
+    meta: [
+      { title: `Anime #${params.id} — WuHubHD` },
+      { name: "description", content: "Watch anime episodes and explore related series on WuHubHD." },
+      { property: "og:title", content: `Anime #${params.id} — WuHubHD` },
+      { property: "og:description", content: "Watch anime episodes and explore related series on WuHubHD." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
   }),
   errorComponent: ({ error, reset }) => (
     <div className="mx-auto max-w-lg px-6 py-24 text-center">
@@ -105,12 +112,7 @@ function AnimeDetail() {
     );
   }, [watchData]);
 
-  // Any change of episode/provider/audio resets the fallback state.
   const watchKey = `${activeId ?? ""}|${provider}|${dub}`;
-  useEffect(() => {
-    setStreamFailed(false);
-    setFailedProviders([]);
-  }, [watchKey]);
 
   // Restore the chosen episode after an automatic provider rotation.
   useEffect(() => {
@@ -129,6 +131,7 @@ function AnimeDetail() {
     if (!candidates.length) return; // every provider tried — show the error
     setFailedProviders((f) => [...f, provider]);
     setPendingNumber(activeEp.number);
+    setStreamFailed(false);
     setProvider(candidates[0].id);
     setSelected(null);
   }, [streamFailed, watchData, watchFetching, activeEp, providers, provider, failedProviders]);
