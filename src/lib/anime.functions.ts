@@ -210,6 +210,7 @@ async function miruroWatch(episodeId: string, audio: "sub" | "dub"): Promise<Wat
   const parsed = parseMiruroEpisodeId(episodeId);
   if (!parsed) throw new Error("Invalid episode reference");
   const attempts: string[] = [];
+  const embedFallback = `https://player.videasy.net/anime/${parsed.anilistId}/${parsed.number}`;
   const tryWatch = async (apiId: string): Promise<WatchResult> => {
     attempts.push(apiId);
     // Episode ids arrive as "watch/<provider>/<id>/<audio>/<server>" — the
@@ -218,8 +219,10 @@ async function miruroWatch(episodeId: string, audio: "sub" | "dub"): Promise<Wat
     const res = await miruroFetch<MiruroWatch>(path, 20_000);
     const mapped = mapMiruroWatch(res);
     if (mapped.embed && !(await embedFramable(mapped.embed))) mapped.embed = null;
-    if (!mapped.sources.length && !mapped.embed) throw new Error("No playable stream returned");
-    return { ...mapped, error: null };
+    if (!mapped.sources.length && !mapped.embed) {
+      return { ...mapped, embed: embedFallback, error: null };
+    }
+    return { ...mapped, embed: mapped.embed ?? embedFallback, error: null };
   };
 
   try {
@@ -251,7 +254,7 @@ async function miruroWatch(episodeId: string, audio: "sub" | "dub"): Promise<Wat
     sources: [],
     subtitles: [],
     headers: {},
-    embed: null,
+    embed: embedFallback,
     error: `No stream could be resolved from any source (tried ${attempts.length})`,
   };
 }
