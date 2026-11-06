@@ -21,8 +21,12 @@ export function HlsPlayer({
     setStatus("loading");
     setMsg("");
     let hls: Hls | null = null;
+    let hasFailed = false;
 
     const fail = (m: string) => {
+      if (hasFailed) return;
+      hasFailed = true;
+      window.clearTimeout(readyTimer);
       setStatus("error");
       setMsg(m);
       onError?.(m);
@@ -30,44 +34,39 @@ export function HlsPlayer({
     // Give the stream a bounded window to become playable; a hung host should
     // surface as an error (triggering any fallback) instead of spinning forever.
     const readyTimer = window.setTimeout(() => {
-      setStatus((s) => {
-        if (s === "ready") return s;
-        fail("Stream took too long to load.");
-        return "error";
-      });
+      fail("Stream took too long to become playable.");
     }, 20_000);
+    const onCanPlay = () => {
+      window.clearTimeout(readyTimer);
+      setStatus("ready");
+    };
+    video.addEventListener("canplay", onCanPlay);
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       // Native HLS (Safari, iOS)
       video.src = src;
-      const onCanPlay = () => {
-        window.clearTimeout(readyTimer);
-        setStatus("ready");
-      };
       const onNativeError = () => fail("The stream refused to load.");
-      video.addEventListener("canplay", onCanPlay);
       video.addEventListener("error", onNativeError);
       return () => {
         window.clearTimeout(readyTimer);
         video.removeEventListener("canplay", onCanPlay);
         video.removeEventListener("error", onNativeError);
+        video.removeAttribute("src");
+        video.load();
       };
     }
 
     if (!Hls.isSupported()) {
-      window.clearTimeout(readyTimer);
       fail("This browser cannot play HLS streams.");
-      return;
+      return () => {
+        window.clearTimeout(readyTimer);
+        video.removeEventListener("canplay", onCanPlay);
+      };
     }
 
     hls = new Hls({ enableWorker: true, lowLatencyMode: false });
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      window.clearTimeout(readyTimer);
-      setStatus("ready");
-    });
     hls.on(Hls.Events.ERROR, (_e, data) => {
-      if (data.fatal) {
-        window.clearTimeout(readyTimer);
+      if (data.fatal || data.details === "fragParsingError") {
         fail(data.details || "Playback error");
       }
     });
@@ -75,7 +74,10 @@ export function HlsPlayer({
     hls.attachMedia(video);
     return () => {
       window.clearTimeout(readyTimer);
+      video.removeEventListener("canplay", onCanPlay);
       hls?.destroy();
+      video.removeAttribute("src");
+      video.load();
     };
   }, [src, onError]);
 
